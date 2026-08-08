@@ -1,0 +1,66 @@
+'use client';
+import { useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { INITIAL_TEAM } from '@/lib/services/dataService';
+import { toast } from 'sonner';
+import { UserCheck, Plus, Edit3, Star } from 'lucide-react';
+
+export default function AdminTeamPage() {
+  const [team, setTeam] = useState(INITIAL_TEAM);
+
+  const toggleFeatured = (id: string) => {
+    setTeam((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, isFeaturedHomepage: !t.isFeaturedHomepage } : t))
+    );
+    toast.info('Homepage slider feature toggled.');
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
+            <UserCheck className="w-7 h-7 text-sky-400" /> Team Content Manager (§73)
+          </h1>
+          <p className="text-sm text-slate-400 mt-1">
+            Manage public website team profiles, display categories, and homepage slider selection.
+          </p>
+        </div>
+
+        <Button variant="fluent" size="sm" onClick={() => toast.success('New team member added!')}>
+          <Plus className="w-4 h-4" /> Add Team Member
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {team.map((m) => (
+          <Card key={m.id} className="p-6 space-y-4 border-slate-800 text-center">
+            <img src={m.photo} alt={m.name} className="w-20 h-20 rounded-2xl object-cover mx-auto border-2 border-sky-400" />
+            <div>
+              <Badge variant="primary" size="sm" className="mb-1">{m.category}</Badge>
+              <h3 className="text-base font-bold text-white">{m.name}</h3>
+              <p className="text-xs text-sky-400">{m.position}</p>
+            </div>
+
+            <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
+              <Button
+                variant={m.isFeaturedHomepage ? 'fluent' : 'outline'}
+                size="sm"
+                onClick={() => toggleFeatured(m.id)}
+                className="text-[11px] gap-1"
+              >
+                <Star className="w-3 h-3" /> {m.isFeaturedHomepage ? 'Featured' : 'Feature'}
+              </Button>
+
+              <Button variant="outline" size="sm" onClick={() => toast.info(`Editing ${m.name}`)}>
+                <Edit3 className="w-3.5 h-3.5" /> Edit
+              </Button>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
