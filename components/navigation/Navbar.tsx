@@ -14,7 +14,9 @@ import {
   LayoutDashboard,
   LogOut,
   Sparkles,
-  ShieldCheck
+  ShieldCheck,
+  UserPlus,
+  LogIn
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -34,7 +36,7 @@ const NAV_ITEMS = [
 export function Navbar() {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
-  const { user, isAuthenticated, logout, role, setMockUserRole } = useAuth();
+  const { user, isAuthenticated, logout, role } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -114,7 +116,7 @@ export function Navbar() {
             </button>
 
             {/* Auth Buttons */}
-            {isAuthenticated ? (
+            {isAuthenticated && user ? (
               <div className="flex items-center gap-2">
                 <Link href="/dashboard">
                   <Button variant="fluent" size="sm">
@@ -128,13 +130,29 @@ export function Navbar() {
                     </Button>
                   </Link>
                 )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={logout}
+                  title="Sign Out"
+                  className="px-2.5 text-slate-400 hover:text-rose-400 hover:border-rose-500/30"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </Button>
               </div>
             ) : (
-              <Link href="/login">
-                <Button variant="fluent" size="sm">
-                  Login
-                </Button>
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link href="/login">
+                  <Button variant="secondary" size="sm">
+                    <LogIn className="w-3.5 h-3.5 text-sky-400" /> Sign In
+                  </Button>
+                </Link>
+                <Link href="/register">
+                  <Button variant="fluent" size="sm">
+                    <UserPlus className="w-3.5 h-3.5" /> Register
+                  </Button>
+                </Link>
+              </div>
             )}
           </div>
 
@@ -177,7 +195,7 @@ export function Navbar() {
           </div>
 
           <div className="pt-4 border-t border-slate-800 flex flex-col gap-2">
-            {isAuthenticated ? (
+            {isAuthenticated && user ? (
               <>
                 <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="fluent" className="w-full">
@@ -196,11 +214,18 @@ export function Navbar() {
                 </Button>
               </>
             ) : (
-              <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="fluent" className="w-full">
-                  Login / Register
-                </Button>
-              </Link>
+              <div className="grid grid-cols-2 gap-2">
+                <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="secondary" className="w-full">
+                    <LogIn className="w-4 h-4 text-sky-400" /> Sign In
+                  </Button>
+                </Link>
+                <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="fluent" className="w-full">
+                    <UserPlus className="w-4 h-4" /> Register
+                  </Button>
+                </Link>
+              </div>
             )}
           </div>
         </div>

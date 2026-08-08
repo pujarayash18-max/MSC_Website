@@ -1,4 +1,4 @@
-// Data Service with Mock Initializer & Store (§10)
+// Data Service with Dynamic Persistence & Storage Sync (§10)
 import { Event, Speaker, TeamMember, Notice, Sponsor, Project, Blog, Gallery, LeaderboardEntry, Winner, Certificate } from '@/types';
 
 export const INITIAL_EVENTS: Event[] = [
@@ -58,47 +58,51 @@ export const INITIAL_EVENTS: Event[] = [
     registrationStart: '2026-08-10T00:00:00.000Z',
     registrationEnd: '2026-09-10T23:59:59.000Z',
     capacity: 300,
-    remainingSeats: 85,
+    remainingSeats: 45,
     waitlistEnabled: true,
     waitlistLimit: 100,
-    waitlistCount: 0,
+    waitlistCount: 28,
     registrationStatus: 'Open',
     eventStatus: 'Registration Open',
-    speakerIds: ['spk_01', 'spk_03'],
+    speakerIds: ['spk_01'],
     coordinatorIds: ['tm_01', 'tm_03'],
     sponsorIds: ['spn_01', 'spn_02'],
-    tags: ['AI', 'AzureOpenAI', 'Hackathon', 'Python', 'Next.js'],
+    resourceFolder: 'hackathon-ai-2026',
+    galleryAlbumId: 'alb_02',
+    tags: ['AI', 'OpenAI', 'Azure', 'Hackathon', 'Python'],
+    agenda: [],
     isDeleted: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     status: 'published'
   },
   {
-    id: 'evt_bootcamp_01',
-    eventId: 'evt_bootcamp_01',
-    title: 'GitHub & Open Source Development Bootcamp',
-    slug: 'github-open-source-bootcamp',
-    shortDescription: 'Learn Git branching, pull requests, CI/CD with GitHub Actions, and license compliance.',
-    description: 'Master Git workflows, open-source contribution practices, code review standards, and GitHub Copilot productivity tips.',
-    banner: 'https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?w=1200&auto=format&fit=crop&q=80',
+    id: 'evt_copilot_01',
+    eventId: 'evt_copilot_01',
+    title: 'GitHub Copilot & Open Source Dev Day',
+    slug: 'github-copilot-dev-day',
+    shortDescription: 'Master AI-assisted software development, automated testing, and open-source contributions.',
+    description: 'Learn how to leverage GitHub Copilot, Copilot Workspace, and GitHub Actions to build production-ready applications 3x faster.',
+    banner: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&auto=format&fit=crop&q=80',
     category: 'Bootcamp',
     mode: 'Offline',
-    venue: 'Auditorium A, Technology Building',
-    startDate: '2026-07-20T10:00:00.000Z',
-    endDate: '2026-07-20T17:00:00.000Z',
-    registrationStart: '2026-07-01T00:00:00.000Z',
-    registrationEnd: '2026-07-19T23:59:59.000Z',
-    capacity: 200,
-    remainingSeats: 0,
-    waitlistEnabled: true,
-    waitlistLimit: 50,
-    waitlistCount: 34,
+    venue: 'Computer Lab 302, MU Tech Building',
+    startDate: '2026-10-05T10:00:00.000Z',
+    endDate: '2026-10-05T16:00:00.000Z',
+    registrationStart: '2026-09-01T00:00:00.000Z',
+    registrationEnd: '2026-10-04T23:59:59.000Z',
+    capacity: 100,
+    remainingSeats: 60,
+    waitlistEnabled: false,
+    waitlistLimit: 0,
+    waitlistCount: 0,
     registrationStatus: 'Closed',
-    eventStatus: 'Completed',
+    eventStatus: 'Upcoming',
     speakerIds: ['spk_02'],
     coordinatorIds: ['tm_02'],
-    sponsorIds: ['spn_01'],
-    tags: ['GitHub', 'Git', 'DevOps', 'OpenSource'],
+    sponsorIds: ['spn_02'],
+    tags: ['GitHub', 'Copilot', 'DevOps', 'CI/CD'],
+    agenda: [],
     isDeleted: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -110,14 +114,14 @@ export const INITIAL_SPEAKERS: Speaker[] = [
   {
     id: 'spk_01',
     speakerId: 'spk_01',
-    name: 'Dr. Rajesh Solanki',
-    organization: 'Microsoft India',
-    designation: 'Principal Cloud Solution Architect',
-    bio: 'Experienced cloud architect specializing in distributed systems, Cosmos DB, and AI infrastructure. Over 15 years in software engineering.',
+    name: 'Prof. Amit Patel',
+    designation: 'Head of Computer Engineering Department',
+    organization: 'Marwadi University',
+    bio: '20+ years experience in distributed systems, cloud computing, and academic research.',
     photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80',
-    linkedin: 'rajeshsolanki-msft',
-    website: 'https://rajeshsolanki.io',
-    expertise: ['Cloud Architecture', 'Azure Cosmos DB', 'Microservices', 'Distributed Systems'],
+    linkedin: 'https://linkedin.com',
+    website: 'https://marwadiuniversity.ac.in',
+    expertise: ['Distributed Systems', 'Cloud Security', 'Academic Excellence'],
     eventIds: ['evt_azure_01', 'evt_hack_01'],
     isDeleted: false,
     createdAt: new Date().toISOString(),
@@ -128,14 +132,14 @@ export const INITIAL_SPEAKERS: Speaker[] = [
     id: 'spk_02',
     speakerId: 'spk_02',
     name: 'Priya Mehta',
-    organization: 'GitHub Tech Lead',
-    designation: 'Senior Developer Relations Engineer',
-    bio: 'Advocate for open source software, developer tooling, and modern JavaScript ecosystem. Speaker at 50+ international conferences.',
+    designation: 'Senior Cloud Solution Architect',
+    organization: 'Microsoft India',
+    bio: 'Specialist in Azure Cosmos DB NoSQL architecture, serverless microservices, and AI models.',
     photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300&auto=format&fit=crop&q=80',
-    linkedin: 'priyamehta-github',
-    website: 'https://priya.dev',
-    expertise: ['GitHub Actions', 'TypeScript', 'DevOps', 'WebAssembly'],
-    eventIds: ['evt_azure_01', 'evt_bootcamp_01'],
+    linkedin: 'https://linkedin.com',
+    website: 'https://microsoft.com',
+    expertise: ['Azure Cosmos DB', 'GenAI', 'Serverless'],
+    eventIds: ['evt_azure_01', 'evt_copilot_01'],
     isDeleted: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -147,15 +151,16 @@ export const INITIAL_TEAM: TeamMember[] = [
   {
     id: 'tm_01',
     memberId: 'tm_01',
-    name: 'Prof. Dr. Amit Patel',
-    position: 'Faculty Coordinator',
-    department: 'Computer Engineering Dept.',
-    category: 'Faculty Coordinators',
-    bio: 'Head of Computer Engineering Department at Marwadi University. Guiding student innovation and tech clubs.',
+    name: 'Rahul Sharma',
+    position: 'President & Microsoft Student Ambassador',
+    department: 'Computer Engineering (4th Year)',
+    category: 'President',
+    bio: 'Leading MCC at Marwadi University. Gold Microsoft Learn Student Ambassador & Azure Certified.',
     photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80',
-    skills: ['Leadership', 'Cloud Infrastructure', 'Academic Excellence'],
-    quote: 'Empowering future tech leaders through hands-on community engagement.',
-    email: 'amit.patel@marwadiuniversity.ac.in',
+    skills: ['Azure', 'Next.js', 'Leadership', 'TypeScript'],
+    quote: 'Empowering students to build world-class cloud solutions.',
+    github: 'rahulsharma-mu',
+    linkedin: 'rahulsharma-dev',
     displayOrder: 1,
     isFeaturedHomepage: true,
     isDeleted: false,
@@ -166,26 +171,6 @@ export const INITIAL_TEAM: TeamMember[] = [
   {
     id: 'tm_02',
     memberId: 'tm_02',
-    name: 'Rahul Sharma',
-    position: 'President',
-    department: 'Computer Engineering (3rd Year)',
-    category: 'President',
-    bio: 'Gold Microsoft Learn Student Ambassador. Passionate about building cloud native full-stack applications.',
-    photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&auto=format&fit=crop&q=80',
-    skills: ['Next.js', 'Azure', 'TypeScript', 'Event Management'],
-    quote: 'Building Gujarat’s premier student tech community at Marwadi University.',
-    github: 'rahulsharma-mu',
-    linkedin: 'rahulsharma-dev',
-    displayOrder: 2,
-    isFeaturedHomepage: true,
-    isDeleted: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    status: 'active'
-  },
-  {
-    id: 'tm_03',
-    memberId: 'tm_03',
     name: 'Ananya Verma',
     position: 'Vice President',
     department: 'Information Technology (3rd Year)',
@@ -263,3 +248,72 @@ export const INITIAL_SPONSORS: Sponsor[] = [
     status: 'active'
   }
 ];
+
+// --- DYNAMIC DATABASE PERSISTENCE ENGINE (§7, §10) ---
+
+const STORAGE_KEYS = {
+  EVENTS: 'mcc_db_events',
+  REGISTRATIONS: 'mcc_db_registrations',
+  ATTENDANCE: 'mcc_db_attendance',
+  NOTICES: 'mcc_db_notices',
+  FEEDBACK: 'mcc_db_feedback'
+};
+
+export const dynamicDb = {
+  getEvents(): Event[] {
+    if (typeof window === 'undefined') return INITIAL_EVENTS;
+    const stored = localStorage.getItem(STORAGE_KEYS.EVENTS);
+    if (!stored) {
+      localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(INITIAL_EVENTS));
+      return INITIAL_EVENTS;
+    }
+    try {
+      return JSON.parse(stored) as Event[];
+    } catch {
+      return INITIAL_EVENTS;
+    }
+  },
+
+  saveEvent(event: Event): void {
+    const current = this.getEvents();
+    const idx = current.findIndex((e) => e.eventId === event.eventId || e.id === event.id);
+    let updated: Event[];
+    if (idx >= 0) {
+      updated = [...current];
+      updated[idx] = { ...event, updatedAt: new Date().toISOString() };
+    } else {
+      updated = [event, ...current];
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(updated));
+    }
+  },
+
+  getRegistrations(): any[] {
+    if (typeof window === 'undefined') return [];
+    const stored = localStorage.getItem(STORAGE_KEYS.REGISTRATIONS);
+    return stored ? JSON.parse(stored) : [];
+  },
+
+  saveRegistration(reg: any): void {
+    const current = this.getRegistrations();
+    const updated = [reg, ...current];
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.REGISTRATIONS, JSON.stringify(updated));
+    }
+  },
+
+  getNotices(): Notice[] {
+    if (typeof window === 'undefined') return INITIAL_NOTICES;
+    const stored = localStorage.getItem(STORAGE_KEYS.NOTICES);
+    return stored ? JSON.parse(stored) : INITIAL_NOTICES;
+  },
+
+  saveNotice(notice: Notice): void {
+    const current = this.getNotices();
+    const updated = [notice, ...current];
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.NOTICES, JSON.stringify(updated));
+    }
+  }
+};
