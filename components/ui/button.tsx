@@ -13,12 +13,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.98]';
 
     const variants = {
-      primary: 'bg-sky-600 hover:bg-sky-500 text-white shadow-lg shadow-sky-600/25 border border-sky-500/30',
-      fluent: 'bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white shadow-lg shadow-sky-600/30 border border-sky-400/30',
-      secondary: 'bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 dark:bg-slate-800/80 dark:hover:bg-slate-700/80',
-      outline: 'border border-slate-700 hover:bg-slate-800/50 text-slate-200 dark:border-slate-700 dark:text-slate-200',
-      ghost: 'hover:bg-slate-800/40 text-slate-300 hover:text-white dark:hover:bg-slate-800/60',
-      destructive: 'bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-600/25'
+      primary: 'bg-sky-600 hover:bg-sky-500 text-white shadow-md shadow-sky-600/25 border border-sky-500/30',
+      fluent: 'bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white shadow-lg shadow-sky-600/30 border border-sky-400/30',
+      secondary: 'bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-100 dark:border-slate-700',
+      outline: 'border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800/60 text-slate-800 dark:text-slate-200',
+      ghost: 'hover:bg-slate-100 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white',
+      destructive: 'bg-red-600 hover:bg-red-500 text-white shadow-md shadow-red-600/25'
     };
 
     const sizes = {
