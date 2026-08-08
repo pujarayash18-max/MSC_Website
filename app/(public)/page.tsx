@@ -56,6 +56,12 @@ const TESTIMONIALS = [
   }
 ];
 
+function formatDateDeterministic(dateString: string): string {
+  const date = new Date(dateString);
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${months[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
+}
+
 export default function HomePage() {
   const [nextEvent, setNextEvent] = useState(INITIAL_EVENTS[0]);
   const [countdown, setCountdown] = useState({ days: 12, hours: 8, minutes: 42, seconds: 19 });
@@ -307,7 +313,7 @@ export default function HomePage() {
                     {notice.priority} Notice
                   </Badge>
                   <span className="text-[10px] text-slate-500 dark:text-slate-400">
-                    {new Date(notice.publishDate).toLocaleDateString()}
+                    {formatDateDeterministic(notice.publishDate)}
                   </span>
                 </div>
                 <h4 className="font-bold text-slate-900 dark:text-white text-sm">{notice.title}</h4>

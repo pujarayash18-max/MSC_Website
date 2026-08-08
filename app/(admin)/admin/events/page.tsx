@@ -9,6 +9,12 @@ import { EventStatus } from '@/types';
 import { toast } from 'sonner';
 import { Calendar, Plus, Edit3, Copy, Archive, CheckCircle, XCircle } from 'lucide-react';
 
+function formatDateDeterministic(dateString: string): string {
+  const date = new Date(dateString);
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${months[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
+}
+
 export default function AdminEventsPage() {
   const [events, setEvents] = useState(INITIAL_EVENTS);
 
@@ -54,7 +60,7 @@ export default function AdminEventsPage() {
                 </div>
                 <h3 className="text-lg font-bold text-white">{evt.title}</h3>
                 <p className="text-xs text-slate-400">
-                  {new Date(evt.startDate).toLocaleDateString()} • Venue: {evt.venue} • Seats Left: {evt.remainingSeats}/{evt.capacity}
+                  {formatDateDeterministic(evt.startDate)} • Venue: {evt.venue} • Seats Left: {evt.remainingSeats}/{evt.capacity}
                 </p>
               </div>
 
