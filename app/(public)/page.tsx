@@ -95,18 +95,18 @@ export default function HomePage() {
           transition={{ duration: 0.6 }}
           className="space-y-6 max-w-4xl mx-auto"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-400 text-xs font-semibold shadow-lg shadow-sky-500/10 backdrop-blur-md">
-            <Sparkles className="w-4 h-4 text-sky-400" /> Official Club Ecosystem • Marwadi University
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-400 text-xs font-semibold shadow-lg shadow-sky-500/10 backdrop-blur-md">
+            <Sparkles className="w-4 h-4 text-sky-500 dark:text-sky-400" /> Official Club Ecosystem • Marwadi University
           </div>
 
-          <h1 className="text-4xl sm:text-6xl font-extrabold text-white tracking-tight leading-tight">
+          <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
             Innovate, Learn & Build with <br className="hidden sm:inline" />
-            <span className="bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 dark:from-sky-400 dark:via-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
               Microsoft Campus Club
             </span>
           </h1>
 
-          <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg text-slate-700 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
             Empowering Marwadi University students through hands-on workshops, national hackathons, Azure cloud certification paths, achievements, and real-time community engagement.
           </p>
 
@@ -127,31 +127,31 @@ export default function HomePage() {
         {/* Floating Acrylic Glass Preview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-16 text-left max-w-5xl mx-auto">
           <Card className="p-6 fluent-glass-card hover:border-sky-500/50 transition-all duration-300 group">
-            <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <Code className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-bold text-white">Dynamic Registrations</h3>
-            <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Dynamic Registrations</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
               Zero-hardcoded dynamic form builder, waitlist auto-promotion, and instant QR pass generation.
             </p>
           </Card>
 
           <Card className="p-6 fluent-glass-card hover:border-sky-500/50 transition-all duration-300 group">
-            <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <Trophy className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-bold text-white">Points & Leaderboard</h3>
-            <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Points & Leaderboard</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
               Automatic points ledger, achievement badges, and live student leaderboards recalculated in real-time.
             </p>
           </Card>
 
           <Card className="p-6 fluent-glass-card hover:border-sky-500/50 transition-all duration-300 group">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <Award className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-bold text-white">Verified Certificates</h3>
-            <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Verified Certificates</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
               Batch generated PDF certificates with QR code verification lookup URLs.
             </p>
           </Card>
@@ -159,19 +159,19 @@ export default function HomePage() {
       </section>
 
       {/* 13.2 COMMUNITY STATISTICS */}
-      <section className="bg-slate-900/60 border-y border-slate-800/80 py-12">
+      <section className="bg-slate-100/80 dark:bg-slate-900/60 border-y border-slate-200 dark:border-slate-800/80 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {STATS.map((s) => {
               const Icon = s.icon;
               return (
                 <div key={s.label} className="space-y-2">
-                  <Icon className="w-6 h-6 text-sky-400 mx-auto opacity-80" />
-                  <h3 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                  <Icon className="w-6 h-6 text-sky-600 dark:text-sky-400 mx-auto opacity-90" />
+                  <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                     {s.value}
                     {s.suffix}
                   </h3>
-                  <p className="text-xs text-slate-400 font-medium">{s.label}</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">{s.label}</p>
                 </div>
               );
             })}
@@ -181,45 +181,45 @@ export default function HomePage() {
 
       {/* 13.3 & 13.4 UPCOMING EVENT BANNER & COUNTDOWN */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="rounded-3xl bg-gradient-to-r from-slate-900 via-sky-950/60 to-slate-900 border border-sky-500/30 p-8 md:p-10 relative overflow-hidden shadow-2xl">
+        <div className="rounded-3xl bg-gradient-to-r from-slate-100 via-sky-50 to-slate-100 dark:from-slate-900 dark:via-sky-950/60 dark:to-slate-900 border border-sky-500/30 p-8 md:p-10 relative overflow-hidden shadow-2xl">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-8 relative z-10">
             <div className="space-y-4 text-center lg:text-left max-w-2xl">
               <Badge variant="primary" className="font-bold uppercase tracking-wider">
                 Next Upcoming Event
               </Badge>
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                 {nextEvent.title}
               </h2>
-              <p className="text-sm text-slate-300 leading-relaxed">{nextEvent.shortDescription}</p>
+              <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{nextEvent.shortDescription}</p>
 
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs text-slate-300 pt-2">
-                <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-sky-400" /> Aug 25, 2026 • 09:30 AM</span>
-                <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-sky-400" /> {nextEvent.venue}</span>
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs text-slate-600 dark:text-slate-300 pt-2">
+                <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-sky-600 dark:text-sky-400" /> Aug 25, 2026 • 09:30 AM</span>
+                <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-sky-600 dark:text-sky-400" /> {nextEvent.venue}</span>
               </div>
             </div>
 
             {/* Countdown Box */}
-            <div className="p-6 rounded-2xl bg-slate-950/90 border border-slate-800 text-center space-y-4 min-w-[280px]">
-              <p className="text-xs font-bold text-sky-400 uppercase tracking-wider">Registration Closes In</p>
+            <div className="p-6 rounded-2xl bg-white/90 dark:bg-slate-950/90 border border-slate-200 dark:border-slate-800 text-center space-y-4 min-w-[280px] shadow-lg">
+              <p className="text-xs font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider">Registration Closes In</p>
               <div className="flex items-center justify-center gap-3">
-                <div className="bg-slate-900 p-2.5 rounded-xl border border-slate-800 w-14">
-                  <span className="text-2xl font-extrabold text-white">{countdown.days}</span>
-                  <p className="text-[10px] text-slate-400 uppercase font-semibold">Days</p>
+                <div className="bg-slate-100 dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 w-14">
+                  <span className="text-2xl font-extrabold text-slate-900 dark:text-white">{countdown.days}</span>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-semibold">Days</p>
                 </div>
-                <span className="text-xl font-bold text-slate-600">:</span>
-                <div className="bg-slate-900 p-2.5 rounded-xl border border-slate-800 w-14">
-                  <span className="text-2xl font-extrabold text-white">{countdown.hours}</span>
-                  <p className="text-[10px] text-slate-400 uppercase font-semibold">Hours</p>
+                <span className="text-xl font-bold text-slate-400 dark:text-slate-600">:</span>
+                <div className="bg-slate-100 dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 w-14">
+                  <span className="text-2xl font-extrabold text-slate-900 dark:text-white">{countdown.hours}</span>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-semibold">Hours</p>
                 </div>
-                <span className="text-xl font-bold text-slate-600">:</span>
-                <div className="bg-slate-900 p-2.5 rounded-xl border border-slate-800 w-14">
-                  <span className="text-2xl font-extrabold text-white">{countdown.minutes}</span>
-                  <p className="text-[10px] text-slate-400 uppercase font-semibold">Mins</p>
+                <span className="text-xl font-bold text-slate-400 dark:text-slate-600">:</span>
+                <div className="bg-slate-100 dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 w-14">
+                  <span className="text-2xl font-extrabold text-slate-900 dark:text-white">{countdown.minutes}</span>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-semibold">Mins</p>
                 </div>
               </div>
 
-              <div className="text-xs text-slate-400 pt-1">
-                Seats Remaining: <strong className="text-emerald-400 font-bold">{nextEvent.remainingSeats}</strong> / {nextEvent.capacity}
+              <div className="text-xs text-slate-600 dark:text-slate-400 pt-1">
+                Seats Remaining: <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{nextEvent.remainingSeats}</strong> / {nextEvent.capacity}
               </div>
 
               <Link href={`/events/${nextEvent.slug}`} className="block">
@@ -236,8 +236,8 @@ export default function HomePage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <div className="text-center max-w-2xl mx-auto">
           <Badge variant="primary" className="mb-2">Leadership</Badge>
-          <h2 className="text-3xl font-extrabold text-white">Meet Core Team Leaders (§14)</h2>
-          <p className="text-sm text-slate-400 mt-1">
+          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">Meet Core Team Leaders (§14)</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
             Faculty coordinators and student ambassadors driving Microsoft Campus Club activities.
           </p>
         </div>
@@ -248,15 +248,15 @@ export default function HomePage() {
               <img
                 src={member.photo}
                 alt={member.name}
-                className="w-24 h-24 rounded-2xl object-cover mx-auto border-2 border-sky-400 shadow-lg"
+                className="w-24 h-24 rounded-2xl object-cover mx-auto border-2 border-sky-500 shadow-lg"
               />
               <div>
-                <h3 className="text-lg font-bold text-white">{member.name}</h3>
-                <p className="text-xs font-semibold text-sky-400 mt-0.5">{member.position}</p>
-                <p className="text-xs text-slate-400 mt-1">{member.department}</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{member.name}</h3>
+                <p className="text-xs font-semibold text-sky-600 dark:text-sky-400 mt-0.5">{member.position}</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{member.department}</p>
               </div>
               {member.quote && (
-                <p className="text-xs text-slate-300 italic bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+                <p className="text-xs text-slate-700 dark:text-slate-300 italic bg-slate-100 dark:bg-slate-950/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
                   "{member.quote}"
                 </p>
               )}
@@ -269,19 +269,19 @@ export default function HomePage() {
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <div className="text-center">
           <Badge variant="purple" className="mb-2">Our Journey</Badge>
-          <h2 className="text-3xl font-extrabold text-white">Community Milestones (§15)</h2>
+          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">Community Milestones (§15)</h2>
         </div>
 
-        <div className="space-y-6 relative before:absolute before:inset-0 before:left-4 md:before:left-1/2 before:w-0.5 before:bg-slate-800">
+        <div className="space-y-6 relative before:absolute before:inset-0 before:left-4 md:before:left-1/2 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
           {TIMELINE.map((item, idx) => (
             <div key={item.year} className={`relative flex items-center gap-6 ${idx % 2 === 0 ? 'md:flex-row-reverse' : ''}`}>
-              <div className="w-8 h-8 rounded-full bg-sky-500 text-white font-bold text-xs flex items-center justify-center z-10 shrink-0 shadow-lg shadow-sky-500/30">
+              <div className="w-8 h-8 rounded-full bg-sky-600 dark:bg-sky-500 text-white font-bold text-xs flex items-center justify-center z-10 shrink-0 shadow-lg shadow-sky-500/30">
                 {item.year.slice(2)}
               </div>
               <Card className="flex-1 p-6 space-y-1 hover:border-sky-500/40 transition-colors">
-                <span className="text-xs font-extrabold text-sky-400">{item.year}</span>
-                <h3 className="text-base font-bold text-white">{item.title}</h3>
-                <p className="text-xs text-slate-400">{item.description}</p>
+                <span className="text-xs font-extrabold text-sky-600 dark:text-sky-400">{item.year}</span>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">{item.title}</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400">{item.description}</p>
               </Card>
             </div>
           ))}
@@ -293,23 +293,25 @@ export default function HomePage() {
         {/* Notice Board */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold text-white flex items-center gap-2">
-              <Pin className="w-5 h-5 text-sky-400" /> Notice Board (§16)
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Pin className="w-5 h-5 text-sky-600 dark:text-sky-400" /> Notice Board (§16)
             </h3>
             <Badge variant="primary">Live Announcements</Badge>
           </div>
 
           <div className="space-y-3">
             {INITIAL_NOTICES.map((notice) => (
-              <Card key={notice.id} className="p-5 space-y-2 border-slate-800">
+              <Card key={notice.id} className="p-4 space-y-2">
                 <div className="flex items-center justify-between">
                   <Badge variant={notice.priority === 'Urgent' ? 'danger' : 'purple'}>
-                    {notice.priority}
+                    {notice.priority} Notice
                   </Badge>
-                  <span className="text-[11px] text-slate-500">Aug 05, 2026</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                    {new Date(notice.publishDate).toLocaleDateString()}
+                  </span>
                 </div>
-                <h4 className="text-sm font-bold text-white">{notice.title}</h4>
-                <p className="text-xs text-slate-300">{notice.description}</p>
+                <h4 className="font-bold text-slate-900 dark:text-white text-sm">{notice.title}</h4>
+                <p className="text-xs text-slate-600 dark:text-slate-400">{notice.description}</p>
               </Card>
             ))}
           </div>
@@ -317,23 +319,28 @@ export default function HomePage() {
 
         {/* Testimonials */}
         <div className="space-y-4">
-          <h3 className="text-xl font-bold text-white flex items-center gap-2">
-            <Star className="w-5 h-5 text-amber-400" /> Participant Feedback (§17)
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Star className="w-5 h-5 text-amber-500 dark:text-amber-400" /> Student Testimonials (§17)
+            </h3>
+            <Badge variant="warning">5-Star Community Feedback</Badge>
+          </div>
 
-          <div className="space-y-4">
-            {TESTIMONIALS.map((t, idx) => (
-              <Card key={idx} className="p-6 space-y-3 border-slate-800">
-                <div className="flex items-center gap-1 text-amber-400">
-                  {[...Array(t.rating)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-amber-400" />
-                  ))}
+          <div className="space-y-3">
+            {TESTIMONIALS.map((t) => (
+              <Card key={t.name} className="p-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-bold text-slate-900 dark:text-white text-sm">{t.name}</h4>
+                    <p className="text-xs text-sky-600 dark:text-sky-400">{t.college} • {t.event}</p>
+                  </div>
+                  <div className="flex text-amber-400">
+                    {[...Array(t.rating)].map((_, i) => (
+                      <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
                 </div>
-                <p className="text-xs text-slate-300 italic">"{t.comment}"</p>
-                <div>
-                  <h5 className="text-xs font-bold text-white">{t.name}</h5>
-                  <p className="text-[11px] text-slate-400">{t.college} • {t.event}</p>
-                </div>
+                <p className="text-xs text-slate-700 dark:text-slate-300 italic">"{t.comment}"</p>
               </Card>
             ))}
           </div>
@@ -344,49 +351,51 @@ export default function HomePage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Sponsors */}
         <div className="text-center space-y-4">
-          <p className="text-xs uppercase font-semibold text-slate-400 tracking-wider">Supported & Sponsored By</p>
-          <div className="flex flex-wrap items-center justify-center gap-8">
-            {INITIAL_SPONSORS.map((spn) => (
-              <div key={spn.id} className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center gap-3">
-                <img src={spn.logo} alt={spn.name} className="w-8 h-8 rounded-lg object-cover" />
-                <span className="text-sm font-bold text-white">{spn.name}</span>
-                <Badge variant="primary" size="sm">{spn.tier}</Badge>
-              </div>
+          <Badge variant="default">Official Partners</Badge>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Supported By Industry Leaders (§18)</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto pt-2">
+            {INITIAL_SPONSORS.map((s) => (
+              <Card key={s.id} className="p-6 flex items-center gap-4 hover:border-sky-500/40 transition-colors">
+                <img src={s.logo} alt={s.name} className="w-12 h-12 rounded-xl object-cover" />
+                <div className="text-left">
+                  <h4 className="font-bold text-slate-900 dark:text-white text-sm">{s.name}</h4>
+                  <Badge variant="primary" className="mt-1">{s.tier} Sponsor</Badge>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">{s.description}</p>
+                </div>
+              </Card>
             ))}
           </div>
         </div>
 
         {/* Newsletter Box */}
-        <Card className="max-w-3xl mx-auto p-8 text-center space-y-6 border-sky-500/30 bg-gradient-to-b from-slate-900 to-sky-950/40 shadow-2xl">
-          <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/30 text-sky-400 flex items-center justify-center mx-auto">
-            <Send className="w-6 h-6" />
-          </div>
-          <div>
-            <h3 className="text-2xl font-extrabold text-white">Subscribe to MCC Community Newsletter (§19)</h3>
-            <p className="text-xs text-slate-400 mt-1">Get notified about upcoming hackathons, Azure credits, workshops, and career opportunities.</p>
-          </div>
+        <div className="rounded-3xl bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 p-8 md:p-10 text-white text-center max-w-4xl mx-auto shadow-2xl space-y-4">
+          <Badge variant="outline" className="text-white border-white/40">Weekly Digest</Badge>
+          <h2 className="text-2xl sm:text-3xl font-extrabold">Stay Updated with MCC Events & Azure Releases (§19)</h2>
+          <p className="text-xs sm:text-sm text-sky-100 max-w-xl mx-auto">
+            Subscribe to receive official announcement notifications, workshop schedules, and hackathon registration alerts.
+          </p>
 
-          <form onSubmit={handleNewsletter} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+          <form onSubmit={handleNewsletter} className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto pt-2">
             <input
               type="text"
               placeholder="Your Name"
               value={newsletterName}
               onChange={(e) => setNewsletterName(e.target.value)}
-              className="px-4 py-2.5 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-sky-500 focus:outline-none"
+              className="px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-sky-200 text-xs focus:outline-none focus:ring-2 focus:ring-white flex-1"
             />
             <input
               type="email"
               required
-              placeholder="Your Email Address"
+              placeholder="student@marwadiuniversity.ac.in"
               value={newsletterEmail}
               onChange={(e) => setNewsletterEmail(e.target.value)}
-              className="px-4 py-2.5 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-sky-500 focus:outline-none flex-1"
+              className="px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-sky-200 text-xs focus:outline-none focus:ring-2 focus:ring-white flex-1"
             />
-            <Button type="submit" variant="fluent" isLoading={isSubscribing}>
-              Subscribe
+            <Button variant="secondary" type="submit" disabled={isSubscribing} className="whitespace-nowrap font-bold text-xs">
+              <Send className="w-3.5 h-3.5" /> {isSubscribing ? 'Subscribing...' : 'Subscribe'}
             </Button>
           </form>
-        </Card>
+        </div>
       </section>
     </div>
   );
