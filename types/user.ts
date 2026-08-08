@@ -57,6 +57,7 @@ export interface Role extends BaseEntity {
 
 export interface User extends BaseEntity {
   userId: string;
+  studentId?: string;
   fullName: string;
   email: string;
   enrollmentNumber?: string;
@@ -75,6 +76,16 @@ export interface User extends BaseEntity {
   attendancePercentage: number;
   roleId: string;
   roleName: SystemRoleName;
+}
+
+export interface StudentProfile {
+  userId: string;
+  studentId: string;
+  fullName: string;
+  enrollmentNumber: string;
+  department: string;
+  year: string;
+  division?: string;
 }
 
 export interface AuditLog {

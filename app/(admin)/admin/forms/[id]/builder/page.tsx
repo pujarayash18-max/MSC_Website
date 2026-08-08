@@ -61,7 +61,7 @@ export default function FormBuilderEditorPage() {
       type,
       required: false,
       placeholder: `Enter ${type.toLowerCase()}...`,
-      options: ['Dropdown' || 'Radio' || 'Multi-select' || 'Checkbox'].includes(type) ? ['Option 1', 'Option 2'] : undefined
+      options: ['Dropdown', 'Radio', 'Multi-select', 'Checkbox'].includes(type) ? ['Option 1', 'Option 2'] : undefined
     };
     setFields([...fields, newField]);
     setEditingId(newField.id);
