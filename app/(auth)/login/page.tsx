@@ -32,10 +32,16 @@ export default function LoginPage() {
     setIsSubmitting(false);
 
     if (res.success) {
-      toast.success('Signed in successfully!');
+      toast.success('Signed in successfully! Welcome back.');
       router.push('/dashboard');
     } else {
-      toast.error(res.message || 'Login failed');
+      toast.error(res.message || 'No matching account found. Redirecting to Student Registration...');
+      setTimeout(() => {
+        const queryParam = identifier.includes('@')
+          ? `?email=${encodeURIComponent(identifier)}`
+          : `?prefill=${encodeURIComponent(identifier)}`;
+        router.push(`/register${queryParam}`);
+      }, 1200);
     }
   };
 

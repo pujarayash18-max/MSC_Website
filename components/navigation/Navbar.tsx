@@ -141,18 +141,11 @@ export function Navbar() {
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
-                <Link href="/login">
-                  <Button variant="secondary" size="sm">
-                    <LogIn className="w-3.5 h-3.5 text-sky-400" /> Sign In
-                  </Button>
-                </Link>
-                <Link href="/register">
-                  <Button variant="fluent" size="sm">
-                    <UserPlus className="w-3.5 h-3.5" /> Register
-                  </Button>
-                </Link>
-              </div>
+              <Link href="/login">
+                <Button variant="fluent" size="sm">
+                  <LogIn className="w-3.5 h-3.5" /> Sign In
+                </Button>
+              </Link>
             )}
           </div>
 
@@ -214,18 +207,11 @@ export function Navbar() {
                 </Button>
               </>
             ) : (
-              <div className="grid grid-cols-2 gap-2">
-                <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="secondary" className="w-full">
-                    <LogIn className="w-4 h-4 text-sky-400" /> Sign In
-                  </Button>
-                </Link>
-                <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="fluent" className="w-full">
-                    <UserPlus className="w-4 h-4" /> Register
-                  </Button>
-                </Link>
-              </div>
+              <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="fluent" className="w-full">
+                  <LogIn className="w-4 h-4" /> Sign In
+                </Button>
+              </Link>
             )}
           </div>
         </div>

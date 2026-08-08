@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,11 +12,14 @@ import { Sparkles, ShieldCheck, User, Mail, Lock, BookOpen, Building2, Phone, Ha
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { registerStudent } = useAuth();
+
+  const prefillEmail = searchParams?.get('email') || searchParams?.get('prefill') || '';
 
   const [formData, setFormData] = useState({
     fullName: '',
-    email: '',
+    email: prefillEmail,
     enrollmentNumber: '',
     college: 'Marwadi University',
     department: 'Computer Engineering',
@@ -27,6 +30,13 @@ export default function RegisterPage() {
     confirmPassword: '',
     agreeTerms: false,
   });
+
+  useEffect(() => {
+    if (prefillEmail) {
+      setFormData((prev) => ({ ...prev, email: prefillEmail }));
+      toast.info('Pre-filled your email for registration.');
+    }
+  }, [prefillEmail]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
