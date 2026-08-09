@@ -39,7 +39,7 @@ export default function AdminFeedbackPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-            <MessageSquare className="w-7 h-7 text-[#00A4EF]" /> Feedback Manager (§49)
+            <MessageSquare className="w-7 h-7 text-[#00A4EF]" /> Feedback Manager
           </h1>
           <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
             Review student feedback ratings and suggestions across MCC events.

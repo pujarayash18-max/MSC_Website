@@ -31,7 +31,7 @@ export default function AdminNotificationsPage() {
     <div className="max-w-3xl space-y-6">
       <div>
         <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-          <Send className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Push Notifications & Email Alerts (§82)
+          <Send className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Push Notifications & Email Alerts
         </h1>
         <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
           Broadcast in-app notifications and automated emails to registered students.

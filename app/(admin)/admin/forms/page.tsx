@@ -36,7 +36,7 @@ export default function AdminFormsCatalogPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-            <FileSpreadsheet className="w-7 h-7 text-[#00A4EF]" /> Dynamic Form Builder Catalog (§65)
+            <FileSpreadsheet className="w-7 h-7 text-[#00A4EF]" /> Dynamic Form Builder Catalog
           </h1>
           <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
             Build, edit, and duplicate registration forms with zero hardcoded code.

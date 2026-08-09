@@ -10,7 +10,7 @@ export default function SpeakersPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 py-8">
       <div className="text-center max-w-3xl mx-auto space-y-3">
-        <Badge variant="primary">Guest Experts (§23)</Badge>
+        <Badge variant="primary">Guest Experts</Badge>
         <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white">Invited Speakers & Mentors</h1>
         <p className="text-sm text-slate-600 dark:text-slate-400">Industry leaders, Microsoft MVPs, and software architects delivering masterclasses for MCC.</p>
       </div>

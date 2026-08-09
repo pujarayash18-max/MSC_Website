@@ -31,7 +31,7 @@ export default function AdminLeaderboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-            <BarChart3 className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Leaderboard Management (§78)
+            <BarChart3 className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Leaderboard Management
           </h1>
           <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
             Recalculate student rankings, award bonus points, and adjust point ledgers.

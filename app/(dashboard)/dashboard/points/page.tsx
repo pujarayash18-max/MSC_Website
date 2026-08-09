@@ -18,7 +18,7 @@ export default function StudentPointsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-          <Zap className="w-7 h-7 text-[#FFB900]" /> Community Points Ledger (§51)
+          <Zap className="w-7 h-7 text-[#FFB900]" /> Community Points Ledger
         </h1>
         <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
           Track your earned community points, semester totals, and point transaction audit history.

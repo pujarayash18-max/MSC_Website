@@ -12,7 +12,7 @@ export default function AdminGalleryPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-            <Image className="w-7 h-7 text-sky-400" /> Gallery & Media Manager (§74)
+            <Image className="w-7 h-7 text-sky-400" /> Gallery & Media Manager
           </h1>
           <p className="text-sm text-slate-400 mt-1">
             Upload workshop photos, hackathon highlights, and manage photo albums.

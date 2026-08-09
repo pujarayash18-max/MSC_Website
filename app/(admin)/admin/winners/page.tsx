@@ -31,7 +31,7 @@ export default function AdminWinnersPage() {
     <div className="max-w-4xl space-y-6">
       <div>
         <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-          <Trophy className="w-7 h-7 text-[#FFB900]" /> Winner Management & Cascade Engine (§71)
+          <Trophy className="w-7 h-7 text-[#FFB900]" /> Winner Management & Cascade Engine
         </h1>
         <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
           Publishing winners automatically awards points, unlocks badges, updates the leaderboard, and generates certificates.

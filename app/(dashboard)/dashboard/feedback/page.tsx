@@ -31,7 +31,7 @@ export default function StudentFeedbackPage() {
     <div className="max-w-3xl space-y-6">
       <div>
         <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-          <MessageSquare className="w-7 h-7 text-[#00A4EF]" /> Event Feedback & Surveys (§49)
+          <MessageSquare className="w-7 h-7 text-[#00A4EF]" /> Event Feedback & Surveys
         </h1>
         <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
           Share your experience for attended MCC workshops & hackathons to earn community feedback points.

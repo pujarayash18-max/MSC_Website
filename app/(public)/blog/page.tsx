@@ -36,7 +36,7 @@ export default function BlogListPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 py-8">
       <div className="text-center max-w-3xl mx-auto space-y-3">
-        <Badge variant="primary">MCC Technical Blog (§29)</Badge>
+        <Badge variant="primary">MCC Technical Blog</Badge>
         <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white">Engineering & Cloud Insights</h1>
         <p className="text-sm text-slate-600 dark:text-slate-400">Articles, tutorials, and cloud architecture deep dives written by MCC leads and guest speakers.</p>
       </div>

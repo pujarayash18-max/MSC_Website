@@ -58,7 +58,7 @@ export default function StudentRegistrationsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-          <FileText className="w-7 h-7 text-[#00A4EF]" /> My Event Registrations (§41, §42)
+          <FileText className="w-7 h-7 text-[#00A4EF]" /> My Event Registrations
         </h1>
         <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
           View your confirmed registrations, download your QR entry pass, and check event schedules.

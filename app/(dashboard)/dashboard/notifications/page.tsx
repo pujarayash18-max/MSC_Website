@@ -47,7 +47,7 @@ export default function StudentNotificationsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-            <Bell className="w-7 h-7 text-[#00A4EF]" /> Notification Center (§28)
+            <Bell className="w-7 h-7 text-[#00A4EF]" /> Notification Center
           </h1>
           <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
             Real-time notifications regarding registration status, live resources, and certificate releases.

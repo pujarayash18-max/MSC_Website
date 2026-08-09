@@ -49,7 +49,7 @@ export default function AdminNoticesPage() {
     <div className="max-w-4xl space-y-6">
       <div>
         <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-          <BellRing className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Notice Board Management (§76)
+          <BellRing className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Notice Board Management
         </h1>
         <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
           Publish announcements to the homepage and student portal notice widgets.

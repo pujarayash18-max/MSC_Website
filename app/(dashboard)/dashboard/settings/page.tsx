@@ -30,7 +30,7 @@ export default function StudentSettingsPage() {
     <div className="max-w-4xl space-y-6">
       <div>
         <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-          <Settings className="w-7 h-7 text-[#00A4EF]" /> Account & Profile Settings (§58)
+          <Settings className="w-7 h-7 text-[#00A4EF]" /> Account & Profile Settings
         </h1>
         <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
           Manage your personal details, portfolio links, and skills. Email & Enrollment number are read-only per security policy.

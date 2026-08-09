@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTheme } from 'next-themes';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -55,6 +56,13 @@ const EVENT_CATEGORY_DISTRIBUTION = [
 ];
 
 export default function AdminDashboardOverviewPage() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+  const axisColor = isDark ? '#A8B0BB' : '#64748B';
+  const tooltipBg = isDark ? '#151B23' : '#FFFFFF';
+  const tooltipBorder = isDark ? '#2A323D' : '#CBD5E1';
+  const tooltipColor = isDark ? '#F5F7FA' : '#0F172A';
+
   return (
     <div className="space-y-8">
       {/* 17.1 MANAGEMENT PORTAL HEADER */}
@@ -62,7 +70,7 @@ export default function AdminDashboardOverviewPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-extrabold text-slate-900 dark:text-[#F5F7FA]">
-              MCC Administration Portal (§78)
+              MCC Administration Portal
             </h1>
             <Badge variant="primary">Microsoft 365 Admin</Badge>
           </div>
@@ -124,14 +132,14 @@ export default function AdminDashboardOverviewPage() {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={MONTHLY_REGISTRATIONS_DATA}>
-                <XAxis dataKey="month" stroke="#A8B0BB" fontSize={11} tickLine={false} />
-                <YAxis stroke="#A8B0BB" fontSize={11} tickLine={false} />
+                <XAxis dataKey="month" stroke={axisColor} fontSize={11} tickLine={false} />
+                <YAxis stroke={axisColor} fontSize={11} tickLine={false} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#151B23',
-                    borderColor: '#2A323D',
+                    backgroundColor: tooltipBg,
+                    borderColor: tooltipBorder,
                     borderRadius: '0.75rem',
-                    color: '#F5F7FA',
+                    color: tooltipColor,
                     fontSize: '12px'
                   }}
                 />
@@ -162,7 +170,15 @@ export default function AdminDashboardOverviewPage() {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: tooltipBg,
+                    borderColor: tooltipBorder,
+                    borderRadius: '0.75rem',
+                    color: tooltipColor,
+                    fontSize: '12px'
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>

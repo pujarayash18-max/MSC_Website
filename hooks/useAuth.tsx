@@ -9,8 +9,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   role: SystemRoleName;
   login: (provider?: 'aad' | 'github') => void;
-  loginStudent: (payload: LoginPayload) => Promise<{ success: boolean; message?: string }>;
-  registerStudent: (payload: RegisterPayload) => Promise<{ success: boolean; message?: string }>;
+  loginStudent: (payload: LoginPayload) => Promise<{ success: boolean; user?: User; message?: string }>;
+  registerStudent: (payload: RegisterPayload) => Promise<{ success: boolean; user?: User; message?: string }>;
   logout: () => void;
   setMockUserRole: (role: SystemRoleName) => void;
 }
@@ -115,8 +115,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     authService.clearSession();
     setUser(null);
-    if (typeof window !== 'undefined' && window.location.pathname.startsWith('/.auth')) {
-      window.location.href = '/.auth/logout';
+    if (typeof window !== 'undefined') {
+      if (window.location.pathname.startsWith('/.auth')) {
+        window.location.href = '/.auth/logout';
+      } else {
+        window.location.href = '/login';
+      }
     }
   };
 

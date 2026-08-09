@@ -10,7 +10,7 @@ export default function VerifyEmailPage() {
   return (
     <div className="min-h-[75vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-6 text-center">
-        <Badge variant="success">Email Verified (§15)</Badge>
+        <Badge variant="success">Email Verified</Badge>
         <h1 className="text-2xl font-extrabold text-white">Account Verified Successfully</h1>
 
         <Card className="p-8 border-slate-800 bg-slate-900/80 shadow-2xl space-y-6">

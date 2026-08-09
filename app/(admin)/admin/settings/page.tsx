@@ -29,7 +29,7 @@ export default function AdminSettingsPage() {
     <div className="max-w-4xl space-y-6">
       <div>
         <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-          <Settings className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Global System Settings (§86)
+          <Settings className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Global System Settings
         </h1>
         <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
           Configure default points allocation, club branding, email templates, and maintenance mode.

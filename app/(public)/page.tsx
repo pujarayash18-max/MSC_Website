@@ -242,7 +242,7 @@ export default function HomePage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <div className="text-center max-w-2xl mx-auto">
           <Badge variant="primary" className="mb-2">Leadership</Badge>
-          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">Meet Core Team Leaders (§14)</h2>
+          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">Meet Core Team Leaders</h2>
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
             Faculty coordinators and student ambassadors driving Microsoft Campus Club activities.
           </p>
@@ -275,7 +275,7 @@ export default function HomePage() {
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <div className="text-center">
           <Badge variant="purple" className="mb-2">Our Journey</Badge>
-          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">Community Milestones (§15)</h2>
+          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">Community Milestones</h2>
         </div>
 
         <div className="space-y-6 relative before:absolute before:inset-0 before:left-4 md:before:left-1/2 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
@@ -300,7 +300,7 @@ export default function HomePage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Pin className="w-5 h-5 text-sky-600 dark:text-sky-400" /> Notice Board (§16)
+              <Pin className="w-5 h-5 text-sky-600 dark:text-sky-400" /> Notice Board
             </h3>
             <Badge variant="primary">Live Announcements</Badge>
           </div>
@@ -327,7 +327,7 @@ export default function HomePage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Star className="w-5 h-5 text-amber-500 dark:text-amber-400" /> Student Testimonials (§17)
+              <Star className="w-5 h-5 text-amber-500 dark:text-amber-400" /> Student Testimonials
             </h3>
             <Badge variant="warning">5-Star Community Feedback</Badge>
           </div>
@@ -358,7 +358,7 @@ export default function HomePage() {
         {/* Sponsors */}
         <div className="text-center space-y-4">
           <Badge variant="default">Official Partners</Badge>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Supported By Industry Leaders (§18)</h2>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Supported By Industry Leaders</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto pt-2">
             {INITIAL_SPONSORS.map((s) => (
               <Card key={s.id} className="p-6 flex items-center gap-4 hover:border-sky-500/40 transition-colors">
@@ -376,7 +376,7 @@ export default function HomePage() {
         {/* Newsletter Box */}
         <div className="rounded-3xl bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 p-8 md:p-10 text-white text-center max-w-4xl mx-auto shadow-2xl space-y-4">
           <Badge variant="outline" className="text-white border-white/40">Weekly Digest</Badge>
-          <h2 className="text-2xl sm:text-3xl font-extrabold">Stay Updated with MCC Events & Azure Releases (§19)</h2>
+          <h2 className="text-2xl sm:text-3xl font-extrabold">Stay Updated with MCC Events & Azure Releases</h2>
           <p className="text-xs sm:text-sm text-sky-100 max-w-xl mx-auto">
             Subscribe to receive official announcement notifications, workshop schedules, and hackathon registration alerts.
           </p>

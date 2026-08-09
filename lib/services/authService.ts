@@ -9,7 +9,7 @@ export interface RegisterPayload {
   department: string;
   year: string;
   division?: string;
-  phone: string;
+  phone?: string;
   password?: string;
 }
 
@@ -92,6 +92,7 @@ export const authService = {
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
       localStorage.setItem(STORAGE_KEY_TOKEN, token);
+      document.cookie = `mcc_user_session=${encodeURIComponent(JSON.stringify(user))}; path=/; max-age=86400`;
     }
   },
 
@@ -100,7 +101,10 @@ export const authService = {
     const data = localStorage.getItem(STORAGE_KEY_USER);
     if (!data) return null;
     try {
-      return JSON.parse(data) as User;
+      const user = JSON.parse(data) as User;
+      // Ensure cookie is synced
+      document.cookie = `mcc_user_session=${encodeURIComponent(data)}; path=/; max-age=86400`;
+      return user;
     } catch {
       return null;
     }
@@ -110,29 +114,38 @@ export const authService = {
     if (typeof window !== 'undefined') {
       localStorage.removeItem(STORAGE_KEY_USER);
       localStorage.removeItem(STORAGE_KEY_TOKEN);
+      document.cookie = 'mcc_user_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
     }
   },
 
   async registerStudent(payload: RegisterPayload): Promise<{ success: boolean; user?: User; message?: string }> {
     try {
+      const usersDb = this.getUsersDb();
+      const cleanEmail = payload.email.trim().toLowerCase();
+      
+      const existing = usersDb.find(u => u.email.toLowerCase() === cleanEmail);
+      if (existing) {
+        return { success: false, message: 'An account with this email address already exists. Please sign in.' };
+      }
+
       const studentId = generateMccStudentId();
       const newUser: User = {
         id: `usr_${Date.now()}`,
         userId: `usr_${Date.now()}`,
         studentId: studentId,
-        fullName: payload.fullName,
-        email: payload.email,
-        enrollmentNumber: payload.enrollmentNumber,
-        college: payload.college || 'Marwadi University',
-        department: payload.department,
-        year: payload.year,
+        fullName: payload.fullName.trim(),
+        email: cleanEmail,
+        enrollmentNumber: payload.enrollmentNumber ? payload.enrollmentNumber.trim() : studentId,
+        college: payload.college.trim() || 'Marwadi University',
+        department: payload.department || 'Computer Engineering',
+        year: payload.year || '3rd Year',
         division: payload.division || 'A',
         profilePhoto: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(payload.fullName)}`,
         github: '',
         linkedin: '',
         portfolio: '',
-        bio: 'Member of Microsoft Campus Club (MCC)',
-        skills: ['Cloud Computing', 'Azure', 'Web Development'],
+        bio: `Student at ${payload.college || 'Marwadi University'} | Member of Microsoft Campus Club (MCC)`,
+        skills: ['Cloud Computing', 'Azure', 'Software Engineering'],
         communityPoints: 50,
         currentRank: 99,
         attendancePercentage: 100,

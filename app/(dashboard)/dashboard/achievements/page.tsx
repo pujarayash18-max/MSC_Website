@@ -18,7 +18,7 @@ export default function StudentAchievementsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-          <Trophy className="w-7 h-7 text-[#00A4EF]" /> Achievement System & Badges (§52)
+          <Trophy className="w-7 h-7 text-[#00A4EF]" /> Achievement System & Badges
         </h1>
         <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
           Automatically unlocked badges as you participate in events, win competitions, and contribute to the community.

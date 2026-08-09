@@ -24,7 +24,7 @@ export default function GalleryPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 py-8">
       <div className="text-center max-w-3xl mx-auto space-y-3">
-        <Badge variant="primary">Event Media (§28)</Badge>
+        <Badge variant="primary">Event Media</Badge>
         <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white">Community Photo & Video Gallery</h1>
         <p className="text-sm text-slate-600 dark:text-slate-400">Highlights from past Azure bootcamps, hackathons, and student meetups at Marwadi University.</p>
       </div>

@@ -27,7 +27,7 @@ export default function AdminBlogsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-            <FileText className="w-7 h-7 text-sky-400" /> Technical Blog Manager (§75)
+            <FileText className="w-7 h-7 text-sky-400" /> Technical Blog Manager
           </h1>
           <p className="text-sm text-slate-400 mt-1">
             Create Markdown technical posts, manage tags, drafts, and scheduled publishing.

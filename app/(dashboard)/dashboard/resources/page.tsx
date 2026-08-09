@@ -123,7 +123,7 @@ export default function StudentResourcesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-            <FolderDown className="w-7 h-7 text-[#00A4EF]" /> Event Learning Resources (§48)
+            <FolderDown className="w-7 h-7 text-[#00A4EF]" /> Event Learning Resources
           </h1>
           <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
             Access slides, practice datasets, live coding starter kits, and recordings for your registered events.
@@ -164,7 +164,7 @@ export default function StudentResourcesPage() {
                       </Badge>
                     )}
                     {res.visibility === 'Public' && (
-                      <Badge variant="secondary" size="sm" className="gap-1">
+                      <Badge variant="outline" size="sm" className="gap-1">
                         <Globe className="w-3 h-3" /> All Signed-in Users
                       </Badge>
                     )}

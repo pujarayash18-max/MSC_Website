@@ -21,7 +21,7 @@ export default function GlobalSearchPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-8">
       <div className="text-center space-y-3">
-        <Badge variant="primary">Platform Search (§32)</Badge>
+        <Badge variant="primary">Platform Search</Badge>
         <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">Global Instant Search</h1>
         <p className="text-sm text-slate-600 dark:text-[#A8B0BB]">Search across events, guest speakers, core team members, and community notices.</p>
       </div>

@@ -43,7 +43,7 @@ export default function AdminCertificatesTemplatesPage() {
     <div className="max-w-4xl space-y-6">
       <div>
         <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-          <Award className="w-7 h-7 text-sky-400" /> Certificate Generator & Template Editor (§79)
+          <Award className="w-7 h-7 text-sky-400" /> Certificate Generator & Template Editor
         </h1>
         <p className="text-sm text-slate-400 mt-1">
           Configure placeholder positions, upload template backgrounds, and trigger batch PDF certificate generation.
@@ -113,8 +113,8 @@ export default function AdminCertificatesTemplatesPage() {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 text-xs space-y-1">
-            <span className="text-slate-400 font-medium">Eligible Checked-in Students:</span>
+          <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs space-y-1">
+            <span className="text-slate-600 dark:text-slate-400 font-medium">Eligible Checked-in Students:</span>
             <p className="text-base font-extrabold text-emerald-400">142 Students</p>
           </div>
 

@@ -24,7 +24,7 @@ export default function StudentAttendancePage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-          <QrCode className="w-7 h-7 text-[#00A4EF]" /> Attendance History & Analytics (§47)
+          <QrCode className="w-7 h-7 text-[#00A4EF]" /> Attendance History & Analytics
         </h1>
         <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
           Track your QR check-in history, entry timestamps, and monthly attendance percentages.

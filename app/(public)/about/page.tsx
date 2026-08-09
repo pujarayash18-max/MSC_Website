@@ -8,7 +8,7 @@ export default function AboutPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 py-8">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto space-y-4">
-        <Badge variant="primary">About MCC (§21)</Badge>
+        <Badge variant="primary">About MCC</Badge>
         <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white">Microsoft Campus Club (MCC)</h1>
         <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
           The official Microsoft Student Community at Marwadi University, Rajkot, dedicated to accelerating student learning in cloud computing, artificial intelligence, software engineering, and open source development.

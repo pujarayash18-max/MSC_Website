@@ -131,7 +131,7 @@ export default function AdminRegistrationsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-            <Users className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Registration Management (§67)
+            <Users className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Registration Management
           </h1>
           <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
             Search, filter, approve, reject, waitlist, and export event registrations.

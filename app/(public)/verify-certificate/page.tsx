@@ -24,7 +24,7 @@ export default function VerifyCertificateSearchPage() {
       </div>
 
       <div>
-        <Badge variant="success" className="mb-2">Credential Verification Engine (§50)</Badge>
+        <Badge variant="success" className="mb-2">Credential Verification Engine</Badge>
         <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">Verify MCC Certificate</h1>
         <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-2">
           Enter the unique credential verification ID found at the bottom of any Microsoft Campus Club certificate to validate authenticity.

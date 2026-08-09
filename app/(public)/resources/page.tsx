@@ -293,7 +293,7 @@ export default function PublicResourcesPage() {
                     </Badge>
                   )}
                   {res.visibility === 'Public' && (
-                    <Badge variant="secondary" size="sm" className="gap-1">
+                    <Badge variant="outline" size="sm" className="gap-1">
                       <Globe className="w-3 h-3" /> All Signed-in Users
                     </Badge>
                   )}

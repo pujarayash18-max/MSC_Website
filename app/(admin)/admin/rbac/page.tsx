@@ -55,7 +55,7 @@ export default function AdminRbacPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-            <ShieldCheck className="w-7 h-7 text-[#7FBA00]" /> RBAC Permission Engine (§77)
+            <ShieldCheck className="w-7 h-7 text-[#7FBA00]" /> RBAC Permission Engine
           </h1>
           <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
             Toggle module access for Super Admin, Website Admin, Event Manager, Content Manager, Media Manager, and Faculty Coordinator.

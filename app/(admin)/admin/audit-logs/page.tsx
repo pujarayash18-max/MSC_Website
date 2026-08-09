@@ -48,7 +48,7 @@ export default function AdminAuditLogsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-            <History className="w-7 h-7 text-sky-400" /> Platform Audit Logs (§84)
+            <History className="w-7 h-7 text-sky-400" /> Platform Audit Logs
           </h1>
           <p className="text-sm text-slate-400 mt-1">
             Immutable log record of every administrative action, form update, and winner publish operation.

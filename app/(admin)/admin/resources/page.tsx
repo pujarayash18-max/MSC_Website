@@ -110,7 +110,7 @@ export default function AdminResourcesPage() {
     <div className="max-w-4xl space-y-6">
       <div>
         <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-          <FolderUp className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Share Event Resources (§48, §71)
+          <FolderUp className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Share Event Resources
         </h1>
         <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
           Publish slides, source code starter kits, and practice datasets with custom access permissions (Signed-in Users or Registered Members Only).
@@ -183,7 +183,7 @@ export default function AdminResourcesPage() {
           {/* Explicit Access Control Options */}
           <div className="space-y-2 pt-1">
             <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block">
-              Sharing Access Control & Visibility Option (§48) *
+              Sharing Access Control & Visibility Option *
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {VISIBILITY_OPTIONS.map((opt) => {

@@ -98,7 +98,7 @@ export default function FormBuilderEditorPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left: Palette of Field Types */}
         <Card className="p-6 space-y-4 lg:col-span-1 border-slate-800">
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider">Field Type Palette (§30)</h3>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Field Type Palette</h3>
           <p className="text-xs text-slate-400">Click any field type to append it to your registration form schema.</p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2 max-h-[65vh] overflow-y-auto pr-1">
@@ -106,32 +106,32 @@ export default function FormBuilderEditorPage() {
               <button
                 key={type}
                 onClick={() => addField(type)}
-                className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-sky-500/50 hover:bg-slate-900 text-xs text-slate-300 font-medium flex items-center justify-between transition-all"
+                className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:border-sky-500/50 hover:bg-slate-200 dark:hover:bg-slate-900 text-xs text-slate-700 dark:text-slate-300 font-medium flex items-center justify-between transition-all"
               >
                 <span>{type}</span>
-                <Plus className="w-3.5 h-3.5 text-sky-400" />
+                <Plus className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
               </button>
             ))}
           </div>
         </Card>
 
         {/* Right: Form Canvas */}
-        <Card className="p-6 space-y-6 lg:col-span-2 border-slate-800">
-          <div className="border-b border-slate-800 pb-4">
-            <label className="text-xs font-semibold text-slate-400 block mb-1">Form Name / Description</label>
+        <Card className="p-6 space-y-6 lg:col-span-2 border-slate-200 dark:border-slate-800">
+          <div className="border-b border-slate-200 dark:border-slate-800 pb-4">
+            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 block mb-1">Form Name / Description</label>
             <input
               type="text"
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
-              className="text-lg font-extrabold bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-white w-full focus:ring-2 focus:ring-sky-500 focus:outline-none"
+              className="text-lg font-extrabold bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2 text-slate-900 dark:text-white w-full focus:ring-2 focus:ring-sky-500 focus:outline-none"
             />
           </div>
 
           <div className="space-y-3">
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Canvas Fields ({fields.length})</h4>
+            <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Canvas Fields ({fields.length})</h4>
 
             {fields.map((f, idx) => (
-              <div key={f.id} className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+              <div key={f.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-3">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3 flex-1">
                     <GripVertical className="w-4 h-4 text-slate-600 cursor-grab" />

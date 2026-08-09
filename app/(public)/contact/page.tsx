@@ -29,7 +29,7 @@ export default function ContactPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 py-8">
       <div className="text-center max-w-3xl mx-auto space-y-3">
-        <Badge variant="primary">Support Portal (§31)</Badge>
+        <Badge variant="primary">Support Portal</Badge>
         <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white">Get in Touch</h1>
         <p className="text-sm text-slate-600 dark:text-slate-400">Have questions regarding event registrations, certificates, or sponsorships? Drop us a ticket.</p>
       </div>

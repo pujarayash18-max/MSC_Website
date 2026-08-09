@@ -34,7 +34,7 @@ export default function AdminEventsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-            <Calendar className="w-7 h-7 text-sky-400" /> Event Lifecycle Manager (§63)
+            <Calendar className="w-7 h-7 text-sky-400" /> Event Lifecycle Manager
           </h1>
           <p className="text-sm text-slate-400 mt-1">
             Create events, build agenda timelines, manage registration status, and archive completed events.

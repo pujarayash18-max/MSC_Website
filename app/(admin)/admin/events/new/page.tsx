@@ -45,7 +45,7 @@ export default function NewEventPage() {
 
       <form onSubmit={handleCreate} className="space-y-6">
         <Card className="p-6 space-y-4 border-sky-500/30">
-          <h2 className="text-lg font-bold text-white border-b border-slate-800 pb-3">Create New Club Event (§63)</h2>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3">Create New Club Event</h2>
 
           <div className="space-y-4 text-xs">
             <div>
@@ -133,7 +133,7 @@ export default function NewEventPage() {
 
           <div className="space-y-3">
             {agenda.map((ag, idx) => (
-              <div key={ag.id} className="p-4 rounded-xl bg-slate-950 border border-slate-800 grid grid-cols-1 md:grid-cols-4 gap-3 items-center">
+              <div key={ag.id} className="p-4 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 grid grid-cols-1 md:grid-cols-4 gap-3 items-center">
                 <input
                   type="text"
                   value={ag.time}

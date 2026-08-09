@@ -26,7 +26,7 @@ export default function AdminTicketsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-          <Ticket className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Support Ticket Management (§81)
+          <Ticket className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Support Ticket Management
         </h1>
         <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
           Review student contact form submissions, assign admin owners, and resolve tickets.

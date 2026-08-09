@@ -54,7 +54,7 @@ export default function RegistrationDetailPage() {
         {/* Hackathon Team Details (§44) */}
         <div className="space-y-4 pt-2">
           <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Users className="w-5 h-5 text-[#00A4EF]" /> Team & Project Submission (§44)
+            <Users className="w-5 h-5 text-[#00A4EF]" /> Team & Project Submission
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
