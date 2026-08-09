@@ -9,7 +9,7 @@ interface FieldProps {
   error?: string;
 }
 
-export function FieldTypeRegistry({ field, value, onChange, error: _error }: FieldProps) {
+export function FieldTypeRegistry({ field, value, onChange }: Omit<FieldProps, 'error'>) {
   const commonClasses =
     'w-full p-2.5 text-xs bg-white dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-[#00A4EF] focus:outline-none placeholder-slate-400 shadow-sm transition-all';
 

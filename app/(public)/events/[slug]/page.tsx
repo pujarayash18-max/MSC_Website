@@ -29,7 +29,7 @@ interface EventPageProps {
 export default async function EventDetailPage({ params }: EventPageProps) {
   const { slug } = await params;
   const decodedSlug = decodeURIComponent(slug);
-  const event = INITIAL_EVENTS.find((e) => e.slug === slug || e.slug === decodedSlug || e.slug === decodedSlug.replace(/\s+/g, '-')) || INITIAL_EVENTS[0];
+  const event = INITIAL_EVENTS.find((e) => e.slug === slug || e.slug === decodedSlug || e.slug === decodedSlug.replace(/\s+/g, '-'));
 
   if (!event) {
     notFound();

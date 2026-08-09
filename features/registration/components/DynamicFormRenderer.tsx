@@ -38,7 +38,7 @@ export interface DynamicFormRendererProps {
   onSubmit?: (data: Record<string, unknown>) => void;
 }
 
-export function DynamicFormRenderer({ event: _event, onSubmit }: DynamicFormRendererProps) {
+export function DynamicFormRenderer({ event, onSubmit }: DynamicFormRendererProps) {
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -98,7 +98,6 @@ export function DynamicFormRenderer({ event: _event, onSubmit }: DynamicFormRend
                   field={field}
                   value={formData[field.fieldId]}
                   onChange={(val) => handleChange(field.fieldId, val)}
-                  error={errors[field.fieldId]}
                 />
 
                 {errors[field.fieldId] && (
@@ -112,7 +111,7 @@ export function DynamicFormRenderer({ event: _event, onSubmit }: DynamicFormRend
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
         <p className="text-xs text-slate-500 dark:text-[#A8B0BB]">
-          Submitting generates a unique QR Pass linked to your enrollment number.
+          Submitting for <strong className="text-slate-900 dark:text-white">{event.title}</strong> generates a unique QR Pass.
         </p>
 
         <Button type="submit" variant="fluent" size="lg" disabled={isSubmitting}>

@@ -1,12 +1,12 @@
 // GET & POST /api/rbac/roles (§113, §126)
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { app, HttpRequest, HttpResponseInit } from '@azure/functions';
 import { verifyPermission } from '../lib/auth';
 import { successResponse, errorResponse } from '../lib/response';
 import { DEFAULTPERMISSIONMATRIX, SystemRoleName } from '../../../types/user';
 
 const currentMatrix = { ...DEFAULTPERMISSIONMATRIX };
 
-export async function rbacRoles(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function rbacRoles(request: HttpRequest): Promise<HttpResponseInit> {
   const { authorized } = verifyPermission(request, 'RBAC', 'Read');
 
   if (request.method === 'GET') {

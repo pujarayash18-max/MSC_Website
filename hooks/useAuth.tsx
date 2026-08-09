@@ -63,11 +63,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const sessionUser = authService.getSessionUser();
-    if (sessionUser) {
-      setUser(sessionUser);
-    }
-    setIsLoading(false);
+    let active = true;
+    requestAnimationFrame(() => {
+      if (!active) return;
+      const sessionUser = authService.getSessionUser();
+      if (sessionUser) {
+        setUser(sessionUser);
+      }
+      setIsLoading(false);
+    });
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -127,9 +134,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     if (typeof window !== 'undefined') {
       if (window.location.pathname.startsWith('/.auth')) {
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
         window.location.href = '/.auth/logout';
       } else {
-        router.push('/login');
+        router.replace('/login');
       }
     }
   };
@@ -138,13 +146,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser((prev) => (prev ? { ...prev, roleName: role } : null));
   };
 
+  const role: SystemRoleName = user?.roleName || 'Student';
+  const isAuthenticated = !!user;
+
   return (
     <AuthContext.Provider
       value={{
         user,
         isLoading,
-        isAuthenticated: !!user,
-        role: user?.roleName || 'Student',
+        isAuthenticated,
+        role,
         login,
         loginStudent,
         registerStudent,
@@ -158,9 +169,5 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  return useContext(AuthContext);
 }

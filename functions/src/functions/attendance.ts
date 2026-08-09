@@ -1,10 +1,10 @@
 // POST /api/attendance/checkin (§117)
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { app, HttpRequest, HttpResponseInit } from '@azure/functions';
 import { successResponse, errorResponse } from '../lib/response';
 import { memoryStore } from '../lib/cosmos';
 import { Attendance } from '../../../types/event';
 
-export async function attendanceCheckin(request: HttpRequest, _context: InvocationContext): Promise<HttpResponseInit> {
+export async function attendanceCheckin(request: HttpRequest): Promise<HttpResponseInit> {
   try {
     const body = (await request.json()) as { qrToken: string; eventId: string; verifiedBy?: string };
 
@@ -40,7 +40,7 @@ export async function attendanceCheckin(request: HttpRequest, _context: Invocati
       attendance: newRecord,
       message: 'Attendance successfully verified and recorded.'
     });
-  } catch (_err) {
+  } catch {
     return errorResponse('Failed to process attendance check-in');
   }
 }

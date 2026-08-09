@@ -1,11 +1,11 @@
 // POST /api/certificates/generate (§122)
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { app, HttpRequest, HttpResponseInit } from '@azure/functions';
 import { verifyPermission } from '../lib/auth';
 import { successResponse, errorResponse } from '../lib/response';
 import { memoryStore } from '../lib/cosmos';
 import { Certificate } from '../../../types/system';
 
-export async function certificatesGenerate(request: HttpRequest, _context: InvocationContext): Promise<HttpResponseInit> {
+export async function certificatesGenerate(request: HttpRequest): Promise<HttpResponseInit> {
   const { authorized } = verifyPermission(request, 'Certificates', 'Create');
   if (!authorized) {
     return errorResponse('Forbidden: Insufficient permissions to generate certificates', 'FORBIDDEN', 403);

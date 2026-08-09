@@ -25,9 +25,6 @@ const STORAGE_KEY_USERS_DB = 'mcc_registered_users_db_v4';
 const DB_VERSION_KEY = 'mcc_registered_users_db_version_v4';
 const CURRENT_DB_VERSION = 'v4.0.0';
 
-// Default seed demo users database with password "password123"
-const DEFAULT_DEMO_HASH = hashPassword('password123');
-
 const INITIAL_REGISTERED_USERS: User[] = [
   {
     id: 'usr_superadmin_001',
@@ -51,7 +48,7 @@ const INITIAL_REGISTERED_USERS: User[] = [
     attendancePercentage: 95,
     roleId: 'role_superadmin',
     roleName: 'Super Admin',
-    passwordHash: DEFAULT_DEMO_HASH,
+    passwordHash: 'c7ad44cbad762a5da0a452f9e854fdc1e0e7a52a38015f23f3eab1d80b931dd4',
     isDeleted: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -79,7 +76,7 @@ const INITIAL_REGISTERED_USERS: User[] = [
     attendancePercentage: 92,
     roleId: 'role_website_admin',
     roleName: 'Website Admin',
-    passwordHash: DEFAULT_DEMO_HASH,
+    passwordHash: 'c7ad44cbad762a5da0a452f9e854fdc1e0e7a52a38015f23f3eab1d80b931dd4',
     isDeleted: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -131,20 +128,21 @@ export const authService = {
     }
   },
 
-  setSession(user: User) {
-    if (typeof window !== 'undefined') {
-      const signedToken = signSessionToken({
-        userId: user.userId,
-        email: user.email,
-        roleName: user.roleName,
-        fullName: user.fullName,
-        exp: Date.now() + 86400000 // 24 hours
-      });
+  async setSession(user: User): Promise<string> {
+    const signedToken = await signSessionToken({
+      userId: user.userId,
+      email: user.email,
+      roleName: user.roleName,
+      fullName: user.fullName,
+      exp: Date.now() + 86400000 // 24 hours
+    });
 
+    if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
       localStorage.setItem(STORAGE_KEY_TOKEN, signedToken);
       document.cookie = `mcc_user_session=${signedToken}; path=/; max-age=86400; SameSite=Lax`;
     }
+    return signedToken;
   },
 
   getSessionUser(): User | null {
@@ -153,8 +151,8 @@ export const authService = {
     if (!data) return null;
     try {
       const user = JSON.parse(data) as User;
-      // Re-sign and update cookie
-      this.setSession(user);
+      // Re-sign and update cookie in background
+      this.setSession(user).catch(() => {});
       return user;
     } catch {
       return null;
@@ -180,7 +178,7 @@ export const authService = {
       }
 
       const studentId = generateMccStudentId();
-      const passwordHash = hashPassword(payload.password || 'password123');
+      const passwordHash = await hashPassword(payload.password || 'password123');
 
       const newUser: User = {
         id: `usr_${Date.now()}`,
@@ -212,7 +210,7 @@ export const authService = {
       };
 
       this.saveUserToDb(newUser);
-      this.setSession(newUser);
+      await this.setSession(newUser);
       return { success: true, user: newUser, message: `Account created successfully! Your MCC Student ID is ${studentId}.` };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Registration failed.';
@@ -245,14 +243,14 @@ export const authService = {
       if (matchedUser.passwordHash) {
         const isDemoAccount = matchedUser.studentId === 'MCC-2026-00042' || matchedUser.studentId === 'MCC-2026-00043';
         const isDemoPassword = inputPassword === 'password123';
-        const isValid = (isDemoAccount && isDemoPassword) || isDemoPassword || verifyPassword(inputPassword, matchedUser.passwordHash);
+        const isValid = (isDemoAccount && isDemoPassword) || isDemoPassword || (await verifyPassword(inputPassword, matchedUser.passwordHash));
 
         if (!isValid) {
           return { success: false, message: 'Invalid password. Please check your credentials.' };
         }
       }
 
-      this.setSession(matchedUser);
+      await this.setSession(matchedUser);
       return { success: true, user: matchedUser };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Login failed.';

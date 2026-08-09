@@ -1,5 +1,3 @@
-const SESSION_SECRET = process.env.SESSION_SECRET || 'mcc-platform-secure-hmac-key-2026-v1';
-
 export interface SessionPayload {
   userId: string;
   email: string;
@@ -8,56 +6,108 @@ export interface SessionPayload {
   exp: number;
 }
 
-/**
- * Fast Web-Standard SHA-256 style hex hash for passwords & tokens (compatible with Edge Runtime, Node.js & Browser).
- */
-export function hashPassword(password: string, salt: string = 'mcc-salt-2026'): string {
-  const text = `${salt}:${password}`;
-  let hash1 = 5381;
-  let hash2 = 0;
-  for (let i = 0; i < text.length; i++) {
-    const char = text.charCodeAt(i);
-    hash1 = (hash1 * 33) ^ char;
-    hash2 = (hash2 << 5) - hash2 + char;
+function getSessionSecret(): string {
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === 'test') {
+      return 'test-environment-secret-key-32-chars-minimum!';
+    }
+    throw new Error('[CRITICAL SECURITY RISK] SESSION_SECRET environment variable is missing!');
   }
-  const str = `${Math.abs(hash1).toString(16)}${Math.abs(hash2).toString(16)}${password.length}`;
-  const encoded = new TextEncoder().encode(str + text);
-  let hex = '';
-  for (let i = 0; i < encoded.length; i++) {
-    hex += encoded[i].toString(16).padStart(2, '0');
-  }
-  return hex;
+  return secret;
 }
 
-export function verifyPassword(password: string, storedHash: string, salt: string = 'mcc-salt-2026'): boolean {
-  return hashPassword(password, salt) === storedHash;
+async function getHmacKey(secret: string): Promise<CryptoKey> {
+  const enc = new TextEncoder();
+  return await crypto.subtle.importKey(
+    'raw',
+    enc.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign', 'verify']
+  );
 }
 
 /**
- * Sign a session payload into a tamper-proof token using Web Crypto compatible HMAC signature (base64url.signature).
+ * Enterprise Web Crypto SHA-256 salted hash for passwords.
  */
-export function signSessionToken(payload: SessionPayload): string {
+export async function hashPassword(password: string, salt: string = 'mcc-user-salt-2026'): Promise<string> {
+  const enc = new TextEncoder();
+  const data = enc.encode(`${salt}:${password}`);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+export async function verifyPassword(password: string, storedHash: string, salt: string = 'mcc-user-salt-2026'): Promise<boolean> {
+  try {
+    const computedHash = await hashPassword(password, salt);
+    if (computedHash.length !== storedHash.length) return false;
+    let res = 0;
+    for (let i = 0; i < computedHash.length; i++) {
+      res |= computedHash.charCodeAt(i) ^ storedHash.charCodeAt(i);
+    }
+    return res === 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Sign session payload into tamper-proof token using HMAC-SHA256 signature.
+ */
+export async function signSessionToken(payload: SessionPayload): Promise<string> {
+  const secret = getSessionSecret();
   const payloadJson = JSON.stringify(payload);
   const payloadBase64 = typeof btoa !== 'undefined'
     ? btoa(payloadJson).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
     : Buffer.from(payloadJson).toString('base64url');
 
-  const signature = hashPassword(payloadBase64, SESSION_SECRET);
-  return `${payloadBase64}.${signature}`;
+  const key = await getHmacKey(secret);
+  const enc = new TextEncoder();
+  const signatureBuffer = await crypto.subtle.sign('HMAC', key, enc.encode(payloadBase64));
+
+  const signatureBytes = new Uint8Array(signatureBuffer);
+  let binary = '';
+  for (let i = 0; i < signatureBytes.byteLength; i++) {
+    binary += String.fromCharCode(signatureBytes[i]);
+  }
+  const signatureBase64Url = (typeof btoa !== 'undefined' ? btoa(binary) : Buffer.from(signatureBytes).toString('base64'))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+  return `${payloadBase64}.${signatureBase64Url}`;
 }
 
 /**
- * Verify and decode a session token. Returns null if invalid or expired.
+ * Cryptographically verify and decode session token.
+ * Returns null if token is tampered, forged, or expired.
  */
-export function verifySessionToken(token: string): SessionPayload | null {
+export async function verifySessionToken(token: string): Promise<SessionPayload | null> {
   try {
     if (!token || !token.includes('.')) return null;
-    const [payloadBase64, signature] = token.split('.');
+    const secret = getSessionSecret();
+    const [payloadBase64, signatureBase64Url] = token.split('.');
 
-    const expectedSignature = hashPassword(payloadBase64, SESSION_SECRET);
-    if (signature !== expectedSignature) {
-      return null;
+    const key = await getHmacKey(secret);
+    const enc = new TextEncoder();
+
+    const base64 = signatureBase64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const pad = base64.length % 4;
+    const paddedBase64 = pad ? base64 + '='.repeat(4 - pad) : base64;
+    const binaryStr = typeof atob !== 'undefined' ? atob(paddedBase64) : Buffer.from(paddedBase64, 'base64').toString('binary');
+    const signatureBytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) {
+      signatureBytes[i] = binaryStr.charCodeAt(i);
     }
+
+    const isValid = await crypto.subtle.verify(
+      'HMAC',
+      key,
+      signatureBytes,
+      enc.encode(payloadBase64)
+    );
+
+    if (!isValid) return null;
 
     const payloadJson = typeof atob !== 'undefined'
       ? atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'))

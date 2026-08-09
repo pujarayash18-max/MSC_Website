@@ -1,6 +1,5 @@
-'use client';
-
-import { useParams } from 'next/navigation';
+/* eslint-disable @next/next/no-img-element */
+import { notFound } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,10 +7,25 @@ import { INITIAL_SPEAKERS } from '@/lib/services/dataService';
 import Link from 'next/link';
 import { ArrowLeft, Mic } from 'lucide-react';
 
-export default function SpeakerDetailPage() {
-  const params = useParams();
-  const speakerId = params?.slug as string;
-  const speaker = INITIAL_SPEAKERS.find((s) => s.speakerId === speakerId) || INITIAL_SPEAKERS[0];
+interface SpeakerPageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export function generateStaticParams() {
+  return INITIAL_SPEAKERS.map((s) => ({
+    slug: s.speakerId,
+  }));
+}
+
+export default async function SpeakerDetailPage({ params }: SpeakerPageProps) {
+  const { slug } = await params;
+  const speaker = INITIAL_SPEAKERS.find(
+    (s) => s.speakerId === slug || s.id === slug || s.name.toLowerCase().replace(/\s+/g, '-') === slug
+  );
+
+  if (!speaker) {
+    notFound();
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-8">
@@ -30,7 +44,9 @@ export default function SpeakerDetailPage() {
           />
           <div className="space-y-2 flex-1">
             <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">{speaker.name}</h1>
-            <p className="text-sm font-semibold text-[#0078D4] dark:text-[#00A4EF]">{speaker.designation} at {speaker.organization}</p>
+            <p className="text-sm font-semibold text-[#0078D4] dark:text-[#00A4EF]">
+              {speaker.designation} at {speaker.organization}
+            </p>
 
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
               {speaker.expertise.map((exp) => (

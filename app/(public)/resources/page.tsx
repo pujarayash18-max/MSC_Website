@@ -14,7 +14,6 @@ import {
   BookOpen,
   Code,
   FileText,
-  Sparkles,
   ArrowRight,
   ShieldCheck,
   Zap,
@@ -22,8 +21,7 @@ import {
   Lock,
   LogIn,
   UserPlus,
-  Ticket,
-  CheckCircle2
+  Ticket
 } from 'lucide-react';
 import { GithubIcon, MicrosoftFourSquareIcon } from '@/components/icons';
 

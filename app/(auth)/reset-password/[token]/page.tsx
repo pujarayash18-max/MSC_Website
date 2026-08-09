@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,9 +9,6 @@ import { toast } from 'sonner';
 import { Lock, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 export default function ResetPasswordPage() {
-  const params = useParams();
-  const router = useRouter();
-  const token = params?.token as string;
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

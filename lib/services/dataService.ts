@@ -1,6 +1,34 @@
 // Data Service with Dynamic Persistence & Storage Sync (§10)
 import { Event, Speaker, TeamMember, Notice, Sponsor } from '@/types';
 
+export interface BlogPost {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  author: string;
+  authorRole: string;
+  authorPhoto: string;
+  publishedDate: string;
+  readTime: string;
+  category: string;
+  tags: string[];
+  banner: string;
+}
+
+export interface CertificateRecord {
+  verificationId: string;
+  studentName: string;
+  studentId: string;
+  enrollmentNumber: string;
+  eventName: string;
+  eventType: string;
+  issueDate: string;
+  status: 'Verified' | 'Revoked';
+  issuer: string;
+}
+
 export const INITIAL_EVENTS: Event[] = [
   {
     id: 'evt_azure_01',
@@ -246,6 +274,86 @@ export const INITIAL_SPONSORS: Sponsor[] = [
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     status: 'active'
+  }
+];
+
+export const INITIAL_BLOGS: BlogPost[] = [
+  {
+    id: 'blg_azure_01',
+    slug: 'getting-started-with-azure-static-web-apps',
+    title: 'Getting Started with Azure Static Web Apps and Next.js 16',
+    excerpt: 'A comprehensive guide on deploying full-stack Next.js applications to Azure Static Web Apps with serverless functions API backend.',
+    content: `
+      # Building Next-Gen Web Applications on Azure
+
+      Azure Static Web Apps (SWA) streamlines full-stack web development with automated global CI/CD deployment directly from GitHub.
+
+      ## Why Choose Azure Static Web Apps?
+
+      - **Global CDN Distribution**: Pre-rendered static assets served closer to your users.
+      - **Integrated Serverless APIs**: Seamless integration with Azure Functions for backend APIs.
+      - **Built-in Custom Domains & SSL**: Free SSL certificates renewed automatically.
+
+      ## Deploying Your First App
+
+      Connecting your GitHub repository triggers GitHub Actions workflow automatically on every push to main branch.
+    `,
+    author: 'Rahul Sharma',
+    authorRole: 'President & Microsoft Student Ambassador',
+    authorPhoto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    publishedDate: '2026-08-01',
+    readTime: '5 min read',
+    category: 'Cloud Architecture',
+    tags: ['Azure', 'Next.js', 'Serverless', 'WebDev'],
+    banner: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'blg_ai_02',
+    slug: 'building-genai-agents-with-openai-and-cosmosdb',
+    title: 'Building Intelligent GenAI Agents with Azure OpenAI and Cosmos DB',
+    excerpt: 'Learn how to leverage Azure Cosmos DB NoSQL vector search alongside Azure OpenAI services to build RAG-powered student assistants.',
+    content: `
+      # Empowering Student Communities with Generative AI
+
+      Generative AI is transforming how student developers learn and build applications.
+
+      ## RAG Architecture Overview
+
+      By embedding document vectors into Cosmos DB, your AI agent can query campus event guidelines and documentation with low latency.
+    `,
+    author: 'Ananya Verma',
+    authorRole: 'Vice President & AI Community Lead',
+    authorPhoto: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
+    publishedDate: '2026-08-05',
+    readTime: '7 min read',
+    category: 'Artificial Intelligence',
+    tags: ['AI', 'OpenAI', 'CosmosDB', 'Python'],
+    banner: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1200&auto=format&fit=crop&q=80'
+  }
+];
+
+export const INITIAL_CERTIFICATES: CertificateRecord[] = [
+  {
+    verificationId: 'MCC-2026-AZ-98214',
+    studentName: 'Rahul Sharma',
+    studentId: 'MCC-2026-00042',
+    enrollmentNumber: '92100103045',
+    eventName: 'Azure Cloud Architecture & Serverless Masterclass',
+    eventType: 'Certificate of Excellence',
+    issueDate: '2026-08-25',
+    status: 'Verified',
+    issuer: 'Microsoft Campus Club (MCC) — Marwadi University'
+  },
+  {
+    verificationId: 'MCC-2026-AI-44120',
+    studentName: 'Ananya Verma',
+    studentId: 'MCC-2026-00043',
+    enrollmentNumber: '92100103099',
+    eventName: 'National Azure AI Hackathon 2026',
+    eventType: 'Winner Certificate (1st Place)',
+    issueDate: '2026-09-16',
+    status: 'Verified',
+    issuer: 'Microsoft Campus Club (MCC) — Marwadi University'
   }
 ];
 

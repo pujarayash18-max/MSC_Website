@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { ADMIN_ROLES } from '@/lib/constants/roles';
 import { verifySessionToken } from '@/lib/auth/session';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionToken = request.cookies.get('mcc_user_session')?.value;
 
@@ -15,7 +15,7 @@ export function middleware(request: NextRequest) {
     }
 
     // Verify cryptographic HMAC signature of session token
-    const session = verifySessionToken(sessionToken);
+    const session = await verifySessionToken(sessionToken);
     if (!session || !session.roleName) {
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);
