@@ -62,7 +62,7 @@ export default function AdminTicketsPage() {
             </div>
 
             <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-[#0D1117] p-4 rounded-xl border border-slate-200 dark:border-[#2A323D]">
-              "{tck.message}"
+              &quot;{tck.message}&quot;
             </p>
           </Card>
         ))}

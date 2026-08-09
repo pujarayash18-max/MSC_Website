@@ -12,7 +12,6 @@ import {
   Search,
   Menu,
   X,
-  User,
   LayoutDashboard,
   LogOut,
   ShieldCheck,
@@ -38,12 +37,18 @@ export function Navbar() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    let active = true;
+    requestAnimationFrame(() => {
+      if (active) setMounted(true);
+    });
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      active = false;
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   return (

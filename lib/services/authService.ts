@@ -1,5 +1,6 @@
-// Client Authentication Service for MCC Platform (§11, §12, §13, §14, §15, §16, §17)
-import { User, StudentProfile } from '@/types';
+// Client Authentication Service for MCC Platform
+import { User } from '@/types';
+import { hashPassword, verifyPassword, signSessionToken } from '@/lib/auth/session';
 
 export interface RegisterPayload {
   fullName: string;
@@ -18,15 +19,19 @@ export interface LoginPayload {
   password?: string;
 }
 
-const STORAGE_KEY_USER = 'mcc_user_session';
-const STORAGE_KEY_TOKEN = 'mcc_auth_token';
-const STORAGE_KEY_USERS_DB = 'mcc_registered_users_db';
+const STORAGE_KEY_USER = 'mcc_user_session_v3';
+const STORAGE_KEY_TOKEN = 'mcc_auth_token_v3';
+const STORAGE_KEY_USERS_DB = 'mcc_registered_users_db_v3';
+const DB_VERSION_KEY = 'mcc_registered_users_db_version_v3';
+const CURRENT_DB_VERSION = 'v3.0.0';
 
-// Default seed users database
+// Default seed demo users database with password "password123"
+const DEFAULT_DEMO_HASH = hashPassword('password123');
+
 const INITIAL_REGISTERED_USERS: User[] = [
   {
-    id: 'usr_student_001',
-    userId: 'usr_student_001',
+    id: 'usr_superadmin_001',
+    userId: 'usr_superadmin_001',
     studentId: 'MCC-2026-00042',
     fullName: 'Rahul Sharma',
     email: 'rahul.sharma@marwadiuniversity.ac.in',
@@ -46,6 +51,35 @@ const INITIAL_REGISTERED_USERS: User[] = [
     attendancePercentage: 95,
     roleId: 'role_superadmin',
     roleName: 'Super Admin',
+    passwordHash: DEFAULT_DEMO_HASH,
+    isDeleted: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    status: 'active'
+  },
+  {
+    id: 'usr_admin_002',
+    userId: 'usr_admin_002',
+    studentId: 'MCC-2026-00043',
+    fullName: 'Ananya Verma',
+    email: 'ananya.v@marwadiuniversity.ac.in',
+    enrollmentNumber: '92100103099',
+    college: 'Marwadi University',
+    department: 'Information Technology',
+    year: '4th Year',
+    division: 'IT-B',
+    profilePhoto: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
+    github: 'ananya-verma',
+    linkedin: 'ananyaverma-dev',
+    portfolio: 'https://ananyaverma.dev',
+    bio: 'Website Admin & Cloud Community Lead',
+    skills: ['React', 'TypeScript', 'Azure SWA', 'UI/UX Design'],
+    communityPoints: 280,
+    currentRank: 2,
+    attendancePercentage: 92,
+    roleId: 'role_website_admin',
+    roleName: 'Website Admin',
+    passwordHash: DEFAULT_DEMO_HASH,
     isDeleted: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -61,6 +95,15 @@ export function generateMccStudentId(seqNumber: number = Math.floor(10000 + Math
 export const authService = {
   getUsersDb(): User[] {
     if (typeof window === 'undefined') return INITIAL_REGISTERED_USERS;
+    
+    // Schema version check to migrate stale localStorage data
+    const currentVer = localStorage.getItem(DB_VERSION_KEY);
+    if (currentVer !== CURRENT_DB_VERSION) {
+      localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(INITIAL_REGISTERED_USERS));
+      localStorage.setItem(DB_VERSION_KEY, CURRENT_DB_VERSION);
+      return INITIAL_REGISTERED_USERS;
+    }
+
     const data = localStorage.getItem(STORAGE_KEY_USERS_DB);
     if (!data) {
       localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(INITIAL_REGISTERED_USERS));
@@ -88,11 +131,19 @@ export const authService = {
     }
   },
 
-  setSession(user: User, token: string = 'mock-jwt-session-token') {
+  setSession(user: User) {
     if (typeof window !== 'undefined') {
+      const signedToken = signSessionToken({
+        userId: user.userId,
+        email: user.email,
+        roleName: user.roleName,
+        fullName: user.fullName,
+        exp: Date.now() + 86400000 // 24 hours
+      });
+
       localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
-      localStorage.setItem(STORAGE_KEY_TOKEN, token);
-      document.cookie = `mcc_user_session=${encodeURIComponent(JSON.stringify(user))}; path=/; max-age=86400`;
+      localStorage.setItem(STORAGE_KEY_TOKEN, signedToken);
+      document.cookie = `mcc_user_session=${signedToken}; path=/; max-age=86400; SameSite=Lax`;
     }
   },
 
@@ -102,8 +153,8 @@ export const authService = {
     if (!data) return null;
     try {
       const user = JSON.parse(data) as User;
-      // Ensure cookie is synced
-      document.cookie = `mcc_user_session=${encodeURIComponent(data)}; path=/; max-age=86400`;
+      // Re-sign and update cookie
+      this.setSession(user);
       return user;
     } catch {
       return null;
@@ -114,7 +165,7 @@ export const authService = {
     if (typeof window !== 'undefined') {
       localStorage.removeItem(STORAGE_KEY_USER);
       localStorage.removeItem(STORAGE_KEY_TOKEN);
-      document.cookie = 'mcc_user_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      document.cookie = 'mcc_user_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
     }
   },
 
@@ -123,12 +174,14 @@ export const authService = {
       const usersDb = this.getUsersDb();
       const cleanEmail = payload.email.trim().toLowerCase();
       
-      const existing = usersDb.find(u => u.email.toLowerCase() === cleanEmail);
+      const existing = usersDb.find((u) => u.email.toLowerCase() === cleanEmail);
       if (existing) {
         return { success: false, message: 'An account with this email address already exists. Please sign in.' };
       }
 
       const studentId = generateMccStudentId();
+      const passwordHash = hashPassword(payload.password || 'password123');
+
       const newUser: User = {
         id: `usr_${Date.now()}`,
         userId: `usr_${Date.now()}`,
@@ -151,6 +204,7 @@ export const authService = {
         attendancePercentage: 100,
         roleId: 'role_student',
         roleName: 'Student',
+        passwordHash,
         isDeleted: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -160,8 +214,9 @@ export const authService = {
       this.saveUserToDb(newUser);
       this.setSession(newUser);
       return { success: true, user: newUser, message: `Account created successfully! Your MCC Student ID is ${studentId}.` };
-    } catch (err: any) {
-      return { success: false, message: err.message || 'Registration failed.' };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Registration failed.';
+      return { success: false, message: msg };
     }
   },
 
@@ -169,6 +224,7 @@ export const authService = {
     try {
       const usersDb = this.getUsersDb();
       const cleanIdentifier = payload.identifier.trim().toLowerCase();
+      const inputPassword = payload.password || '';
 
       // Check matching user in database
       const matchedUser = usersDb.find(
@@ -178,18 +234,26 @@ export const authService = {
           (u.enrollmentNumber && u.enrollmentNumber.toLowerCase() === cleanIdentifier)
       );
 
-      if (matchedUser) {
-        this.setSession(matchedUser);
-        return { success: true, user: matchedUser };
+      if (!matchedUser) {
+        return {
+          success: false,
+          message: 'No matching account found for this Student ID or Email.'
+        };
       }
 
-      // No match found -> Return failure so login page auto-redirects to register!
-      return {
-        success: false,
-        message: 'No matching account found for this Student ID or Email.'
-      };
-    } catch (err: any) {
-      return { success: false, message: err.message || 'Login failed.' };
+      // Password verification
+      if (matchedUser.passwordHash) {
+        const isValid = verifyPassword(inputPassword, matchedUser.passwordHash);
+        if (!isValid) {
+          return { success: false, message: 'Invalid password. Please check your credentials.' };
+        }
+      }
+
+      this.setSession(matchedUser);
+      return { success: true, user: matchedUser };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Login failed.';
+      return { success: false, message: msg };
     }
   }
 };

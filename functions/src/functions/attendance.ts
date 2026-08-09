@@ -4,7 +4,7 @@ import { successResponse, errorResponse } from '../lib/response';
 import { memoryStore } from '../lib/cosmos';
 import { Attendance } from '../../../types/event';
 
-export async function attendanceCheckin(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function attendanceCheckin(request: HttpRequest, _context: InvocationContext): Promise<HttpResponseInit> {
   try {
     const body = (await request.json()) as { qrToken: string; eventId: string; verifiedBy?: string };
 
@@ -40,7 +40,7 @@ export async function attendanceCheckin(request: HttpRequest, context: Invocatio
       attendance: newRecord,
       message: 'Attendance successfully verified and recorded.'
     });
-  } catch (err) {
+  } catch (_err) {
     return errorResponse('Failed to process attendance check-in');
   }
 }

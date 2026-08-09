@@ -60,6 +60,8 @@ function LoginContent() {
     if (res.success) {
       toast.success(`Logged in as ${res.user?.fullName} (${studentId})! Redirecting...`);
       router.push(redirectUrl);
+    } else {
+      toast.error(res.message || 'Quick login failed. Please try again.');
     }
   };
 
@@ -178,7 +180,7 @@ function LoginContent() {
               <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{user ? `Logged in as ${user.fullName}` : 'Guest'}</span>
             </div>
             <p className="text-slate-600 dark:text-slate-400 text-[11px]">
-              Don't have a Student Account?{' '}
+              Don&apos;t have a Student Account?{' '}
               <Link href="/register" className="text-sky-600 dark:text-sky-400 font-bold hover:underline">
                 Register Account & Get Student ID
               </Link>

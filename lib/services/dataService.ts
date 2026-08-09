@@ -1,5 +1,5 @@
 // Data Service with Dynamic Persistence & Storage Sync (§10)
-import { Event, Speaker, TeamMember, Notice, Sponsor, Project, Blog, Gallery, LeaderboardEntry, Winner, Certificate } from '@/types';
+import { Event, Speaker, TeamMember, Notice, Sponsor } from '@/types';
 
 export const INITIAL_EVENTS: Event[] = [
   {
@@ -289,13 +289,13 @@ export const dynamicDb = {
     }
   },
 
-  getRegistrations(): any[] {
+  getRegistrations(): Record<string, unknown>[] {
     if (typeof window === 'undefined') return [];
     const stored = localStorage.getItem(STORAGE_KEYS.REGISTRATIONS);
     return stored ? JSON.parse(stored) : [];
   },
 
-  saveRegistration(reg: any): void {
+  saveRegistration(reg: Record<string, unknown>): void {
     const current = this.getRegistrations();
     const updated = [reg, ...current];
     if (typeof window !== 'undefined') {

@@ -4,12 +4,12 @@ import { FormField } from '@/types';
 
 interface FieldProps {
   field: FormField;
-  value: any;
-  onChange: (val: any) => void;
+  value: unknown;
+  onChange: (val: unknown) => void;
   error?: string;
 }
 
-export function FieldTypeRegistry({ field, value, onChange, error }: FieldProps) {
+export function FieldTypeRegistry({ field, value, onChange, error: _error }: FieldProps) {
   const commonClasses =
     'w-full p-2.5 text-xs bg-white dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-[#00A4EF] focus:outline-none placeholder-slate-400 shadow-sm transition-all';
 
@@ -18,7 +18,7 @@ export function FieldTypeRegistry({ field, value, onChange, error }: FieldProps)
       return (
         <textarea
           rows={3}
-          value={value || ''}
+          value={typeof value === 'string' ? value : ''}
           onChange={(e) => onChange(e.target.value)}
           placeholder={field.placeholder}
           className={commonClasses}
@@ -27,7 +27,7 @@ export function FieldTypeRegistry({ field, value, onChange, error }: FieldProps)
 
     case 'Dropdown':
       return (
-        <select value={value || ''} onChange={(e) => onChange(e.target.value)} className={commonClasses}>
+        <select value={typeof value === 'string' ? value : ''} onChange={(e) => onChange(e.target.value)} className={commonClasses}>
           <option value="">-- Select {field.label} --</option>
           {field.options?.map((opt) => (
             <option key={opt} value={opt}>
@@ -103,7 +103,9 @@ export function FieldTypeRegistry({ field, value, onChange, error }: FieldProps)
             onChange={(e) => onChange(e.target.files?.[0]?.name || 'uploaded-file.pdf')}
             className="text-xs text-slate-600 dark:text-slate-400 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#0078D4] file:text-white hover:file:bg-[#00A4EF] cursor-pointer"
           />
-          {value && <p className="text-[11px] text-[#7FBA00] font-medium">File selected: {value}</p>}
+          {typeof value === 'string' && value ? (
+            <p className="text-[11px] text-[#7FBA00] font-medium">File selected: {value}</p>
+          ) : null}
         </div>
       );
 
@@ -111,7 +113,7 @@ export function FieldTypeRegistry({ field, value, onChange, error }: FieldProps)
       return (
         <input
           type={field.type === 'Number' ? 'number' : field.type === 'Email' ? 'email' : 'text'}
-          value={value || ''}
+          value={typeof value === 'string' || typeof value === 'number' ? String(value) : ''}
           onChange={(e) => onChange(e.target.value)}
           placeholder={field.placeholder || `Enter ${field.label}`}
           className={commonClasses}

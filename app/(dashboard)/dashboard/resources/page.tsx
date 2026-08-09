@@ -61,7 +61,7 @@ export default function StudentResourcesPage() {
   }, [isLoading, isAuthenticated, router]);
 
   // Real-time listener for live resource uploads during event (§48, §123)
-  useRealtime('LIVE_RESOURCE_UPLOADED', (event: RealtimeEvent<any>) => {
+  useRealtime('LIVE_RESOURCE_UPLOADED', (event: RealtimeEvent<{ title: string; eventTitle?: string; eventId?: string; category: string; visibility: string; blobUrl: string }>) => {
     toast.success(`⚡ Live Resource Broadcast Received: "${event.payload.title}"`, {
       description: `Target Event: ${event.payload.eventTitle || 'Event Workshop'}`
     });
@@ -110,7 +110,7 @@ export default function StudentResourcesPage() {
               <UserPlus className="w-4 h-4 text-[#00A4EF]" /> Register Account
             </Button>
           </Link>
-          <Button variant="outline" size="lg" onClick={() => login('aad')} className="gap-2 px-6">
+          <Button variant="outline" size="lg" onClick={() => login('Student')} className="gap-2 px-6">
             <MicrosoftFourSquareIcon className="w-4 h-4" /> Microsoft SSO
           </Button>
         </div>

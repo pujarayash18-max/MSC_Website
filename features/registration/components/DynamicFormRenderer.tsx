@@ -38,12 +38,12 @@ export interface DynamicFormRendererProps {
   onSubmit?: (data: Record<string, unknown>) => void;
 }
 
-export function DynamicFormRenderer({ event, onSubmit }: DynamicFormRendererProps) {
+export function DynamicFormRenderer({ event: _event, onSubmit }: DynamicFormRendererProps) {
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = (fieldId: string, val: any) => {
+  const handleChange = (fieldId: string, val: unknown) => {
     setFormData((prev) => ({ ...prev, [fieldId]: val }));
     if (errors[fieldId]) {
       setErrors((prev) => {

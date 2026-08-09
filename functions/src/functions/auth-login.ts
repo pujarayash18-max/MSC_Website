@@ -1,9 +1,14 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { successResponse, errorResponse } from '../lib/response';
 
+interface LoginRequestBody {
+  loginIdentifier?: string;
+  password?: string;
+}
+
 export async function authLoginHandler(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
   try {
-    const body = (await request.json()) as any;
+    const body = (await request.json()) as LoginRequestBody;
     const { loginIdentifier, password } = body;
 
     if (!loginIdentifier || !password) {
@@ -26,9 +31,10 @@ export async function authLoginHandler(request: HttpRequest, context: Invocation
       user: mockUser,
       token: `mcc_jwt_${Date.now()}`
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Login failed';
     context.error('Error logging in student:', error);
-    return errorResponse(error.message || 'Login failed');
+    return errorResponse(msg);
   }
 }
 

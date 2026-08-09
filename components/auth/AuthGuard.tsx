@@ -3,18 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-
-const ADMIN_ROLES = [
-  'Super Admin',
-  'Website Admin',
-  'Event Manager',
-  'Content Manager',
-  'Media Manager',
-  'Faculty Coordinator',
-  'President',
-  'Vice President',
-  'Technical Lead'
-];
+import { ADMIN_ROLES } from '@/lib/constants/roles';
 
 interface AuthGuardProps {
   children: React.ReactNode;

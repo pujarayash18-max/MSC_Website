@@ -18,7 +18,7 @@ export function useRealtime<T = unknown>(
   eventType?: RealtimeEvent['type'],
   callback?: (event: RealtimeEvent<T>) => void
 ) {
-  const [isConnected, setIsConnected] = useState(true);
+  const [isConnected] = useState(true);
   const [lastEvent, setLastEvent] = useState<RealtimeEvent<T> | null>(null);
 
   useEffect(() => {

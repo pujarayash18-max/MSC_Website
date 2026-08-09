@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Search, ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './button';
 
 export interface Column<T> {
@@ -16,7 +16,7 @@ interface DataTableProps<T> {
   actions?: React.ReactNode;
 }
 
-export function DataTable<T extends Record<string, any>>({
+export function DataTable<T extends object>({
   columns,
   data,
   searchPlaceholder = 'Search records...',
@@ -74,7 +74,7 @@ export function DataTable<T extends Record<string, any>>({
                 <tr key={idx} className="hover:bg-slate-800/30 transition-colors">
                   {columns.map((col) => (
                     <td key={col.key} className="px-6 py-4">
-                      {col.render ? col.render(row) : row[col.key]}
+                      {col.render ? col.render(row) : String((row as Record<string, unknown>)[col.key] ?? '')}
                     </td>
                   ))}
                 </tr>

@@ -76,6 +76,7 @@ export interface User extends BaseEntity {
   attendancePercentage: number;
   roleId: string;
   roleName: SystemRoleName;
+  passwordHash?: string;
 }
 
 export interface StudentProfile {

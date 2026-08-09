@@ -263,7 +263,7 @@ export default function HomePage() {
               </div>
               {member.quote && (
                 <p className="text-xs text-slate-700 dark:text-slate-300 italic bg-slate-100 dark:bg-slate-950/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
-                  "{member.quote}"
+                  &quot;{member.quote}&quot;
                 </p>
               )}
             </Card>
@@ -346,7 +346,7 @@ export default function HomePage() {
                     ))}
                   </div>
                 </div>
-                <p className="text-xs text-slate-700 dark:text-slate-300 italic">"{t.comment}"</p>
+                <p className="text-xs text-slate-700 dark:text-slate-300 italic">&quot;{t.comment}&quot;</p>
               </Card>
             ))}
           </div>

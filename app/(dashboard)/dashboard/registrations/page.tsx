@@ -35,24 +35,24 @@ const STATIC_REGISTRATIONS = [
 
 export default function StudentRegistrationsPage() {
   const [selectedQr, setSelectedQr] = useState<string | null>(null);
-  const [allRegs, setAllRegs] = useState<any[]>(STATIC_REGISTRATIONS);
-
-  useEffect(() => {
+  const [allRegs, setAllRegs] = useState(() => {
+    if (typeof window === 'undefined') return STATIC_REGISTRATIONS;
     const saved = dynamicDb.getRegistrations();
     if (saved && saved.length > 0) {
-      const mappedSaved = saved.map((s: any) => ({
-        registrationId: s.registrationId,
-        eventTitle: s.eventTitle,
+      const mappedSaved = saved.map((s: Record<string, unknown>) => ({
+        registrationId: String(s.registrationId || ''),
+        eventTitle: String(s.eventTitle || ''),
         eventVenue: 'Seminar Hall 4, Main Campus',
         banner: INITIAL_EVENTS[0].banner,
-        submittedAt: s.createdAt,
-        status: s.status || 'Approved',
-        qrToken: s.qrPassCode || `MCC-PASS-${s.registrationId}`,
+        submittedAt: String(s.createdAt || new Date().toISOString()),
+        status: String(s.status || 'Approved'),
+        qrToken: String(s.qrPassCode || `MCC-PASS-${s.registrationId}`),
         attendanceStatus: 'Registered'
       }));
-      setAllRegs([...mappedSaved, ...STATIC_REGISTRATIONS]);
+      return [...mappedSaved, ...STATIC_REGISTRATIONS];
     }
-  }, []);
+    return STATIC_REGISTRATIONS;
+  });
 
   return (
     <div className="space-y-6">

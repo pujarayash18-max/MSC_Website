@@ -3,10 +3,13 @@ import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/fu
 import { verifyPermission } from '../lib/auth';
 import { successResponse, errorResponse } from '../lib/response';
 import { memoryStore } from '../lib/cosmos';
-import { Winner, Points, Achievement, LeaderboardEntry } from '../../../types/engagement';
+import { Winner, Points, Achievement } from '../../../types/engagement';
 
-export async function winnersPublish(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function winnersPublish(request: HttpRequest, _context: InvocationContext): Promise<HttpResponseInit> {
   const { authorized } = verifyPermission(request, 'Winners', 'Publish');
+  if (!authorized) {
+    return errorResponse('Forbidden: Insufficient permissions to publish winners', 'FORBIDDEN', 403);
+  }
 
   try {
     const body = (await request.json()) as {
@@ -90,7 +93,7 @@ export async function winnersPublish(request: HttpRequest, context: InvocationCo
       published: true,
       message: `Published ${body.winners.length} winners for ${body.eventName}. Cascade complete: Points credited, Badges awarded, Leaderboard updated.`
     });
-  } catch (err) {
+  } catch (_err) {
     return errorResponse('Failed to publish winners cascade');
   }
 }

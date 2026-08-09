@@ -29,7 +29,7 @@ const EVENTS_LIST = [
   { id: 'evt_general', title: 'General MCC Community Resources (All Events)' }
 ];
 
-const VISIBILITY_OPTIONS: { value: ResourceVisibility; label: string; description: string; badge: string; icon: any }[] = [
+const VISIBILITY_OPTIONS: { value: ResourceVisibility; label: string; description: string; badge: string; icon: React.ComponentType<{ className?: string }> }[] = [
   {
     value: 'Public',
     label: 'All Signed-in Users',

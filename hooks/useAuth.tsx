@@ -1,5 +1,6 @@
 'use client';
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, SystemRoleName } from '@/types';
 import { authService, RegisterPayload, LoginPayload } from '@/lib/services/authService';
 
@@ -8,7 +9,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   role: SystemRoleName;
-  login: (provider?: 'aad' | 'github') => void;
+  login: (roleName?: SystemRoleName) => void;
   loginStudent: (payload: LoginPayload) => Promise<{ success: boolean; user?: User; message?: string }>;
   registerStudent: (payload: RegisterPayload) => Promise<{ success: boolean; user?: User; message?: string }>;
   logout: () => void;
@@ -16,9 +17,9 @@ interface AuthContextType {
 }
 
 const defaultUser: User = {
-  id: 'usr_dev_001',
-  userId: 'usr_dev_001',
-  studentId: 'MCC-2026-00001',
+  id: 'usr_student_default',
+  userId: 'usr_student_default',
+  studentId: 'MCC-2026-00042',
   fullName: 'Rahul Sharma',
   email: 'rahul.sharma@marwadiuniversity.ac.in',
   enrollmentNumber: '92100103045',
@@ -27,7 +28,7 @@ const defaultUser: User = {
   year: '3rd Year',
   division: 'CE-A',
   profilePhoto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-  github: 'rahulsharma-mu',
+  github: 'rahulsharma-dev',
   linkedin: 'rahulsharma-dev',
   portfolio: 'https://rahulsharma.dev',
   bio: 'Passionate Cloud & Full-Stack Developer | Microsoft Student Ambassador',
@@ -44,10 +45,10 @@ const defaultUser: User = {
 };
 
 const AuthContext = createContext<AuthContextType>({
-  user: defaultUser,
-  isLoading: false,
-  isAuthenticated: true,
-  role: 'Super Admin',
+  user: null,
+  isLoading: true,
+  isAuthenticated: false,
+  role: 'Student',
   login: () => {},
   loginStudent: async () => ({ success: false }),
   registerStudent: async () => ({ success: false }),
@@ -56,24 +57,24 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return authService.getSessionUser();
+  });
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return !authService.getSessionUser();
+  });
 
   useEffect(() => {
-    // 1. Check local session storage first
-    const storedUser = authService.getSessionUser();
-    if (storedUser) {
-      setUser(storedUser);
-      setIsLoading(false);
-      return;
-    }
+    if (user) return;
 
-    // 2. Check Azure SWA /.auth/me endpoint in production browser environment
+    let active = true;
     async function checkSwaAuth() {
       try {
         const res = await fetch('/.auth/me');
         const data = await res.json();
-        if (data.clientPrincipal) {
+        if (data.clientPrincipal && active) {
           const principal = data.clientPrincipal;
           setUser((prev) => ({
             ...(prev || defaultUser),
@@ -83,17 +84,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }));
         }
       } catch {
-        // Fallback to local default dev user
+        // Fallback
       } finally {
-        setIsLoading(false);
+        if (active) setIsLoading(false);
       }
     }
 
     checkSwaAuth();
-  }, []);
+    return () => {
+      active = false;
+    };
+  }, [user]);
 
-  const login = (provider: 'aad' | 'github' = 'aad') => {
-    window.location.href = `/.auth/login/${provider}`;
+  const login = (roleName: SystemRoleName = 'Student') => {
+    const updatedUser = { ...defaultUser, roleName };
+    setUser(updatedUser);
+    authService.setSession(updatedUser);
   };
 
   const loginStudent = async (payload: LoginPayload) => {
@@ -148,5 +154,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 export function useAuth() {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 }

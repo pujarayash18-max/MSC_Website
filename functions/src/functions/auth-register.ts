@@ -2,9 +2,18 @@ import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/fu
 import { successResponse, errorResponse } from '../lib/response';
 import { memoryStore } from '../lib/cosmos';
 
+interface RegisterRequestBody {
+  fullName?: string;
+  email?: string;
+  enrollmentNumber?: string;
+  department?: string;
+  year?: string;
+  password?: string;
+}
+
 export async function authRegisterHandler(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
   try {
-    const body = (await request.json()) as any;
+    const body = (await request.json()) as RegisterRequestBody;
     const { fullName, email, enrollmentNumber, department, year, password } = body;
 
     if (!fullName || !email || !password) {
@@ -40,9 +49,10 @@ export async function authRegisterHandler(request: HttpRequest, context: Invocat
     context.log(`Student registered successfully: ${studentId}`);
 
     return successResponse(newUser);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Failed to register student';
     context.error('Error registering student:', error);
-    return errorResponse(error.message || 'Failed to register student');
+    return errorResponse(msg);
   }
 }
 

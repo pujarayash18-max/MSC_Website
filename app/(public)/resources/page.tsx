@@ -181,7 +181,7 @@ export default function PublicResourcesPage() {
                 <UserPlus className="w-4 h-4 text-[#00A4EF]" /> Register Account
               </Button>
             </Link>
-            <Button variant="outline" size="lg" onClick={() => login('aad')} className="gap-2 px-6">
+            <Button variant="outline" size="lg" onClick={() => login('Student')} className="gap-2 px-6">
               <MicrosoftFourSquareIcon className="w-4 h-4" /> Microsoft SSO
             </Button>
           </div>

@@ -1,46 +1,34 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-
-const ADMIN_ROLES = [
-  'Super Admin',
-  'Website Admin',
-  'Event Manager',
-  'Content Manager',
-  'Media Manager',
-  'Faculty Coordinator',
-  'President',
-  'Vice President',
-  'Technical Lead'
-];
+import { ADMIN_ROLES } from '@/lib/constants/roles';
+import { verifySessionToken } from '@/lib/auth/session';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const sessionCookie = request.cookies.get('mcc_user_session')?.value;
+  const sessionToken = request.cookies.get('mcc_user_session')?.value;
 
   if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
-    if (!sessionCookie) {
+    if (!sessionToken) {
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);
     }
 
-    try {
-      const user = JSON.parse(decodeURIComponent(sessionCookie));
-      if (!user || !user.roleName) {
-        const loginUrl = new URL('/login', request.url);
-        loginUrl.searchParams.set('redirect', pathname);
-        return NextResponse.redirect(loginUrl);
-      }
-
-      if (pathname.startsWith('/admin')) {
-        if (!ADMIN_ROLES.includes(user.roleName)) {
-          return NextResponse.redirect(new URL('/unauthorized', request.url));
-        }
-      }
-    } catch {
+    // Verify cryptographic HMAC signature of session token
+    const session = verifySessionToken(sessionToken);
+    if (!session || !session.roleName) {
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(loginUrl);
+      const response = NextResponse.redirect(loginUrl);
+      response.cookies.delete('mcc_user_session');
+      return response;
+    }
+
+    // RBAC Guard for /admin/*
+    if (pathname.startsWith('/admin')) {
+      if (!ADMIN_ROLES.includes(session.roleName as import('@/types').SystemRoleName)) {
+        return NextResponse.redirect(new URL('/unauthorized', request.url));
+      }
     }
   }
 

@@ -4,7 +4,7 @@ import { verifyPermission } from '../lib/auth';
 import { successResponse, errorResponse } from '../lib/response';
 import { DEFAULTPERMISSIONMATRIX, SystemRoleName } from '../../../types/user';
 
-let currentMatrix = { ...DEFAULTPERMISSIONMATRIX };
+const currentMatrix = { ...DEFAULTPERMISSIONMATRIX };
 
 export async function rbacRoles(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
   const { authorized } = verifyPermission(request, 'RBAC', 'Read');

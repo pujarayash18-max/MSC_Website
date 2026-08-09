@@ -8,7 +8,7 @@ import { DynamicFormRenderer } from '@/features/registration/components/DynamicF
 import { Event } from '@/types';
 import { dynamicDb } from '@/lib/services/dataService';
 import { toast } from 'sonner';
-import { Sparkles, CheckCircle, QrCode } from 'lucide-react';
+import { Sparkles, QrCode } from 'lucide-react';
 
 interface EventRegistrationModalProps {
   event: Event;

@@ -40,7 +40,7 @@ export default function GlobalSearchPage() {
 
       {query && (
         <div className="space-y-6">
-          <p className="text-xs font-semibold text-slate-600 dark:text-[#A8B0BB]">Found {totalResults} matching results for "{query}"</p>
+          <p className="text-xs font-semibold text-slate-600 dark:text-[#A8B0BB]">Found {totalResults} matching results for &quot;{query}&quot;</p>
 
           {/* Events Results */}
           {matchingEvents.length > 0 && (

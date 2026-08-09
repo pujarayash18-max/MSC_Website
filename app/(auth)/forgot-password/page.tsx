@@ -47,7 +47,7 @@ export default function ForgotPasswordPage() {
               <div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">Reset Link Dispatched</h3>
                 <p className="text-xs text-slate-600 dark:text-[#A8B0BB] mt-1">
-                  We've sent password reset instructions to <strong className="text-slate-900 dark:text-white">{email}</strong>.
+                  We&apos;ve sent password reset instructions to <strong className="text-slate-900 dark:text-white">{email}</strong>.
                 </p>
               </div>
 

@@ -10,7 +10,7 @@ export async function eventsHandler(request: HttpRequest, context: InvocationCon
     }
 
     if (request.method === 'POST') {
-      const eventData = (await request.json()) as any;
+      const eventData = (await request.json()) as Record<string, unknown>;
       const newEvent = {
         id: `evt_${Date.now()}`,
         eventId: `evt_${Date.now()}`,
@@ -24,9 +24,10 @@ export async function eventsHandler(request: HttpRequest, context: InvocationCon
     }
 
     return errorResponse('Method not allowed');
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Events operation failed';
     context.error('Error handling events:', error);
-    return errorResponse(error.message || 'Events operation failed');
+    return errorResponse(msg);
   }
 }
 
