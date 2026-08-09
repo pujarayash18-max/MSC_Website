@@ -1,105 +1,184 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Segoe UI Variable', 'Segoe UI', Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+:root {
+  --background: 210 25% 98%; /* #F7F9FC */
+  --background-secondary: 216 33% 97%; /* #F3F6FA */
+  --foreground: 0 0% 10%; /* #1A1A1A */
+  
+  --card: 0 0% 100%; /* #FFFFFF */
+  --card-foreground: 0 0% 10%;
+  
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 10%;
+
+  /* Microsoft Brand 4 Colors */
+  --ms-blue: 199 100% 47%; /* #00A4EF */
+  --ms-blue-primary: 206 100% 41.6%; /* #0078D4 */
+  --ms-green: 80 100% 36.5%; /* #7FBA00 */
+  --ms-yellow: 44 100% 50%; /* #FFB900 */
+  --ms-red: 13 89% 54%; /* #F25022 */
+
+  --primary: 206 100% 41.6%; /* #0078D4 */
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 216 33% 97%;
+  --secondary-foreground: 220 14% 37%;
+
+  --muted: 214 32% 91%;
+  --muted-foreground: 218 8% 38%;
+
+  --accent: 199 100% 47%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 13 89% 54%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 213 18% 90%; /* #E1E5EA */
+  --input: 213 18% 90%;
+  --ring: 206 100% 41.6%;
+  --radius: 0.85rem;
+}
+
+.dark {
+  --background: 214 28% 6%; /* #0B0F14 */
+  --background-secondary: 214 25% 9%; /* #11161D */
+  --foreground: 216 33% 97%; /* #F5F7FA */
+
+  --card: 214 24% 11%; /* #151B23 */
+  --card-foreground: 216 33% 97%;
+
+  --popover: 214 24% 11%;
+  --popover-foreground: 216 33% 97%;
+
+  /* Microsoft Brand 4 Colors Luminous Dark Mode */
+  --ms-blue: 199 100% 47%; /* #00A4EF */
+  --ms-blue-primary: 206 100% 41.6%; /* #0078D4 */
+  --ms-green: 80 100% 36.5%; /* #7FBA00 */
+  --ms-yellow: 44 100% 50%; /* #FFB900 */
+  --ms-red: 13 89% 54%; /* #F25022 */
+
+  --primary: 199 100% 47%; /* #00A4EF */
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 214 25% 9%;
+  --secondary-foreground: 216 16% 70%;
+
+  --muted: 214 20% 18%;
+  --muted-foreground: 216 16% 70%; /* #A8B0BB */
+
+  --accent: 199 100% 47%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 13 89% 54%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 214 18% 20%; /* #2A323D */
+  --input: 214 18% 20%;
+  --ring: 199 100% 47%;
+}
+
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 207 100% 42%; /* Microsoft Blue #0078D4 */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222 47% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 207 100% 42%;
-    --radius: 0.875rem;
+  * {
+    border-color: hsl(var(--border));
   }
-
-  .dark {
-    --background: 224 71% 4%; /* Dark mica background #070B14 */
-    --foreground: 213 31% 91%;
-    --card: 224 71% 7%;
-    --card-foreground: 213 31% 91%;
-    --popover: 224 71% 7%;
-    --popover-foreground: 213 31% 91%;
-    --primary: 207 100% 46%; /* #0078D4 */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 217.2 32.6% 14.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 14.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 207 100% 46%;
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Segoe UI Variable', 'Segoe UI', Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow-x: hidden;
   }
 }
 
-body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-  font-family: 'Segoe UI Variable', 'Segoe UI', Inter, -apple-system, BlinkMacSystemFont, sans-serif;
-  overflow-x: hidden;
+/* Microsoft 4-Color Classes */
+.bg-ms-red { background-color: #F25022; }
+.bg-ms-green { background-color: #7FBA00; }
+.bg-ms-blue { background-color: #00A4EF; }
+.bg-ms-yellow { background-color: #FFB900; }
+
+.text-ms-red { color: #F25022; }
+.text-ms-green { color: #7FBA00; }
+.text-ms-blue { color: #00A4EF; }
+.text-ms-yellow { color: #FFB900; }
+
+.border-ms-red { border-color: #F25022; }
+.border-ms-green { border-color: #7FBA00; }
+.border-ms-blue { border-color: #00A4EF; }
+.border-ms-yellow { border-color: #FFB900; }
+
+/* Microsoft 4-Color Gradient Accent */
+.ms-gradient-bar {
+  background: linear-gradient(90deg, #F25022 0%, #7FBA00 33%, #00A4EF 66%, #FFB900 100%);
 }
 
-/* Fluent 2 Acrylic & Mica Glassmorphism Styles */
-.fluent-glass {
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.ms-gradient-glow {
+  background: radial-gradient(circle at 50% 0%, rgba(0, 164, 239, 0.15) 0%, rgba(127, 186, 0, 0.08) 35%, rgba(242, 80, 34, 0.05) 70%, transparent 100%);
 }
 
-.light .fluent-glass {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+/* Fluent 2 Acrylic & Surface Styles */
+.fluent-acrylic {
+  background: rgba(21, 27, 35, 0.75);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
-.fluent-glass-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-  border-radius: 1rem;
-}
-
-.light .fluent-glass-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(240, 246, 255, 0.7) 100%);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 120, 212, 0.15);
-  box-shadow: 0 8px 24px 0 rgba(0, 120, 212, 0.08);
-  border-radius: 1rem;
+:root:not(.dark) .fluent-acrylic {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
 .gradient-mesh {
-  background-color: #050b14;
+  background-color: #0B0F14;
   background-image: 
-    radial-gradient(at 0% 0%, rgba(0, 120, 212, 0.25) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(80, 70, 229, 0.2) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.15) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(147, 51, 234, 0.2) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(0, 164, 239, 0.18) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(127, 186, 0, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(255, 185, 0, 0.12) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(242, 80, 34, 0.15) 0px, transparent 50%);
 }
 
-.light .gradient-mesh {
-  background-color: #f8fafc;
+:root:not(.dark) .gradient-mesh {
+  background-color: #F7F9FC;
   background-image: 
-    radial-gradient(at 0% 0%, rgba(0, 120, 212, 0.12) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(0, 164, 239, 0.12) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(127, 186, 0, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(255, 185, 0, 0.08) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(242, 80, 34, 0.08) 0px, transparent 50%);
 }
 
 /* Custom Scrollbars */
@@ -107,16 +186,13 @@ body {
   width: 8px;
   height: 8px;
 }
-
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.2);
+  background: rgba(168, 176, 187, 0.25);
   border-radius: 4px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.4);
+  background: rgba(0, 164, 239, 0.5);
 }

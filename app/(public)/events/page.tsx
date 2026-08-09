@@ -8,8 +8,8 @@ export default function EventsPage() {
       {/* Page Header */}
       <div className="text-center max-w-3xl mx-auto space-y-3">
         <Badge variant="primary">MCC Events Catalog</Badge>
-        <h1 className="text-4xl font-extrabold text-white">Workshops, Hackathons & Bootcamps</h1>
-        <p className="text-sm text-slate-400">Discover upcoming Microsoft events, register with dynamic forms, track seat capacity, and earn community points.</p>
+        <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white">Workshops, Hackathons & Bootcamps</h1>
+        <p className="text-sm text-slate-600 dark:text-slate-400">Discover upcoming Microsoft events, register with dynamic forms, track seat capacity, and earn community points.</p>
       </div>
 
       {/* Filter Catalog */}

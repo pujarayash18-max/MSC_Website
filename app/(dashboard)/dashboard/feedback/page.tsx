@@ -11,48 +11,53 @@ import { MessageSquare, Star, Send, CheckCircle2 } from 'lucide-react';
 export default function StudentFeedbackPage() {
   const [selectedEventId, setSelectedEventId] = useState(INITIAL_EVENTS[0].eventId);
   const [rating, setRating] = useState(5);
-  const [speakerRating, setSpeakerRating] = useState(5);
-  const [contentQuality, setContentQuality] = useState('Excellent');
-  const [suggestions, setSuggestions] = useState('');
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitted(true);
-    toast.success('Thank you! Your feedback has been recorded (§70).');
+    if (!feedbackText) return;
+
+    setIsSubmitting(true);
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setSubmitted(true);
+      toast.success('Thank you! Your feedback has been submitted to the MCC event organizers.');
+    }, 600);
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-3xl space-y-6">
       <div>
-        <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-          <MessageSquare className="w-7 h-7 text-sky-400" /> Event Feedback (§70)
+        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+          <MessageSquare className="w-7 h-7 text-[#00A4EF]" /> Event Feedback & Surveys (§49)
         </h1>
-        <p className="text-sm text-slate-400 mt-1">
-          Share your experience for events you attended. Feedback is used to improve future Microsoft workshops.
+        <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
+          Share your experience for attended MCC workshops & hackathons to earn community feedback points.
         </p>
       </div>
 
-      <Card className="p-8 border-slate-800 bg-slate-900/80 shadow-2xl">
-        {isSubmitted ? (
-          <div className="text-center py-8 space-y-4">
-            <CheckCircle2 className="w-16 h-16 text-emerald-400 mx-auto" />
-            <h2 className="text-xl font-bold text-white">Feedback Submitted Successfully!</h2>
-            <p className="text-xs text-slate-400">
-              You earned <strong className="text-emerald-400">+5 Bonus Community Points</strong> for submitting event feedback.
+      <Card className="p-6 space-y-6 border-slate-200 dark:border-[#2A323D]">
+        {submitted ? (
+          <div className="p-8 text-center space-y-4">
+            <CheckCircle2 className="w-12 h-12 text-[#7FBA00] mx-auto animate-bounce" />
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white">Feedback Received!</h3>
+            <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">
+              You earned <strong className="text-[#00A4EF] font-bold">+5 Community Points</strong> for helping improve MCC events.
             </p>
-            <Button variant="outline" size="sm" onClick={() => setIsSubmitted(false)}>
-              Submit Feedback for Another Event
+            <Button variant="outline" size="sm" onClick={() => setSubmitted(false)}>
+              Submit Another Review
             </Button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">Select Attended Event</label>
+              <label className="text-xs font-semibold text-slate-700 dark:text-[#F5F7FA] block mb-1">Select Attended Event *</label>
               <select
                 value={selectedEventId}
                 onChange={(e) => setSelectedEventId(e.target.value)}
-                className="w-full p-3 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                className="w-full p-2.5 text-xs bg-white dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-[#00A4EF] focus:outline-none"
               >
                 {INITIAL_EVENTS.map((evt) => (
                   <option key={evt.eventId} value={evt.eventId}>
@@ -62,64 +67,40 @@ export default function StudentFeedbackPage() {
               </select>
             </div>
 
-            {/* Overall Rating */}
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-slate-300">Overall Event Rating</label>
+            <div>
+              <label className="text-xs font-semibold text-slate-700 dark:text-[#F5F7FA] block mb-2">Event Rating (1 to 5 Stars)</label>
               <div className="flex items-center gap-2">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
                     type="button"
                     onClick={() => setRating(star)}
-                    className={`p-2 rounded-xl border transition-all ${
-                      star <= rating
-                        ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
-                        : 'bg-slate-950 border-slate-800 text-slate-600'
-                    }`}
+                    className="p-1 text-[#FFB900] hover:scale-110 transition-transform"
                   >
-                    <Star className="w-5 h-5 fill-current" />
+                    <Star className={`w-6 h-6 ${star <= rating ? 'fill-[#FFB900]' : 'text-slate-300 dark:text-slate-700'}`} />
                   </button>
                 ))}
-                <span className="text-xs text-amber-400 font-bold ml-2">{rating} / 5 Stars</span>
+                <span className="text-xs font-bold text-slate-700 dark:text-[#F5F7FA] ml-2">{rating} / 5 Stars</span>
               </div>
             </div>
 
-            {/* Speaker Rating */}
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-slate-300">Speaker & Content Quality</label>
-              <div className="flex items-center gap-2">
-                {['Good', 'Very Good', 'Excellent', 'Outstanding'].map((q) => (
-                  <button
-                    key={q}
-                    type="button"
-                    onClick={() => setContentQuality(q)}
-                    className={`px-3 py-2 text-xs font-semibold rounded-xl border transition-all ${
-                      contentQuality === q
-                        ? 'bg-sky-500/10 border-sky-500/40 text-sky-400'
-                        : 'bg-slate-950 border-slate-800 text-slate-400'
-                    }`}
-                  >
-                    {q}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Suggestions */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">Comments & Future Suggestions</label>
+              <label className="text-xs font-semibold text-slate-700 dark:text-[#F5F7FA] block mb-1">Detailed Review / Suggestions *</label>
               <textarea
                 rows={4}
-                placeholder="What did you like most? What topics would you like to see in future workshops?"
-                value={suggestions}
-                onChange={(e) => setSuggestions(e.target.value)}
-                className="w-full p-3 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-sky-500 focus:outline-none placeholder-slate-500"
+                required
+                value={feedbackText}
+                onChange={(e) => setFeedbackText(e.target.value)}
+                placeholder="What did you enjoy most? How can we make future workshops even better?"
+                className="w-full p-3 text-xs bg-white dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-[#00A4EF] focus:outline-none"
               />
             </div>
 
-            <Button type="submit" variant="fluent" className="w-full justify-center text-xs py-3 font-bold">
-              <Send className="w-4 h-4" /> Submit Verified Feedback (+5 Points)
-            </Button>
+            <div className="flex justify-end pt-2">
+              <Button type="submit" variant="fluent" size="lg" disabled={isSubmitting}>
+                <Send className="w-4 h-4" /> {isSubmitting ? 'Submitting Feedback...' : 'Submit Feedback'}
+              </Button>
+            </div>
           </form>
         )}
       </Card>

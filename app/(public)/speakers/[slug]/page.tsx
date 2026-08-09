@@ -1,12 +1,12 @@
 'use client';
+
 import { useParams } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { INITIAL_SPEAKERS } from '@/lib/services/dataService';
 import Link from 'next/link';
-import { ArrowLeft, Globe, Mic } from 'lucide-react';
-import { LinkedinIcon } from '@/components/icons';
+import { ArrowLeft, Mic } from 'lucide-react';
 
 export default function SpeakerDetailPage() {
   const params = useParams();
@@ -21,16 +21,16 @@ export default function SpeakerDetailPage() {
         </Button>
       </Link>
 
-      <Card className="p-8 space-y-6 border-sky-500/30">
+      <Card className="p-8 space-y-6 border-slate-200 dark:border-[#2A323D]">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
           <img
             src={speaker.photo}
             alt={speaker.name}
-            className="w-28 h-28 rounded-2xl object-cover border-2 border-sky-400 shadow-xl"
+            className="w-28 h-28 rounded-2xl object-cover border-2 border-[#00A4EF] shadow-xl"
           />
           <div className="space-y-2 flex-1">
-            <h1 className="text-3xl font-extrabold text-white">{speaker.name}</h1>
-            <p className="text-sm font-semibold text-sky-400">{speaker.designation} at {speaker.organization}</p>
+            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">{speaker.name}</h1>
+            <p className="text-sm font-semibold text-[#0078D4] dark:text-[#00A4EF]">{speaker.designation} at {speaker.organization}</p>
 
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
               {speaker.expertise.map((exp) => (
@@ -42,18 +42,18 @@ export default function SpeakerDetailPage() {
           </div>
         </div>
 
-        <div className="space-y-3 border-t border-slate-800 pt-6">
-          <h3 className="text-base font-bold text-white">Biography</h3>
-          <p className="text-sm text-slate-300 leading-relaxed">{speaker.bio}</p>
+        <div className="space-y-3 border-t border-slate-200 dark:border-[#2A323D] pt-6">
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">Biography</h3>
+          <p className="text-sm text-slate-600 dark:text-[#A8B0BB] leading-relaxed">{speaker.bio}</p>
         </div>
 
-        <div className="space-y-3 border-t border-slate-800 pt-6">
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
-            <Mic className="w-4 h-4 text-sky-400" /> Keynote Sessions Delivered at MCC
+        <div className="space-y-3 border-t border-slate-200 dark:border-[#2A323D] pt-6">
+          <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Mic className="w-4 h-4 text-[#00A4EF]" /> Keynote Sessions Delivered at MCC
           </h3>
-          <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-            <h4 className="text-sm font-bold text-white">Azure Cloud Architecture & Serverless Masterclass</h4>
-            <p className="text-xs text-slate-400">Delivered on Aug 25, 2026 • Marwadi University Campus</p>
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] space-y-1">
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white">Azure Cloud Architecture & Serverless Masterclass</h4>
+            <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">Delivered on Aug 25, 2026 • Marwadi University Campus</p>
           </div>
         </div>
       </Card>

@@ -61,27 +61,27 @@ export default function AdminRegistrationsPage() {
     {
       key: 'registrationId',
       header: 'Reg ID',
-      render: (row) => <span className="font-mono text-xs text-sky-400">{row.registrationId}</span>
+      render: (row) => <span className="font-mono text-xs text-[#0078D4] dark:text-[#00A4EF]">{row.registrationId}</span>
     },
     {
       key: 'studentName',
       header: 'Student Name',
       render: (row) => (
         <div>
-          <p className="font-bold text-white text-xs">{row.studentName}</p>
-          <p className="text-[11px] text-slate-400">{row.enrollmentNumber}</p>
+          <p className="font-bold text-slate-900 dark:text-white text-xs">{row.studentName}</p>
+          <p className="text-[11px] text-slate-600 dark:text-[#A8B0BB]">{row.enrollmentNumber}</p>
         </div>
       )
     },
     {
       key: 'eventName',
       header: 'Event',
-      render: (row) => <span className="text-xs text-slate-300 font-medium">{row.eventName}</span>
+      render: (row) => <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{row.eventName}</span>
     },
     {
       key: 'submittedAt',
       header: 'Date',
-      render: (row) => <span className="text-xs text-slate-400">{row.submittedAt}</span>
+      render: (row) => <span className="text-xs text-slate-600 dark:text-[#A8B0BB]">{row.submittedAt}</span>
     },
     {
       key: 'status',
@@ -103,7 +103,7 @@ export default function AdminRegistrationsPage() {
             onClick={() => updateStatus(row.registrationId, 'Approved')}
             title="Approve Registration"
           >
-            <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
           </Button>
           <Button
             variant="outline"
@@ -111,7 +111,7 @@ export default function AdminRegistrationsPage() {
             onClick={() => updateStatus(row.registrationId, 'Waitlisted')}
             title="Move to Waitlist"
           >
-            <Clock className="w-3.5 h-3.5 text-amber-400" />
+            <Clock className="w-3.5 h-3.5 text-amber-500" />
           </Button>
           <Button
             variant="outline"
@@ -119,7 +119,7 @@ export default function AdminRegistrationsPage() {
             onClick={() => updateStatus(row.registrationId, 'Rejected')}
             title="Reject Registration"
           >
-            <XCircle className="w-3.5 h-3.5 text-rose-400" />
+            <XCircle className="w-3.5 h-3.5 text-rose-500" />
           </Button>
         </div>
       )
@@ -130,10 +130,10 @@ export default function AdminRegistrationsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-            <Users className="w-7 h-7 text-sky-400" /> Registration Management (§67)
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+            <Users className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Registration Management (§67)
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
             Search, filter, approve, reject, waitlist, and export event registrations.
           </p>
         </div>

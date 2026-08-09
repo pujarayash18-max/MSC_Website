@@ -34,10 +34,10 @@ export default function AdminSpeakersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-            <Mic className="w-7 h-7 text-sky-400" /> Speaker Management (§72)
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+            <Mic className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Speaker Management (§72)
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
             Add guest speakers, manage biography profiles, social links, and session mapping.
           </p>
         </div>
@@ -49,13 +49,13 @@ export default function AdminSpeakersPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {speakers.map((spk) => (
-          <Card key={spk.id} className="p-6 space-y-4 border-slate-800">
+          <Card key={spk.id} className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D] bg-white dark:bg-[#151B23]">
             <div className="flex items-center gap-4">
-              <img src={spk.photo} alt={spk.name} className="w-16 h-16 rounded-xl object-cover border border-sky-400" />
+              <img src={spk.photo} alt={spk.name} className="w-16 h-16 rounded-xl object-cover border border-[#00A4EF]" />
               <div>
-                <h3 className="text-base font-bold text-white">{spk.name}</h3>
-                <p className="text-xs text-sky-400 font-medium">{spk.designation}</p>
-                <p className="text-[11px] text-slate-400">{spk.organization}</p>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">{spk.name}</h3>
+                <p className="text-xs text-[#0078D4] dark:text-[#00A4EF] font-semibold">{spk.designation}</p>
+                <p className="text-[11px] text-slate-600 dark:text-[#A8B0BB]">{spk.organization}</p>
               </div>
             </div>
 
@@ -65,7 +65,7 @@ export default function AdminSpeakersPage() {
               ))}
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-[#2A323D]">
               <Button variant="outline" size="sm" onClick={() => toast.info(`Editing speaker ${spk.name}`)}>
                 <Edit3 className="w-3.5 h-3.5" /> Edit Profile
               </Button>

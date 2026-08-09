@@ -1,4 +1,5 @@
 'use client';
+
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Trophy, Award, Star, Zap, Code, ShieldCheck, CheckCircle2 } from 'lucide-react';
@@ -16,10 +17,10 @@ export default function StudentAchievementsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-          <Trophy className="w-7 h-7 text-purple-400" /> Achievement System & Badges (§52)
+        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+          <Trophy className="w-7 h-7 text-[#00A4EF]" /> Achievement System & Badges (§52)
         </h1>
-        <p className="text-sm text-slate-400 mt-1">
+        <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
           Automatically unlocked badges as you participate in events, win competitions, and contribute to the community.
         </p>
       </div>
@@ -32,16 +33,16 @@ export default function StudentAchievementsPage() {
               key={ach.id}
               className={`p-6 space-y-4 border transition-all ${
                 ach.earned
-                  ? 'border-purple-500/40 bg-gradient-to-b from-slate-900 to-purple-950/20'
-                  : 'border-slate-800 bg-slate-950/60 opacity-60'
+                  ? 'border-[#00A4EF]/40 bg-white dark:bg-[#151B23]'
+                  : 'border-slate-200 dark:border-[#2A323D] bg-slate-50 dark:bg-[#0B0F14] opacity-60'
               }`}
             >
               <div className="flex items-center justify-between">
                 <div
                   className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${
                     ach.earned
-                      ? 'bg-purple-500/20 text-purple-400 border-purple-500/40 shadow-lg shadow-purple-500/20'
-                      : 'bg-slate-900 text-slate-600 border-slate-800'
+                      ? 'bg-[#00A4EF]/10 text-[#00A4EF] border-[#00A4EF]/30 shadow-md'
+                      : 'bg-slate-200 dark:bg-slate-800 text-slate-500 border-slate-300 dark:border-slate-700'
                   }`}
                 >
                   <Icon className="w-6 h-6" />
@@ -53,13 +54,13 @@ export default function StudentAchievementsPage() {
               </div>
 
               <div>
-                <h3 className="text-base font-bold text-white">{ach.title}</h3>
-                <p className="text-xs text-slate-400 mt-1 leading-relaxed">{ach.description}</p>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">{ach.title}</h3>
+                <p className="text-xs text-slate-600 dark:text-[#A8B0BB] mt-1 leading-relaxed">{ach.description}</p>
               </div>
 
-              <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500">
+              <div className="pt-2 border-t border-slate-200 dark:border-[#2A323D] flex items-center justify-between text-[11px] text-slate-500 dark:text-[#A8B0BB]">
                 <span>Earned: {ach.date}</span>
-                {ach.earned && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
+                {ach.earned && <CheckCircle2 className="w-4 h-4 text-[#7FBA00]" />}
               </div>
             </Card>
           );

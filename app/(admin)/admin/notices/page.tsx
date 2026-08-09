@@ -48,58 +48,58 @@ export default function AdminNoticesPage() {
   return (
     <div className="max-w-4xl space-y-6">
       <div>
-        <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-          <BellRing className="w-7 h-7 text-sky-400" /> Notice Board Management (§76)
+        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+          <BellRing className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Notice Board Management (§76)
         </h1>
-        <p className="text-sm text-slate-400 mt-1">
+        <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
           Publish announcements to the homepage and student portal notice widgets.
         </p>
       </div>
 
       {/* New Notice Form */}
-      <Card className="p-6 space-y-4 border-sky-500/30">
-        <h3 className="text-base font-bold text-white border-b border-slate-800 pb-3">Create & Pin Announcement</h3>
+      <Card className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D] bg-white dark:bg-[#151B23]">
+        <h3 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-[#2A323D] pb-3">Create & Pin Announcement</h3>
 
         <form onSubmit={handleCreateNotice} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2">
-              <label className="text-xs font-semibold text-slate-300 block mb-1">Notice Title *</label>
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">Notice Title *</label>
               <input
                 type="text"
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Azure AI Hackathon Winner Announcement"
-                className="w-full p-2.5 text-xs bg-slate-900 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                className="w-full p-2.5 text-xs bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-[#0078D4] dark:focus:ring-[#00A4EF] focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-1">Priority Category</label>
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">Priority Category</label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as NoticePriority)}
-                className="w-full p-2.5 text-xs bg-slate-900 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                className="w-full p-2.5 text-xs bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0078D4] dark:focus:ring-[#00A4EF] focus:outline-none"
               >
-                <option value="Urgent">Urgent</option>
-                <option value="Event">Event</option>
-                <option value="Recruitment">Recruitment</option>
-                <option value="Placement">Placement</option>
-                <option value="General">General</option>
-                <option value="Microsoft Learn">Microsoft Learn</option>
+                <option value="Urgent" className="bg-white dark:bg-[#151B23]">Urgent</option>
+                <option value="Event" className="bg-white dark:bg-[#151B23]">Event</option>
+                <option value="Recruitment" className="bg-white dark:bg-[#151B23]">Recruitment</option>
+                <option value="Placement" className="bg-white dark:bg-[#151B23]">Placement</option>
+                <option value="General" className="bg-white dark:bg-[#151B23]">General</option>
+                <option value="Microsoft Learn" className="bg-white dark:bg-[#151B23]">Microsoft Learn</option>
               </select>
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1">Description / Full Content *</label>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">Description / Full Content *</label>
             <textarea
               rows={3}
               required
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Announcement details..."
-              className="w-full p-2.5 text-xs bg-slate-900 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-sky-500 focus:outline-none"
+              className="w-full p-2.5 text-xs bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-[#0078D4] dark:focus:ring-[#00A4EF] focus:outline-none"
             />
           </div>
 
@@ -114,7 +114,7 @@ export default function AdminNoticesPage() {
       {/* Notices List */}
       <div className="space-y-3">
         {notices.map((n) => (
-          <Card key={n.id} className="p-5 border-slate-800 space-y-2">
+          <Card key={n.id} className="p-5 border-slate-200 dark:border-[#2A323D] bg-white dark:bg-[#151B23] space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Badge variant={n.priority === 'Urgent' ? 'danger' : 'purple'}>{n.priority}</Badge>
@@ -126,8 +126,8 @@ export default function AdminNoticesPage() {
               </Button>
             </div>
 
-            <h4 className="text-sm font-bold text-white">{n.title}</h4>
-            <p className="text-xs text-slate-300">{n.description}</p>
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white">{n.title}</h4>
+            <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">{n.description}</p>
           </Card>
         ))}
       </div>

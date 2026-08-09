@@ -1,134 +1,216 @@
 'use client';
+
+import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { StatCard } from '@/components/ui/stat-card';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, BarChart, Bar } from 'recharts';
-import { Users, Calendar, Award, FileCheck, QrCode, MessageSquare, ShieldCheck, History, ArrowUpRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { INITIAL_EVENTS } from '@/lib/services/dataService';
+import {
+  Users,
+  Calendar,
+  Award,
+  QrCode,
+  ArrowUpRight,
+  Plus,
+  BarChart3,
+  CheckCircle2,
+  Clock,
+  Send,
+  ShieldCheck,
+  FileSpreadsheet
+} from 'lucide-react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell
+} from 'recharts';
 
-const REGISTRATION_TREND = [
-  { month: 'May', registrations: 120, checkins: 110 },
-  { month: 'Jun', registrations: 240, checkins: 210 },
-  { month: 'Jul', registrations: 380, checkins: 350 },
-  { month: 'Aug', registrations: 520, checkins: 485 }
+const COMMUNITY_METRICS = [
+  { label: 'Active Students', value: '1,240', change: '+12%', color: 'text-[#00A4EF]', bg: 'bg-[#00A4EF]/10 border-[#00A4EF]/30', icon: Users },
+  { label: 'Events Published', value: '28', change: '+4', color: 'text-[#7FBA00]', bg: 'bg-[#7FBA00]/10 border-[#7FBA00]/30', icon: Calendar },
+  { label: 'Certificates Issued', value: '450', change: '+85', color: 'text-[#7FBA00]', bg: 'bg-[#7FBA00]/10 border-[#7FBA00]/30', icon: Award },
+  { label: 'Attendance Rate', value: '94.2%', change: '+3.1%', color: 'text-[#00A4EF]', bg: 'bg-[#00A4EF]/10 border-[#00A4EF]/30', icon: QrCode }
 ];
 
-const RECENT_ACTIVITIES = [
-  { user: 'Rahul Sharma', action: 'Registered for Azure Cloud Masterclass', time: '10 mins ago', module: 'Registrations' },
-  { user: 'Admin Yash', action: 'Uploaded Live Event Resource "Cosmos DB Slides.pdf"', time: '25 mins ago', module: 'Resources' },
-  { user: 'System Cascade', action: 'Batch Generated 142 Certificates for Azure Bootcamp', time: '1 hour ago', module: 'Certificates' },
-  { user: 'Admin Ananya', action: 'Published National Hackathon 2026 Winner Roster', time: '3 hours ago', module: 'Winners' }
+const MONTHLY_REGISTRATIONS_DATA = [
+  { month: 'Jan', registrations: 120, attendance: 110 },
+  { month: 'Feb', registrations: 190, attendance: 180 },
+  { month: 'Mar', registrations: 240, attendance: 220 },
+  { month: 'Apr', registrations: 310, attendance: 290 },
+  { month: 'May', registrations: 280, attendance: 260 },
+  { month: 'Jun', registrations: 420, attendance: 400 }
 ];
 
-export default function AdminDashboardPage() {
+const EVENT_CATEGORY_DISTRIBUTION = [
+  { name: 'Hackathons', value: 40, color: '#00A4EF' },
+  { name: 'Workshops', value: 35, color: '#7FBA00' },
+  { name: 'Bootcamps', value: 15, color: '#FFB900' },
+  { name: 'Seminars', value: 10, color: '#F25022' }
+];
+
+export default function AdminDashboardOverviewPage() {
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-          <ShieldCheck className="w-7 h-7 text-sky-400" /> Admin Command Console (§62)
-        </h1>
-        <p className="text-sm text-slate-400 mt-1">
-          Real-time metrics, registration trends, certificate status, and community activity audit.
-        </p>
-      </div>
-
-      {/* KPI Stat Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          title="Total Community Members"
-          value="1,240"
-          description="Registered student accounts"
-          icon={<Users className="w-6 h-6" />}
-          accentColor="blue"
-          trend={{ value: '18%', isPositive: true }}
-        />
-        <StatCard
-          title="Events Conducted"
-          value="35"
-          description="Workshops & hackathons"
-          icon={<Calendar className="w-6 h-6" />}
-          accentColor="purple"
-        />
-        <StatCard
-          title="Total Registrations"
-          value="2,480"
-          description="Across all events"
-          icon={<FileCheck className="w-6 h-6" />}
-          accentColor="emerald"
-          trend={{ value: '24%', isPositive: true }}
-        />
-        <StatCard
-          title="Certificates Generated"
-          value="1,850"
-          description="Verified PDF credentials"
-          icon={<Award className="w-6 h-6" />}
-          accentColor="amber"
-        />
-      </div>
-
-      {/* Recharts Analytics Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="p-6 space-y-4">
-          <h3 className="text-base font-bold text-white border-b border-slate-800 pb-3">
-            Registration & Attendance Growth Trend
-          </h3>
-          <div className="h-64 w-full pt-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={REGISTRATION_TREND}>
-                <defs>
-                  <linearGradient id="colorReg" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0078D4" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#0078D4" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} />
-                <YAxis stroke="#94a3b8" fontSize={12} />
-                <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '12px' }} />
-                <Area type="monotone" dataKey="registrations" stroke="#0078D4" fillOpacity={1} fill="url(#colorReg)" />
-              </AreaChart>
-            </ResponsiveContainer>
+      {/* 17.1 MANAGEMENT PORTAL HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-[#2A323D] pb-6">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-[#F5F7FA]">
+              MCC Administration Portal (§78)
+            </h1>
+            <Badge variant="primary">Microsoft 365 Admin</Badge>
           </div>
-        </Card>
+          <p className="text-xs text-slate-600 dark:text-[#A8B0BB] mt-1">
+            Real-time telemetry, student registrations, winner cascade triggers, and system analytics.
+          </p>
+        </div>
 
-        <Card className="p-6 space-y-4">
-          <h3 className="text-base font-bold text-white border-b border-slate-800 pb-3">
-            Verified Check-ins Rate
-          </h3>
-          <div className="h-64 w-full pt-2">
+        <div className="flex items-center gap-2">
+          <Link href="/admin/events/new">
+            <Button variant="fluent" size="sm">
+              <Plus className="w-4 h-4" /> Create Event
+            </Button>
+          </Link>
+          <Link href="/admin/forms">
+            <Button variant="secondary" size="sm">
+              <FileSpreadsheet className="w-4 h-4" /> Form Builder
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* 17.2 KPI METRIC CARDS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {COMMUNITY_METRICS.map((m) => {
+          const Icon = m.icon;
+          return (
+            <Card key={m.label} className="p-5 border-slate-200 dark:border-[#2A323D] space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-[#A8B0BB]">
+                  {m.label}
+                </span>
+                <div className={`p-2 rounded-xl border ${m.bg} ${m.color}`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="flex items-baseline justify-between">
+                <h3 className="text-3xl font-black text-slate-900 dark:text-[#F5F7FA]">{m.value}</h3>
+                <span className="text-xs font-bold text-[#7FBA00] flex items-center">
+                  {m.change} <ArrowUpRight className="w-3 h-3 ml-0.5" />
+                </span>
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* 17.3 CHARTS SECTION */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Monthly Trend Chart */}
+        <Card className="lg:col-span-2 p-6 space-y-4 border-slate-200 dark:border-[#2A323D]">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-[#2A323D] pb-3">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-[#F5F7FA] flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-[#00A4EF]" /> Registration & Attendance Telemetry
+            </h3>
+            <Badge variant="outline">2026 Growth</Badge>
+          </div>
+
+          <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={REGISTRATION_TREND}>
-                <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} />
-                <YAxis stroke="#94a3b8" fontSize={12} />
-                <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '12px' }} />
-                <Bar dataKey="checkins" fill="#10b981" radius={[8, 8, 0, 0]} />
+              <BarChart data={MONTHLY_REGISTRATIONS_DATA}>
+                <XAxis dataKey="month" stroke="#A8B0BB" fontSize={11} tickLine={false} />
+                <YAxis stroke="#A8B0BB" fontSize={11} tickLine={false} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#151B23',
+                    borderColor: '#2A323D',
+                    borderRadius: '0.75rem',
+                    color: '#F5F7FA',
+                    fontSize: '12px'
+                  }}
+                />
+                <Bar dataKey="registrations" fill="#00A4EF" radius={[4, 4, 0, 0]} name="Registrations" />
+                <Bar dataKey="attendance" fill="#7FBA00" radius={[4, 4, 0, 0]} name="Attendance" />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </Card>
+
+        {/* Category Breakdown */}
+        <Card className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D]">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-[#F5F7FA] border-b border-slate-200 dark:border-[#2A323D] pb-3">
+            Event Category Distribution
+          </h3>
+
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={EVENT_CATEGORY_DISTRIBUTION}
+                  innerRadius={50}
+                  outerRadius={75}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {EVENT_CATEGORY_DISTRIBUTION.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="space-y-1.5 text-xs">
+            {EVENT_CATEGORY_DISTRIBUTION.map((cat) => (
+              <div key={cat.name} className="flex items-center justify-between">
+                <span className="flex items-center gap-2 text-slate-700 dark:text-[#A8B0BB]">
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: cat.color }} />
+                  {cat.name}
+                </span>
+                <span className="font-bold text-slate-900 dark:text-white">{cat.value}%</span>
+              </div>
+            ))}
+          </div>
+        </Card>
       </div>
 
-      {/* Activity Feed */}
-      <Card className="p-6 space-y-4 border-slate-800">
-        <h3 className="text-base font-bold text-white border-b border-slate-800 pb-3 flex items-center gap-2">
-          <History className="w-5 h-5 text-sky-400" /> Recent Platform Activity Stream (§62)
-        </h3>
+      {/* Quick Action Matrix */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <Link href="/admin/attendance/scanner">
+          <Card className="p-4 text-center space-y-2 hover:border-[#00A4EF]/50 transition-all cursor-pointer border-slate-200 dark:border-[#2A323D]">
+            <QrCode className="w-6 h-6 text-[#00A4EF] mx-auto" />
+            <h4 className="text-xs font-bold text-slate-900 dark:text-[#F5F7FA]">Launch Scanner</h4>
+          </Card>
+        </Link>
 
-        <div className="space-y-3">
-          {RECENT_ACTIVITIES.map((act, idx) => (
-            <div key={idx} className="p-4 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <Badge variant="primary" size="sm">{act.module}</Badge>
-                  <span className="text-xs font-bold text-white">{act.user}</span>
-                </div>
-                <p className="text-xs text-slate-300">{act.action}</p>
-              </div>
+        <Link href="/admin/winners">
+          <Card className="p-4 text-center space-y-2 hover:border-[#FFB900]/50 transition-all cursor-pointer border-slate-200 dark:border-[#2A323D]">
+            <Award className="w-6 h-6 text-[#FFB900] mx-auto" />
+            <h4 className="text-xs font-bold text-slate-900 dark:text-[#F5F7FA]">Winner Cascade</h4>
+          </Card>
+        </Link>
 
-              <span className="text-[11px] text-slate-500 font-mono shrink-0">{act.time}</span>
-            </div>
-          ))}
-        </div>
-      </Card>
+        <Link href="/admin/notifications">
+          <Card className="p-4 text-center space-y-2 hover:border-[#00A4EF]/50 transition-all cursor-pointer border-slate-200 dark:border-[#2A323D]">
+            <Send className="w-6 h-6 text-[#00A4EF] mx-auto" />
+            <h4 className="text-xs font-bold text-slate-900 dark:text-[#F5F7FA]">Push Alerts</h4>
+          </Card>
+        </Link>
+
+        <Link href="/admin/rbac">
+          <Card className="p-4 text-center space-y-2 hover:border-[#7FBA00]/50 transition-all cursor-pointer border-slate-200 dark:border-[#2A323D]">
+            <ShieldCheck className="w-6 h-6 text-[#7FBA00] mx-auto" />
+            <h4 className="text-xs font-bold text-slate-900 dark:text-[#F5F7FA]">RBAC Matrix</h4>
+          </Card>
+        </Link>
+      </div>
     </div>
   );
 }

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { INITIAL_SPEAKERS } from '@/lib/services/dataService';
-import { Mic, Globe, ChevronRight } from 'lucide-react';
+import { Globe, ChevronRight } from 'lucide-react';
 import { LinkedinIcon } from '@/components/icons';
 
 export default function SpeakersPage() {
@@ -11,8 +11,8 @@ export default function SpeakersPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 py-8">
       <div className="text-center max-w-3xl mx-auto space-y-3">
         <Badge variant="primary">Guest Experts (§23)</Badge>
-        <h1 className="text-4xl font-extrabold text-white">Invited Speakers & Mentors</h1>
-        <p className="text-sm text-slate-400">Industry leaders, Microsoft MVPs, and software architects delivering masterclasses for MCC.</p>
+        <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white">Invited Speakers & Mentors</h1>
+        <p className="text-sm text-slate-600 dark:text-slate-400">Industry leaders, Microsoft MVPs, and software architects delivering masterclasses for MCC.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -22,16 +22,16 @@ export default function SpeakersPage() {
               <img
                 src={spk.photo}
                 alt={spk.name}
-                className="w-20 h-20 rounded-2xl object-cover border-2 border-sky-400 shrink-0"
+                className="w-20 h-20 rounded-2xl object-cover border-2 border-sky-500 shrink-0"
               />
               <div className="space-y-1">
-                <h3 className="text-xl font-bold text-white">{spk.name}</h3>
-                <p className="text-xs font-semibold text-sky-400">{spk.designation}</p>
-                <p className="text-xs text-slate-400">{spk.organization}</p>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white">{spk.name}</h3>
+                <p className="text-xs font-semibold text-sky-600 dark:text-sky-400">{spk.designation}</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400">{spk.organization}</p>
               </div>
             </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed">{spk.bio}</p>
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{spk.bio}</p>
 
             <div className="flex flex-wrap gap-1.5 pt-1">
               {spk.expertise.map((exp) => (
@@ -41,21 +41,21 @@ export default function SpeakersPage() {
               ))}
             </div>
 
-            <div className="flex items-center justify-between pt-3 border-t border-slate-800 text-xs">
+            <div className="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-slate-800 text-xs">
               <div className="flex items-center gap-3">
                 {spk.linkedin && (
-                  <a href={`https://linkedin.com/in/${spk.linkedin}`} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-sky-400 flex items-center gap-1">
+                  <a href={`https://linkedin.com/in/${spk.linkedin}`} target="_blank" rel="noreferrer" className="text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 flex items-center gap-1">
                     <LinkedinIcon className="w-4 h-4" /> LinkedIn
                   </a>
                 )}
                 {spk.website && (
-                  <a href={spk.website} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-sky-400 flex items-center gap-1">
+                  <a href={spk.website} target="_blank" rel="noreferrer" className="text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 flex items-center gap-1">
                     <Globe className="w-4 h-4" /> Portfolio
                   </a>
                 )}
               </div>
 
-              <Link href={`/speakers/${spk.speakerId}`} className="text-sky-400 hover:underline flex items-center gap-1 font-semibold">
+              <Link href={`/speakers/${spk.speakerId}`} className="text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1 font-semibold">
                 View Sessions <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>

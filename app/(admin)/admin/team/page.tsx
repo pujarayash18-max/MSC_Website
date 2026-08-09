@@ -21,10 +21,10 @@ export default function AdminTeamPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-            <UserCheck className="w-7 h-7 text-sky-400" /> Team Content Manager (§73)
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+            <UserCheck className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Team Content Manager (§73)
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
             Manage public website team profiles, display categories, and homepage slider selection.
           </p>
         </div>
@@ -36,15 +36,15 @@ export default function AdminTeamPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {team.map((m) => (
-          <Card key={m.id} className="p-6 space-y-4 border-slate-800 text-center">
-            <img src={m.photo} alt={m.name} className="w-20 h-20 rounded-2xl object-cover mx-auto border-2 border-sky-400" />
+          <Card key={m.id} className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D] bg-white dark:bg-[#151B23] text-center">
+            <img src={m.photo} alt={m.name} className="w-20 h-20 rounded-2xl object-cover mx-auto border-2 border-[#00A4EF]" />
             <div>
               <Badge variant="primary" size="sm" className="mb-1">{m.category}</Badge>
-              <h3 className="text-base font-bold text-white">{m.name}</h3>
-              <p className="text-xs text-sky-400">{m.position}</p>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">{m.name}</h3>
+              <p className="text-xs text-[#0078D4] dark:text-[#00A4EF] font-semibold">{m.position}</p>
             </div>
 
-            <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
+            <div className="pt-2 border-t border-slate-200 dark:border-[#2A323D] flex items-center justify-between">
               <Button
                 variant={m.isFeaturedHomepage ? 'fluent' : 'outline'}
                 size="sm"

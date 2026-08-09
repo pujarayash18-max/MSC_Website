@@ -1,11 +1,12 @@
 'use client';
+
 import { useState } from 'react';
-import { Event, FormSection, FormField } from '@/types';
+import { Event, FormSection } from '@/types';
 import { FieldTypeRegistry } from './FieldTypeRegistry';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Sparkles, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 const DEFAULT_SECTIONS: FormSection[] = [
   {
@@ -57,7 +58,6 @@ export function DynamicFormRenderer({ event, onSubmit }: DynamicFormRendererProp
     e.preventDefault();
     const newErrors: Record<string, string> = {};
 
-    // Validate required fields
     DEFAULT_SECTIONS.forEach((sec) => {
       sec.fields.forEach((f) => {
         if (f.required && (!formData[f.fieldId] || formData[f.fieldId] === '')) {
@@ -82,16 +82,16 @@ export function DynamicFormRenderer({ event, onSubmit }: DynamicFormRendererProp
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {DEFAULT_SECTIONS.map((section) => (
-        <Card key={section.sectionId} className="p-6 space-y-4 border-slate-800">
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-slate-800 pb-2 text-sky-400">
+        <Card key={section.sectionId} className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D]">
+          <h3 className="text-xs font-extrabold text-[#00A4EF] uppercase tracking-wider border-b border-slate-200 dark:border-[#2A323D] pb-2">
             {section.title}
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {section.fields.map((field) => (
               <div key={field.fieldId} className={field.type === 'Long Text' ? 'md:col-span-2' : ''}>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">
-                  {field.label} {field.required && <span className="text-rose-400">*</span>}
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                  {field.label} {field.required && <span className="text-[#F25022]">*</span>}
                 </label>
 
                 <FieldTypeRegistry
@@ -102,7 +102,7 @@ export function DynamicFormRenderer({ event, onSubmit }: DynamicFormRendererProp
                 />
 
                 {errors[field.fieldId] && (
-                  <p className="text-[11px] text-rose-400 mt-1">{errors[field.fieldId]}</p>
+                  <p className="text-[11px] text-[#F25022] mt-1">{errors[field.fieldId]}</p>
                 )}
               </div>
             ))}
@@ -110,12 +110,12 @@ export function DynamicFormRenderer({ event, onSubmit }: DynamicFormRendererProp
         </Card>
       ))}
 
-      <div className="flex items-center justify-between pt-2">
-        <p className="text-xs text-slate-500">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
+        <p className="text-xs text-slate-500 dark:text-[#A8B0BB]">
           Submitting generates a unique QR Pass linked to your enrollment number.
         </p>
 
-        <Button type="submit" variant="fluent" size="lg" isLoading={isSubmitting}>
+        <Button type="submit" variant="fluent" size="lg" disabled={isSubmitting}>
           <CheckCircle2 className="w-4 h-4" /> Confirm Registration
         </Button>
       </div>

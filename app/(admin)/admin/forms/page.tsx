@@ -1,89 +1,79 @@
 'use client';
+
 import { useState } from 'react';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FormInput, Plus, Edit3, Copy, Trash2, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { FileSpreadsheet, Plus, Edit3, Eye, Copy, Trash2 } from 'lucide-react';
 
 const MOCK_FORMS = [
-  {
-    formId: 'frm_01',
-    formName: 'Standard College Event Registration Form',
-    formType: 'College Registration',
-    eventId: 'evt_azure_01',
-    isEnabled: true,
-    sectionsCount: 2,
-    fieldsCount: 8
-  },
-  {
-    formId: 'frm_02',
-    formName: 'National Hackathon Team Registration Form',
-    formType: 'Hackathon Registration',
-    eventId: 'evt_hack_01',
-    isEnabled: true,
-    sectionsCount: 3,
-    fieldsCount: 12
-  }
+  { id: 'frm_01', name: 'Standard College Event Registration Form', fieldsCount: 6, responsesCount: 142, status: 'Active', date: 'Aug 05, 2026' },
+  { id: 'frm_02', name: 'National Hackathon Team & Project Registration Form', fieldsCount: 12, responsesCount: 88, status: 'Active', date: 'Aug 10, 2026' },
+  { id: 'frm_03', name: 'Azure Cloud Certification Workshop Feedback Form', fieldsCount: 5, responsesCount: 210, status: 'Archived', date: 'Jul 20, 2026' }
 ];
 
-export default function AdminFormsPage() {
+export default function AdminFormsCatalogPage() {
   const [forms, setForms] = useState(MOCK_FORMS);
 
-  const handleDuplicate = (formName: string) => {
-    toast.success(`Form "${formName}" cloned successfully!`);
+  const handleDuplicate = (id: string) => {
+    const target = forms.find((f) => f.id === id);
+    if (!target) return;
+    const duplicated = {
+      ...target,
+      id: `frm_${Date.now()}`,
+      name: `${target.name} (Copy)`,
+      responsesCount: 0,
+      date: new Date().toISOString().split('T')[0]
+    };
+    setForms([...forms, duplicated]);
+    toast.success('Form schema duplicated successfully.');
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-            <FormInput className="w-7 h-7 text-sky-400" /> Visual Form Builder (§43, §65)
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+            <FileSpreadsheet className="w-7 h-7 text-[#00A4EF]" /> Dynamic Form Builder Catalog (§65)
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Create, duplicate, and customize dynamic registration forms without writing code.
+          <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
+            Build, edit, and duplicate registration forms with zero hardcoded code.
           </p>
         </div>
 
         <Link href="/admin/forms/new/builder">
           <Button variant="fluent" size="sm">
-            <Plus className="w-4 h-4" /> Create New Form
+            <Plus className="w-4 h-4" /> Create New Form Schema
           </Button>
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {forms.map((form) => (
-          <Card key={form.formId} className="p-6 space-y-4 border-slate-800 hover:border-sky-500/50 transition-all">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <Badge variant="primary" className="mb-2">{form.formType}</Badge>
-                <h3 className="text-lg font-bold text-white">{form.formName}</h3>
-                <p className="text-xs text-slate-400 mt-1">
-                  {form.sectionsCount} Sections • {form.fieldsCount} Custom Fields
-                </p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {forms.map((f) => (
+          <Card key={f.id} className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D] flex flex-col justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Badge variant={f.status === 'Active' ? 'success' : 'default'}>{f.status}</Badge>
+                <span className="text-[11px] font-mono text-slate-500 dark:text-[#A8B0BB]">{f.id}</span>
               </div>
-              <Badge variant={form.isEnabled ? 'success' : 'danger'}>
-                {form.isEnabled ? 'Active' : 'Disabled'}
-              </Badge>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">{f.name}</h3>
+              <p className="text-xs text-slate-500 dark:text-[#A8B0BB]">
+                Fields: <strong className="text-slate-900 dark:text-white">{f.fieldsCount}</strong> • Submissions: <strong className="text-[#00A4EF]">{f.responsesCount}</strong>
+              </p>
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t border-slate-800 text-xs">
-              <span className="text-slate-500 font-mono">ID: {form.formId}</span>
+            <div className="pt-4 border-t border-slate-200 dark:border-[#2A323D] flex items-center justify-between">
+              <Button variant="outline" size="sm" onClick={() => handleDuplicate(f.id)} title="Duplicate Schema">
+                <Copy className="w-3.5 h-3.5" />
+              </Button>
 
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => handleDuplicate(form.formName)}>
-                  <Copy className="w-3.5 h-3.5" /> Clone
+              <Link href={`/admin/forms/${f.id}/builder`}>
+                <Button variant="fluent" size="sm">
+                  <Edit3 className="w-3.5 h-3.5" /> Edit Builder
                 </Button>
-
-                <Link href={`/admin/forms/${form.formId}/builder`}>
-                  <Button variant="fluent" size="sm">
-                    <Edit3 className="w-3.5 h-3.5" /> Open Builder
-                  </Button>
-                </Link>
-              </div>
+              </Link>
             </div>
           </Card>
         ))}

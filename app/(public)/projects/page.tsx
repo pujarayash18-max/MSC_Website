@@ -2,7 +2,7 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Globe, Trophy, Code, Users } from 'lucide-react';
+import { Globe, Trophy, Users } from 'lucide-react';
 import { GithubIcon } from '@/components/icons';
 
 const PROJECTS = [
@@ -34,13 +34,13 @@ export default function ProjectsPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 py-8">
       <div className="text-center max-w-3xl mx-auto space-y-3">
         <Badge variant="primary">Community Innovation (§27)</Badge>
-        <h1 className="text-4xl font-extrabold text-white">Student Project Showcase</h1>
-        <p className="text-sm text-slate-400">Explore open source software, AI applications, and cloud projects built by MCC student members.</p>
+        <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white">Student Project Showcase</h1>
+        <p className="text-sm text-slate-600 dark:text-slate-400">Explore open source software, AI applications, and cloud projects built by MCC student members.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {PROJECTS.map((prj) => (
-          <Card key={prj.projectId} className="overflow-hidden border-slate-800 flex flex-col group hover:border-sky-500/50 transition-all">
+          <Card key={prj.projectId} className="overflow-hidden border-slate-200 dark:border-slate-800 flex flex-col group hover:border-sky-500/50 transition-all">
             <img src={prj.thumbnail} alt={prj.title} className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" />
 
             <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
@@ -50,8 +50,8 @@ export default function ProjectsPage() {
                     <Trophy className="w-3.5 h-3.5" /> {prj.awards[0]}
                   </Badge>
                 )}
-                <h3 className="text-xl font-bold text-white">{prj.title}</h3>
-                <p className="text-xs text-slate-300 leading-relaxed">{prj.description}</p>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white">{prj.title}</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{prj.description}</p>
 
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   {prj.technologies.map((tech) => (
@@ -62,9 +62,9 @@ export default function ProjectsPage() {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between">
-                <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                  <Users className="w-3.5 h-3.5 text-sky-400" /> {prj.teamMembers.join(', ')}
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <span className="text-[11px] text-slate-600 dark:text-slate-400 flex items-center gap-1">
+                  <Users className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" /> {prj.teamMembers.join(', ')}
                 </span>
 
                 <div className="flex items-center gap-2">

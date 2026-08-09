@@ -35,8 +35,8 @@ export default function TeamPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 py-8">
       <div className="text-center max-w-3xl mx-auto space-y-3">
         <Badge variant="primary">Community Leaders (§22)</Badge>
-        <h1 className="text-4xl font-extrabold text-white">MCC Core Team</h1>
-        <p className="text-sm text-slate-400">Meet the faculty leads, student presidents, and team heads driving the Microsoft Campus Club.</p>
+        <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white">MCC Core Team</h1>
+        <p className="text-sm text-slate-600 dark:text-slate-400">Meet the faculty leads, student presidents, and team heads driving the Microsoft Campus Club.</p>
       </div>
 
       {/* Filter & Search Bar */}
@@ -47,10 +47,10 @@ export default function TeamPage() {
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-xl transition-all ${
+              className={`px-3 py-1.5 text-xs font-semibold rounded-xl transition-all ${
                 selectedCategory === cat
                   ? 'bg-sky-600 text-white font-semibold shadow-md shadow-sky-600/25'
-                  : 'bg-slate-900 text-slate-400 border border-slate-800 hover:text-white'
+                  : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               {cat}
@@ -66,7 +66,7 @@ export default function TeamPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search member or role..."
-            className="w-full pl-9 pr-4 py-2 text-xs bg-slate-900 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:ring-2 focus:ring-sky-500 focus:outline-none"
+            className="w-full pl-9 pr-4 py-2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-sky-500 focus:outline-none shadow-sm"
           />
         </div>
       </div>
@@ -78,30 +78,30 @@ export default function TeamPage() {
             <img
               src={member.photo}
               alt={member.name}
-              className="w-24 h-24 rounded-2xl object-cover mx-auto border-2 border-sky-400 shadow-xl"
+              className="w-24 h-24 rounded-2xl object-cover mx-auto border-2 border-sky-500 shadow-xl"
             />
             <div>
               <Badge variant="primary" size="sm" className="mb-2">{member.category}</Badge>
-              <h3 className="text-lg font-bold text-white">{member.name}</h3>
-              <p className="text-xs font-semibold text-sky-400">{member.position}</p>
-              <p className="text-xs text-slate-400 mt-1">{member.department}</p>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">{member.name}</h3>
+              <p className="text-xs font-semibold text-sky-600 dark:text-sky-400">{member.position}</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{member.department}</p>
             </div>
 
-            <p className="text-xs text-slate-300 line-clamp-2">{member.bio}</p>
+            <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2">{member.bio}</p>
 
-            <div className="flex items-center justify-center gap-3 pt-2 text-slate-400 border-t border-slate-800">
+            <div className="flex items-center justify-center gap-3 pt-2 text-slate-400 border-t border-slate-200 dark:border-slate-800">
               {member.github && (
-                <a href={`https://github.com/${member.github}`} target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
+                <a href={`https://github.com/${member.github}`} target="_blank" rel="noreferrer" className="hover:text-slate-900 dark:hover:text-white transition-colors">
                   <GithubIcon className="w-4 h-4" />
                 </a>
               )}
               {member.linkedin && (
-                <a href={`https://linkedin.com/in/${member.linkedin}`} target="_blank" rel="noreferrer" className="hover:text-sky-400 transition-colors">
+                <a href={`https://linkedin.com/in/${member.linkedin}`} target="_blank" rel="noreferrer" className="hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
                   <LinkedinIcon className="w-4 h-4" />
                 </a>
               )}
               {member.email && (
-                <a href={`mailto:${member.email}`} className="hover:text-sky-400 transition-colors">
+                <a href={`mailto:${member.email}`} className="hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
                   <Mail className="w-4 h-4" />
                 </a>
               )}

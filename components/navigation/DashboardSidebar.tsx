@@ -1,7 +1,6 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
 import {
   LayoutDashboard,
   Calendar,
@@ -9,27 +8,23 @@ import {
   FolderDown,
   Award,
   QrCode,
-  Trophy,
   Zap,
-  BarChart2,
+  Trophy,
   MessageSquare,
   Bell,
   User,
-  Settings,
-  LogOut,
-  Sparkles
+  Settings
 } from 'lucide-react';
 
-const DASHBOARD_NAV = [
-  { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'My Events', href: '/dashboard/events', icon: Calendar },
+const SIDEBAR_ITEMS = [
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'My Registrations', href: '/dashboard/registrations', icon: FileCheck },
-  { label: 'Event Resources', href: '/dashboard/resources', icon: FolderDown },
+  { label: 'Resources', href: '/dashboard/resources', icon: FolderDown },
   { label: 'Certificates', href: '/dashboard/certificates', icon: Award },
   { label: 'Attendance', href: '/dashboard/attendance', icon: QrCode },
-  { label: 'Achievements', href: '/dashboard/achievements', icon: Trophy },
-  { label: 'Points', href: '/dashboard/points', icon: Zap },
-  { label: 'Leaderboard', href: '/dashboard/leaderboard', icon: BarChart2 },
+  { label: 'Achievements', href: '/dashboard/achievements', icon: Zap },
+  { label: 'Points Ledger', href: '/dashboard/points', icon: Trophy },
+  { label: 'Leaderboard', href: '/dashboard/leaderboard', icon: Trophy },
   { label: 'Feedback', href: '/dashboard/feedback', icon: MessageSquare },
   { label: 'Notifications', href: '/dashboard/notifications', icon: Bell },
   { label: 'Profile', href: '/dashboard/profile', icon: User },
@@ -38,56 +33,41 @@ const DASHBOARD_NAV = [
 
 export function DashboardSidebar() {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
 
   return (
-    <aside className="w-64 bg-slate-950/80 backdrop-blur-xl border-r border-slate-800/80 min-h-[calc(100vh-4rem)] p-4 flex flex-col justify-between">
+    <aside className="w-64 bg-white dark:bg-[#151B23] border-r border-slate-200 dark:border-[#2A323D] flex flex-col justify-between p-4 h-full shrink-0">
       <div className="space-y-6">
-        {/* User Mini Profile */}
-        <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3">
-          <img
-            src={user?.profilePhoto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'}
-            alt={user?.fullName}
-            className="w-10 h-10 rounded-xl object-cover border border-sky-500/30"
-          />
-          <div className="overflow-hidden">
-            <h4 className="text-xs font-bold text-white truncate">{user?.fullName}</h4>
-            <p className="text-[11px] text-sky-400 font-medium truncate">{user?.roleName}</p>
-          </div>
-        </div>
+        <div>
+          <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-[#A8B0BB] px-3 block mb-2">
+            Student Navigation
+          </span>
+          <nav className="space-y-1">
+            {SIDEBAR_ITEMS.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
 
-        {/* Navigation Items */}
-        <nav className="space-y-1">
-          {DASHBOARD_NAV.map((item) => {
-            const Icon = item.icon;
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 px-3.5 py-2.5 text-xs font-medium rounded-xl transition-all duration-200 ${
-                  isActive
-                    ? 'bg-sky-600 text-white font-semibold shadow-lg shadow-sky-600/25'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
-                }`}
-              >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                    isActive
+                      ? 'bg-[#0078D4] dark:bg-[#00A4EF] text-white shadow-md shadow-sky-500/25'
+                      : 'text-slate-700 dark:text-[#A8B0BB] hover:bg-slate-100 dark:hover:bg-[#1B222C] hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-500 dark:text-[#A8B0BB]'}`} />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
       </div>
 
-      {/* Logout Action */}
-      <div className="pt-4 border-t border-slate-800/80">
-        <button
-          onClick={logout}
-          className="w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-medium rounded-xl text-rose-400 hover:bg-rose-500/10 transition-colors"
-        >
-          <LogOut className="w-4 h-4" />
-          <span>Logout</span>
-        </button>
+      <div className="pt-4 border-t border-slate-200 dark:border-[#2A323D] px-2 text-[11px] text-slate-500 dark:text-[#A8B0BB]">
+        <p className="font-bold text-slate-800 dark:text-[#F5F7FA]">Microsoft 365 Hub</p>
+        <p className="text-[10px]">Student Ecosystem v1.0</p>
       </div>
     </aside>
   );

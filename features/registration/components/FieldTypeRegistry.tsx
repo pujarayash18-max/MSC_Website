@@ -1,4 +1,5 @@
 'use client';
+
 import { FormField } from '@/types';
 
 interface FieldProps {
@@ -10,7 +11,7 @@ interface FieldProps {
 
 export function FieldTypeRegistry({ field, value, onChange, error }: FieldProps) {
   const commonClasses =
-    'w-full p-2.5 text-xs bg-slate-900 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-sky-500 focus:outline-none placeholder-slate-500 transition-all';
+    'w-full p-2.5 text-xs bg-white dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-[#00A4EF] focus:outline-none placeholder-slate-400 shadow-sm transition-all';
 
   switch (field.type) {
     case 'Long Text':
@@ -40,14 +41,14 @@ export function FieldTypeRegistry({ field, value, onChange, error }: FieldProps)
       return (
         <div className="space-y-1.5 pt-1">
           {field.options?.map((opt) => (
-            <label key={opt} className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+            <label key={opt} className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
               <input
                 type="radio"
                 name={field.fieldId}
                 value={opt}
                 checked={value === opt}
                 onChange={() => onChange(opt)}
-                className="text-sky-500 focus:ring-sky-500"
+                className="text-[#00A4EF] focus:ring-[#00A4EF]"
               />
               {opt}
             </label>
@@ -57,12 +58,12 @@ export function FieldTypeRegistry({ field, value, onChange, error }: FieldProps)
 
     case 'Checkbox':
       return (
-        <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer pt-1">
+        <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer pt-1">
           <input
             type="checkbox"
             checked={!!value}
             onChange={(e) => onChange(e.target.checked)}
-            className="rounded text-sky-500 focus:ring-sky-500"
+            className="rounded text-[#00A4EF] focus:ring-[#00A4EF]"
           />
           {field.label}
         </label>
@@ -75,7 +76,7 @@ export function FieldTypeRegistry({ field, value, onChange, error }: FieldProps)
             const arr = Array.isArray(value) ? value : [];
             const checked = arr.includes(opt);
             return (
-              <label key={opt} className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+              <label key={opt} className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={checked}
@@ -83,7 +84,7 @@ export function FieldTypeRegistry({ field, value, onChange, error }: FieldProps)
                     if (e.target.checked) onChange([...arr, opt]);
                     else onChange(arr.filter((item: string) => item !== opt));
                   }}
-                  className="rounded text-sky-500 focus:ring-sky-500"
+                  className="rounded text-[#00A4EF] focus:ring-[#00A4EF]"
                 />
                 {opt}
               </label>
@@ -96,18 +97,17 @@ export function FieldTypeRegistry({ field, value, onChange, error }: FieldProps)
     case 'Resume Upload':
     case 'Image Upload':
       return (
-        <div className="p-3 bg-slate-900 border border-dashed border-slate-700 rounded-xl text-center space-y-1">
+        <div className="p-3 bg-slate-50 dark:bg-[#0B0F14] border border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-center space-y-1">
           <input
             type="file"
             onChange={(e) => onChange(e.target.files?.[0]?.name || 'uploaded-file.pdf')}
-            className="text-xs text-slate-400 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-sky-600 file:text-white hover:file:bg-sky-500 cursor-pointer"
+            className="text-xs text-slate-600 dark:text-slate-400 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#0078D4] file:text-white hover:file:bg-[#00A4EF] cursor-pointer"
           />
-          {value && <p className="text-[11px] text-emerald-400 font-medium">File selected: {value}</p>}
+          {value && <p className="text-[11px] text-[#7FBA00] font-medium">File selected: {value}</p>}
         </div>
       );
 
     default:
-      // Short Text, Email, Phone, Enrollment Number, College Name, Department, Year, Division, Team Name, Number, URL, GitHub, LinkedIn, etc.
       return (
         <input
           type={field.type === 'Number' ? 'number' : field.type === 'Email' ? 'email' : 'text'}

@@ -25,43 +25,43 @@ export default function AdminTicketsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-          <Ticket className="w-7 h-7 text-sky-400" /> Support Ticket Management (§81)
+        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+          <Ticket className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Support Ticket Management (§81)
         </h1>
-        <p className="text-sm text-slate-400 mt-1">
+        <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
           Review student contact form submissions, assign admin owners, and resolve tickets.
         </p>
       </div>
 
       <div className="space-y-4">
         {tickets.map((tck) => (
-          <Card key={tck.ticketId} className="p-6 space-y-4 border-slate-800">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-3">
+          <Card key={tck.ticketId} className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D] bg-white dark:bg-[#151B23]">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-[#2A323D] pb-3">
               <div>
                 <div className="flex items-center gap-2">
                   <Badge variant={tck.status === 'Open' ? 'danger' : 'primary'}>{tck.status}</Badge>
-                  <span className="text-[11px] font-mono text-sky-400">ID: {tck.ticketId}</span>
+                  <span className="text-[11px] font-mono text-[#0078D4] dark:text-[#00A4EF]">ID: {tck.ticketId}</span>
                 </div>
-                <h3 className="text-base font-bold text-white mt-1">{tck.subject}</h3>
-                <p className="text-xs text-slate-400">From: {tck.name} ({tck.email})</p>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white mt-1">{tck.subject}</h3>
+                <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">From: {tck.name} ({tck.email})</p>
               </div>
 
               <div className="flex items-center gap-2">
                 <select
                   value={tck.status}
                   onChange={(e) => updateStatus(tck.ticketId, e.target.value as TicketStatus)}
-                  className="text-xs bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white"
+                  className="text-xs bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl px-3 py-2 text-slate-900 dark:text-white"
                 >
-                  <option value="Open">Open</option>
-                  <option value="Assigned">Assigned</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Resolved">Resolved</option>
-                  <option value="Closed">Closed</option>
+                  <option value="Open" className="bg-white dark:bg-[#151B23]">Open</option>
+                  <option value="Assigned" className="bg-white dark:bg-[#151B23]">Assigned</option>
+                  <option value="In Progress" className="bg-white dark:bg-[#151B23]">In Progress</option>
+                  <option value="Resolved" className="bg-white dark:bg-[#151B23]">Resolved</option>
+                  <option value="Closed" className="bg-white dark:bg-[#151B23]">Closed</option>
                 </select>
               </div>
             </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed bg-slate-950 p-4 rounded-xl border border-slate-800">
+            <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-[#0D1117] p-4 rounded-xl border border-slate-200 dark:border-[#2A323D]">
               "{tck.message}"
             </p>
           </Card>

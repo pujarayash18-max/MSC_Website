@@ -1,5 +1,16 @@
 import React from 'react';
 
+export function MicrosoftFourSquareIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <rect x="2" y="2" width="9.5" height="9.5" rx="1.5" fill="#F25022" />
+      <rect x="12.5" y="2" width="9.5" height="9.5" rx="1.5" fill="#7FBA00" />
+      <rect x="2" y="12.5" width="9.5" height="9.5" rx="1.5" fill="#00A4EF" />
+      <rect x="12.5" y="12.5" width="9.5" height="9.5" rx="1.5" fill="#FFB900" />
+    </svg>
+  );
+}
+
 export function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg fill="currentColor" viewBox="0 0 24 24" {...props}>

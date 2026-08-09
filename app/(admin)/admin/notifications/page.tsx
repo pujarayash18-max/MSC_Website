@@ -30,61 +30,61 @@ export default function AdminNotificationsPage() {
   return (
     <div className="max-w-3xl space-y-6">
       <div>
-        <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-          <Send className="w-7 h-7 text-sky-400" /> Push Notifications & Email Alerts (§82)
+        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+          <Send className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Push Notifications & Email Alerts (§82)
         </h1>
-        <p className="text-sm text-slate-400 mt-1">
+        <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
           Broadcast in-app notifications and automated emails to registered students.
         </p>
       </div>
 
-      <Card className="p-6 space-y-4 border-sky-500/30">
+      <Card className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D] bg-white dark:bg-[#151B23]">
         <form onSubmit={handleSend} className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1">Notification Type</label>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">Notification Type</label>
             <select
               value={type}
               onChange={(e) => setType(e.target.value as NotificationType)}
-              className="w-full p-2.5 text-xs bg-slate-900 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-sky-500"
+              className="w-full p-2.5 text-xs bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0078D4] dark:focus:ring-[#00A4EF]"
             >
-              <option value="Event Reminder">Event Reminder</option>
-              <option value="Live Resource Available">Live Resource Available</option>
-              <option value="Certificate Ready">Certificate Ready</option>
-              <option value="Winner Announcement">Winner Announcement</option>
-              <option value="New Notice">New Notice</option>
+              <option value="Event Reminder" className="bg-white dark:bg-[#151B23]">Event Reminder</option>
+              <option value="Live Resource Available" className="bg-white dark:bg-[#151B23]">Live Resource Available</option>
+              <option value="Certificate Ready" className="bg-white dark:bg-[#151B23]">Certificate Ready</option>
+              <option value="Winner Announcement" className="bg-white dark:bg-[#151B23]">Winner Announcement</option>
+              <option value="New Notice" className="bg-white dark:bg-[#151B23]">New Notice</option>
             </select>
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1">Notification Headline *</label>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">Notification Headline *</label>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Live Coding Resources Uploaded for Azure Masterclass"
-              className="w-full p-2.5 text-xs bg-slate-900 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-sky-500"
+              className="w-full p-2.5 text-xs bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-[#0078D4] dark:focus:ring-[#00A4EF]"
             />
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1">Notification Body Message *</label>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">Notification Body Message *</label>
             <textarea
               rows={3}
               required
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Detailed notification message text..."
-              className="w-full p-2.5 text-xs bg-slate-900 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-sky-500"
+              className="w-full p-2.5 text-xs bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-[#0078D4] dark:focus:ring-[#00A4EF]"
             />
           </div>
 
-          <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer pt-1">
+          <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer pt-1">
             <input
               type="checkbox"
               checked={sendEmail}
               onChange={(e) => setSendEmail(e.target.checked)}
-              className="rounded text-sky-500"
+              className="rounded text-[#0078D4] dark:text-[#00A4EF]"
             />
             Also deliver via Azure Communication Services / SendGrid Email
           </label>
