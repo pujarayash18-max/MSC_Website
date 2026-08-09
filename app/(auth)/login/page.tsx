@@ -39,7 +39,9 @@ function LoginContent() {
 
     if (res.success) {
       toast.success(`Signed in successfully as ${res.user?.fullName || 'Student'}! Redirecting...`);
-      router.push(redirectUrl);
+      setTimeout(() => {
+        window.location.href = redirectUrl;
+      }, 100);
     } else {
       toast.error(res.message || 'No matching account found. Redirecting to Registration...');
       setTimeout(() => {
@@ -59,7 +61,9 @@ function LoginContent() {
     setIsSubmitting(false);
     if (res.success) {
       toast.success(`Logged in as ${res.user?.fullName} (${studentId})! Redirecting...`);
-      router.push(redirectUrl);
+      setTimeout(() => {
+        window.location.href = redirectUrl;
+      }, 100);
     } else {
       toast.error(res.message || 'Quick login failed. Please try again.');
     }
