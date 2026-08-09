@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { FileSpreadsheet, Download, FileText, CheckCircle2 } from 'lucide-react';
+import { FileSpreadsheet, Download } from 'lucide-react';
 
 const REPORT_TYPES = [
   { id: 'rep_01', title: 'Student Registrations Master Report', format: 'Excel / CSV', count: '2,480 Records', desc: 'Contains complete registration responses, enrollment numbers, branches, and waitlist status.' },

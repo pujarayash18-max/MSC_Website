@@ -1,11 +1,12 @@
 'use client';
 import { useState } from 'react';
+import Image from 'next/image';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { INITIAL_SPEAKERS } from '@/lib/services/dataService';
 import { toast } from 'sonner';
-import { Mic, Plus, Trash2, Edit3 } from 'lucide-react';
+import { Mic, Plus, Edit3 } from 'lucide-react';
 
 export default function AdminSpeakersPage() {
   const [speakers, setSpeakers] = useState(INITIAL_SPEAKERS);
@@ -13,21 +14,22 @@ export default function AdminSpeakersPage() {
   const handleAddMock = () => {
     const newSpk = {
       id: `spk_${Date.now()}`,
-      speakerId: `spk_${Date.now()}`,
-      name: 'Dr. Sanjay Gupta',
-      organization: 'Microsoft MVP',
-      designation: 'Principal Architect',
-      bio: 'Cloud and AI Solution Architect with 12+ years experience.',
-      photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
-      expertise: ['Azure AI', 'Generative AI', 'Cosmos DB'],
+      speakerId: `spk_0${speakers.length + 1}`,
+      name: 'Dr. Rajesh Patel',
+      designation: 'Principal Azure Cloud Architect',
+      organization: 'Microsoft India',
+      bio: 'Cloud architecture Specialist with 15+ years of distributed systems experience.',
+      photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80',
+      topicTitle: 'Building Enterprise Resilient Serverless Workloads',
+      expertise: ['Azure Architecture', 'Serverless', 'Cosmos DB'],
       eventIds: [],
       isDeleted: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       status: 'active' as const
     };
-    setSpeakers([...speakers, newSpk]);
-    toast.success('Speaker profile added!');
+    setSpeakers([newSpk, ...speakers]);
+    toast.success(`Speaker "${newSpk.name}" added successfully!`);
   };
 
   return (
@@ -35,10 +37,10 @@ export default function AdminSpeakersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-            <Mic className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Speaker Management
+            <Mic className="w-7 h-7 text-[#00A4EF]" /> Guest Speaker Registry
           </h1>
           <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
-            Add guest speakers, manage biography profiles, social links, and session mapping.
+            Manage profiles, topics, and session schedules for keynotes and workshop trainers.
           </p>
         </div>
 
@@ -51,7 +53,7 @@ export default function AdminSpeakersPage() {
         {speakers.map((spk) => (
           <Card key={spk.id} className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D] bg-white dark:bg-[#151B23]">
             <div className="flex items-center gap-4">
-              <img src={spk.photo} alt={spk.name} className="w-16 h-16 rounded-xl object-cover border border-[#00A4EF]" />
+              <Image src={spk.photo} alt={spk.name} width={64} height={64} className="w-16 h-16 rounded-xl object-cover border border-[#00A4EF]" />
               <div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">{spk.name}</h3>
                 <p className="text-xs text-[#0078D4] dark:text-[#00A4EF] font-semibold">{spk.designation}</p>

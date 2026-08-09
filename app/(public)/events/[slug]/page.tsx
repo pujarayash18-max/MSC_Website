@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -49,7 +50,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
       {/* Hero Banner Header */}
       <div className="relative rounded-3xl overflow-hidden border border-sky-500/30 shadow-2xl bg-gradient-to-r from-sky-700 via-blue-800 to-indigo-900 dark:from-slate-900 dark:via-sky-950/90 dark:to-slate-900">
         <div className="h-72 sm:h-96 relative">
-          <img src={event.banner} alt={event.title} className="w-full h-full object-cover opacity-50 dark:opacity-60" />
+          <Image src={event.banner} alt={event.title} fill className="object-cover opacity-50 dark:opacity-60" priority />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/50 to-transparent" />
         </div>
 
@@ -137,7 +138,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
             <div className="space-y-4">
               {speakers.map((spk) => (
                 <div key={spk.id} className="flex items-center gap-3 p-2 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800/80">
-                  <img src={spk.photo} alt={spk.name} className="w-12 h-12 rounded-xl object-cover border border-sky-500 shadow-sm" />
+                  <Image src={spk.photo} alt={spk.name} width={48} height={48} className="w-12 h-12 rounded-xl object-cover border border-sky-500 shadow-sm" />
                   <div>
                     <h4 className="text-xs font-bold text-slate-900 dark:text-white">{spk.name}</h4>
                     <p className="text-[11px] font-semibold text-sky-600 dark:text-sky-400">{spk.designation}</p>

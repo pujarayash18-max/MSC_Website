@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Users, Send, CheckCircle2 } from 'lucide-react';
+import { Send } from 'lucide-react';
 
 const POSITIONS = [
   { role: 'Technical Lead', dept: 'Computer Engineering / IT', status: 'Open', desc: 'Lead cloud architecture workshops, review student projects, and build open-source tools.' },

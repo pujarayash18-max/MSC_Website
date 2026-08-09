@@ -1,33 +1,49 @@
 'use client';
-import { useState } from 'react';
+
+import { useState, use } from 'react';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { INITIAL_EVENTS } from '@/lib/services/dataService';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Plus } from 'lucide-react';
 
-export default function NewEventPage() {
-  const [title, setTitle] = useState('');
-  const [shortDesc, setShortDesc] = useState('');
-  const [category, setCategory] = useState('Workshop');
-  const [mode, setMode] = useState('Offline');
-  const [venue, setVenue] = useState('Seminar Hall 4, Main Campus');
-  const [capacity, setCapacity] = useState(150);
-  const [agenda, setAgenda] = useState([
-    { id: '1', time: '09:30 AM', title: 'Welcome & Registration', speaker: 'Faculty Coordinator', room: 'Hall 4' }
-  ]);
+interface EditEventPageProps {
+  params: Promise<{ eventId: string }>;
+}
+
+export default function EditEventPage({ params }: EditEventPageProps) {
+  const resolvedParams = use(params);
+  const eventId = resolvedParams.eventId;
+
+  const targetEvent = INITIAL_EVENTS.find((e) => e.eventId === eventId || e.id === eventId) || INITIAL_EVENTS[0];
+
+  const [title, setTitle] = useState(targetEvent.title);
+  const [shortDesc, setShortDesc] = useState(targetEvent.shortDescription);
+  const [category, setCategory] = useState(targetEvent.category);
+  const [mode, setMode] = useState(targetEvent.mode);
+  const [venue, setVenue] = useState(targetEvent.venue);
+  const [capacity, setCapacity] = useState(targetEvent.capacity);
+  const [agenda, setAgenda] = useState(
+    targetEvent.agenda && targetEvent.agenda.length > 0
+      ? targetEvent.agenda
+      : [{ id: '1', time: '09:30 AM', title: 'Welcome & Keynote', speaker: 'Prof. Amit Patel', room: 'Hall 4' }]
+  );
   const [isSaving, setIsSaving] = useState(false);
 
   const addAgendaItem = () => {
-    setAgenda([...agenda, { id: Date.now().toString(), time: '10:00 AM', title: 'Technical Session', speaker: 'Speaker', room: 'Lab 204' }]);
+    setAgenda([
+      ...agenda,
+      { id: Date.now().toString(), time: '11:00 AM', title: 'Technical Deep Dive', speaker: 'Lead Speaker', room: 'Lab 204' }
+    ]);
   };
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     setTimeout(() => {
       setIsSaving(false);
-      toast.success(`Event "${title || 'New Event'}" created as Draft!`);
+      toast.success(`Event "${title}" updated successfully!`);
     }, 600);
   };
 
@@ -41,9 +57,11 @@ export default function NewEventPage() {
         </Link>
       </div>
 
-      <form onSubmit={handleCreate} className="space-y-6">
+      <form onSubmit={handleUpdate} className="space-y-6">
         <Card className="p-6 space-y-4 border-sky-500/30">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3">Create New Club Event</h2>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3">
+            Edit Event: {targetEvent.title}
+          </h2>
 
           <div className="space-y-4 text-xs">
             <div>
@@ -53,7 +71,6 @@ export default function NewEventPage() {
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Azure AI & Generative Workflows Bootcamp"
                 className="w-full p-3 text-xs bg-slate-900 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-sky-500 focus:outline-none"
               />
             </div>
@@ -63,7 +80,7 @@ export default function NewEventPage() {
                 <label className="text-slate-300 font-semibold block mb-1">Category</label>
                 <select
                   value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                  onChange={(e) => setCategory(e.target.value as 'Workshop' | 'Hackathon' | 'Bootcamp' | 'Webinar')}
                   className="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-white"
                 >
                   <option value="Workshop">Workshop</option>
@@ -77,7 +94,7 @@ export default function NewEventPage() {
                 <label className="text-slate-300 font-semibold block mb-1">Event Mode</label>
                 <select
                   value={mode}
-                  onChange={(e) => setMode(e.target.value)}
+                  onChange={(e) => setMode(e.target.value as 'Offline' | 'Online' | 'Hybrid')}
                   className="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-white"
                 >
                   <option value="Offline">Offline</option>
@@ -113,7 +130,6 @@ export default function NewEventPage() {
                 rows={2}
                 value={shortDesc}
                 onChange={(e) => setShortDesc(e.target.value)}
-                placeholder="Brief summary for event cards and homepage banners..."
                 className="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-white"
               />
             </div>
@@ -150,7 +166,6 @@ export default function NewEventPage() {
                     copy[idx].title = e.target.value;
                     setAgenda(copy);
                   }}
-                  placeholder="Session Title"
                   className="p-2 text-xs bg-slate-900 border border-slate-800 rounded-lg text-white md:col-span-2"
                 />
                 <button
@@ -167,7 +182,7 @@ export default function NewEventPage() {
 
         <div className="flex justify-end">
           <Button type="submit" variant="fluent" size="lg" isLoading={isSaving}>
-            <Save className="w-4 h-4" /> Create & Save Draft Event
+            <Save className="w-4 h-4" /> Save Changes
           </Button>
         </div>
       </form>

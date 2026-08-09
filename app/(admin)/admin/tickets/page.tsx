@@ -2,10 +2,9 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { TicketStatus } from '@/types';
 import { toast } from 'sonner';
-import { Ticket, CheckCircle, Clock, UserCheck } from 'lucide-react';
+import { Ticket } from 'lucide-react';
 
 const MOCK_TICKETS = [
   { ticketId: 'tck_01', name: 'Harsh Vardhan', email: 'harsh@marwadiuniversity.ac.in', subject: 'Issue downloading Azure Workshop certificate', message: 'I completed check-in but certificate download button says pending.', status: 'Open' as TicketStatus, assignedTo: 'Rahul Sharma' },

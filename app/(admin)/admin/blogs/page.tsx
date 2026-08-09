@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { FileText, Plus, Edit3, Eye, Trash2 } from 'lucide-react';
+import { FileText, Plus, Edit3 } from 'lucide-react';
 
 const MOCK_ADMIN_BLOGS = [
   { id: 'b1', title: 'Building Serverless REST APIs with Azure Functions v4 & TypeScript', category: 'Cloud', status: 'Published', date: 'Aug 20, 2026' },
@@ -55,7 +55,7 @@ export default function AdminBlogsPage() {
               <Button variant="outline" size="sm" onClick={() => togglePublish(b.id)}>
                 {b.status === 'Published' ? 'Unpublish' : 'Publish Post'}
               </Button>
-              <Button variant="fluent" size="sm">
+              <Button variant="fluent" size="sm" onClick={() => toast.success(`Blog editor opened for "${b.title}"`)}>
                 <Edit3 className="w-3.5 h-3.5" /> Edit
               </Button>
             </div>

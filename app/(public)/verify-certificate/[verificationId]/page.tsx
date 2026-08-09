@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { INITIAL_CERTIFICATES } from '@/lib/services/dataService';
+import { toast } from 'sonner';
 import { ShieldCheck, ShieldAlert, ArrowLeft, Download } from 'lucide-react';
 
 export default function CertificateVerificationResultPage() {
@@ -95,7 +96,7 @@ export default function CertificateVerificationResultPage() {
         </div>
 
         <div className="pt-2 flex justify-center">
-          <Button variant="fluent" size="lg">
+          <Button variant="fluent" size="lg" onClick={() => toast.success(`Official PDF Certificate downloaded for ${cert.studentName}!`)}>
             <Download className="w-4 h-4" /> Download Official PDF Certificate
           </Button>
         </div>

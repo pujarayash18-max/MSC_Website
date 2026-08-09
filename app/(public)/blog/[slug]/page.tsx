@@ -1,10 +1,11 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { INITIAL_BLOGS } from '@/lib/services/dataService';
-import { ArrowLeft, Clock, User, Share2 } from 'lucide-react';
+import { ArrowLeft, Clock, User } from 'lucide-react';
 
 interface BlogPageProps {
   params: Promise<{ slug: string }>;
@@ -55,9 +56,11 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
           </div>
         </div>
 
-        <img
+        <Image
           src={blog.banner}
           alt={blog.title}
+          width={800}
+          height={320}
           className="w-full h-80 object-cover rounded-2xl border border-slate-800"
         />
 

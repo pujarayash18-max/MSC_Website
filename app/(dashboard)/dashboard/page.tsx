@@ -1,12 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { INITIAL_EVENTS, INITIAL_NOTICES } from '@/lib/services/dataService';
-import { MicrosoftFourSquareIcon } from '@/components/icons';
 import {
   Calendar,
   Award,
@@ -15,8 +15,7 @@ import {
   Trophy,
   FolderDown,
   ChevronRight,
-  Pin,
-  Bell
+  Pin
 } from 'lucide-react';
 
 export default function StudentDashboardPage() {
@@ -29,9 +28,11 @@ export default function StudentDashboardPage() {
       <div className="rounded-3xl p-6 sm:p-8 bg-white dark:bg-[#151B23] border border-slate-200 dark:border-[#2A323D] relative overflow-hidden shadow-xl">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
           <div className="flex items-center gap-4 text-center md:text-left">
-            <img
+            <Image
               src={user?.profilePhoto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
-              alt={user?.fullName}
+              alt={user?.fullName || 'User Profile'}
+              width={64}
+              height={64}
               className="w-16 h-16 rounded-2xl object-cover border-2 border-[#00A4EF] shadow-md"
             />
             <div>
@@ -114,7 +115,7 @@ export default function StudentDashboardPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D]">
-            <img src={upcomingEvent.banner} alt={upcomingEvent.title} className="w-full sm:w-36 h-24 rounded-xl object-cover" />
+            <Image src={upcomingEvent.banner} alt={upcomingEvent.title} width={144} height={96} className="w-full sm:w-36 h-24 rounded-xl object-cover" />
             <div className="space-y-1 text-center sm:text-left flex-1">
               <Badge variant="primary" size="sm">{upcomingEvent.category}</Badge>
               <h4 className="text-sm font-bold text-slate-900 dark:text-[#F5F7FA]">{upcomingEvent.title}</h4>

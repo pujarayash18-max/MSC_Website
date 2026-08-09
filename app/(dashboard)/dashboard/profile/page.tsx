@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,9 +17,11 @@ export default function StudentProfilePage() {
       {/* Header Banner */}
       <div className="relative rounded-3xl p-8 bg-white dark:bg-[#151B23] border border-slate-200 dark:border-[#2A323D] overflow-hidden shadow-xl">
         <div className="flex flex-col md:flex-row items-center gap-6 relative z-10">
-          <img
+          <Image
             src={user?.profilePhoto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'}
-            alt={user?.fullName}
+            alt={user?.fullName || 'Profile Photo'}
+            width={96}
+            height={96}
             className="w-24 h-24 rounded-2xl object-cover border-2 border-[#00A4EF] shadow-xl"
           />
           <div className="text-center md:text-left space-y-2 flex-1">

@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { FileSpreadsheet, Plus, Edit3, Eye, Copy, Trash2 } from 'lucide-react';
+import { FileSpreadsheet, Plus, Edit3, Copy } from 'lucide-react';
 
 const MOCK_FORMS = [
   { id: 'frm_01', name: 'Standard College Event Registration Form', fieldsCount: 6, responsesCount: 142, status: 'Active', date: 'Aug 05, 2026' },

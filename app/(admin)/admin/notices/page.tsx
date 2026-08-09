@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { INITIAL_NOTICES } from '@/lib/services/dataService';
 import { NoticePriority } from '@/types';
 import { toast } from 'sonner';
-import { BellRing, Plus, Pin, Trash2, CheckCircle2 } from 'lucide-react';
+import { BellRing, Plus, Pin } from 'lucide-react';
 
 export default function AdminNoticesPage() {
   const [notices, setNotices] = useState(INITIAL_NOTICES);

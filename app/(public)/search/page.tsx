@@ -14,7 +14,7 @@ export default function GlobalSearchPage() {
   const matchingEvents = query ? INITIAL_EVENTS.filter((e) => e.title.toLowerCase().includes(query.toLowerCase()) || e.tags.some((t) => t.toLowerCase().includes(query.toLowerCase()))) : [];
   const matchingSpeakers = query ? INITIAL_SPEAKERS.filter((s) => s.name.toLowerCase().includes(query.toLowerCase()) || s.expertise.some((e) => e.toLowerCase().includes(query.toLowerCase()))) : [];
   const matchingTeam = query ? INITIAL_TEAM.filter((t) => t.name.toLowerCase().includes(query.toLowerCase()) || t.position.toLowerCase().includes(query.toLowerCase())) : [];
-  const matchingNotices = query ? INITIAL_NOTICES.filter((n) => n.title.toLowerCase().includes(query.toLowerCase())) : [];
+  const matchingNotices = query ? INITIAL_NOTICES.filter((n) => n.title.toLowerCase().includes(query.toLowerCase()) || n.description.toLowerCase().includes(query.toLowerCase())) : [];
 
   const totalResults = matchingEvents.length + matchingSpeakers.length + matchingTeam.length + matchingNotices.length;
 
@@ -73,6 +73,40 @@ export default function GlobalSearchPage() {
                   <Link href={`/speakers/${spk.speakerId}`}>
                     <Button variant="outline" size="sm">Profile</Button>
                   </Link>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {/* Core Team Results */}
+          {matchingTeam.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#F25022]">Core Team ({matchingTeam.length})</h3>
+              {matchingTeam.map((tm) => (
+                <Card key={tm.id} className="p-4 flex items-center justify-between gap-4 border-slate-200 dark:border-[#2A323D]">
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">{tm.name}</h4>
+                    <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">{tm.position} • {tm.department}</p>
+                  </div>
+                  <Link href="/team">
+                    <Button variant="outline" size="sm">View Team</Button>
+                  </Link>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {/* Notices Results */}
+          {matchingNotices.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#FFB900]">Notices ({matchingNotices.length})</h3>
+              {matchingNotices.map((ntc) => (
+                <Card key={ntc.id} className="p-4 flex items-center justify-between gap-4 border-slate-200 dark:border-[#2A323D]">
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">{ntc.title}</h4>
+                    <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">{ntc.description}</p>
+                  </div>
+                  <Badge variant="warning" size="sm">{ntc.priority}</Badge>
                 </Card>
               ))}
             </div>

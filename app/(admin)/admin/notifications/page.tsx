@@ -1,11 +1,10 @@
 'use client';
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { NotificationType } from '@/types';
 import { toast } from 'sonner';
-import { Send, Bell, Mail } from 'lucide-react';
+import { Send } from 'lucide-react';
 
 export default function AdminNotificationsPage() {
   const [title, setTitle] = useState('');

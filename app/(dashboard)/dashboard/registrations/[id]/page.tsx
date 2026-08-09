@@ -6,7 +6,8 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { INITIAL_EVENTS } from '@/lib/services/dataService';
-import { ArrowLeft, Users, QrCode, CheckCircle2, Download } from 'lucide-react';
+import { toast } from 'sonner';
+import { ArrowLeft, Users, CheckCircle2, Download } from 'lucide-react';
 import { GithubIcon } from '@/components/icons';
 
 export default function RegistrationDetailPage() {
@@ -45,7 +46,7 @@ export default function RegistrationDetailPage() {
             <svg className="w-32 h-32 text-slate-950 mx-auto" viewBox="0 0 100 100" fill="currentColor">
               <path d="M0,0 h30 v30 h-30 z M40,0 h20 v10 h-20 z M70,0 h30 v30 h-30 z M10,10 h10 v10 h-10 z M80,10 h10 v10 h-10 z M0,40 h10 v20 h-10 z M30,40 h30 v10 h-30 z M70,40 h10 v10 h-10 z M0,70 h30 v30 h-30 z M10,80 h10 v10 h-10 z M40,70 h20 v30 h-20 z M70,70 h30 v10 h-30 z M80,90 h20 v10 h-20 z" />
             </svg>
-            <Button variant="fluent" size="sm" className="mt-3 w-full">
+            <Button variant="fluent" size="sm" className="mt-3 w-full" onClick={() => toast.success('QR Code Entry Pass downloaded successfully!')}>
               <Download className="w-4 h-4" /> Save Pass
             </Button>
           </div>

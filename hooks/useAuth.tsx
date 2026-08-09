@@ -62,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  // Synchronize initial session state post-hydration to match server SSR tree (React 19 hydration safety)
   useEffect(() => {
     let active = true;
     requestAnimationFrame(() => {
@@ -95,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }));
         }
       } catch {
-        // Fallback
+        // SWA auth fallback
       } finally {
         if (active) setIsLoading(false);
       }
@@ -110,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = (roleName: SystemRoleName = 'Student') => {
     const updatedUser = { ...defaultUser, roleName };
     setUser(updatedUser);
-    authService.setSession(updatedUser);
+    authService.setSession(updatedUser).catch(() => {});
   };
 
   const loginStudent = async (payload: LoginPayload) => {
@@ -134,10 +135,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     if (typeof window !== 'undefined') {
       if (window.location.pathname.startsWith('/.auth')) {
+        // True external SWA provider endpoint
         // eslint-disable-next-line @next/next/no-location-assign-relative-destination
         window.location.href = '/.auth/logout';
       } else {
-        router.replace('/login');
+        // Client-side Next.js route navigation
+        router.push('/login');
       }
     }
   };

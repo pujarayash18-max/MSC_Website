@@ -1,10 +1,9 @@
 'use client';
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Settings, Save, Shield, Database, Lock } from 'lucide-react';
+import { Settings, Save, Database } from 'lucide-react';
 
 export default function AdminSettingsPage() {
   const [clubName, setClubName] = useState('Microsoft Campus Club - Marwadi University');

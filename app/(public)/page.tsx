@@ -22,7 +22,6 @@ import {
   Pin,
   Send,
   Star,
-  CheckCircle,
   Code
 } from 'lucide-react';
 
@@ -64,7 +63,7 @@ function formatDateDeterministic(dateString: string): string {
 }
 
 export default function HomePage() {
-  const [nextEvent, setNextEvent] = useState(INITIAL_EVENTS[0]);
+  const [nextEvent] = useState(INITIAL_EVENTS[0]);
   const [countdown, setCountdown] = useState({ days: 12, hours: 8, minutes: 42, seconds: 19 });
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterName, setNewsletterName] = useState('');

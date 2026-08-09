@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { INITIAL_EVENTS, dynamicDb } from '@/lib/services/dataService';
 import { toast } from 'sonner';
-import { QrCode, Calendar, MapPin, CheckCircle, ChevronRight, Download, FileText } from 'lucide-react';
+import { QrCode, Calendar, MapPin, ChevronRight, Download, FileText } from 'lucide-react';
 
 const STATIC_REGISTRATIONS = [
   {
@@ -35,7 +36,7 @@ const STATIC_REGISTRATIONS = [
 
 export default function StudentRegistrationsPage() {
   const [selectedQr, setSelectedQr] = useState<string | null>(null);
-  const [allRegs, setAllRegs] = useState(() => {
+  const [allRegs] = useState(() => {
     if (typeof window === 'undefined') return STATIC_REGISTRATIONS;
     const saved = dynamicDb.getRegistrations();
     if (saved && saved.length > 0) {
@@ -70,9 +71,11 @@ export default function StudentRegistrationsPage() {
           <Card key={reg.registrationId} className="p-6 border-slate-200 dark:border-[#2A323D] hover:border-[#00A4EF]/50 transition-all">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div className="flex items-start gap-4">
-                <img
+                <Image
                   src={reg.banner}
                   alt={reg.eventTitle}
+                  width={80}
+                  height={80}
                   className="w-20 h-20 rounded-2xl object-cover border border-[#00A4EF]/30 shrink-0 hidden sm:block shadow-sm"
                 />
                 <div className="space-y-1.5">

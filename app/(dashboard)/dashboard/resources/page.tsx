@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useRealtime, RealtimeEvent } from '@/hooks/useRealtime';
 import { toast } from 'sonner';
-import { FolderDown, Download, Lock, Sparkles, LogIn, ShieldCheck, UserPlus, Ticket, CheckCircle2, Globe } from 'lucide-react';
+import { FolderDown, Download, Lock, Sparkles, LogIn, ShieldCheck, UserPlus, Ticket, Globe } from 'lucide-react';
 import { MicrosoftFourSquareIcon } from '@/components/icons';
 
 // Mock registered events for current user
@@ -51,7 +51,7 @@ const INITIAL_STUDENT_RESOURCES = [
 
 export default function StudentResourcesPage() {
   const router = useRouter();
-  const { user, isAuthenticated, login, isLoading } = useAuth();
+  const { isAuthenticated, login, isLoading } = useAuth();
   const [resources, setResources] = useState(INITIAL_STUDENT_RESOURCES);
 
   useEffect(() => {

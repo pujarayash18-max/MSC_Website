@@ -5,7 +5,6 @@ import { useTheme } from 'next-themes';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { INITIAL_EVENTS } from '@/lib/services/dataService';
 import {
   Users,
   Calendar,
@@ -14,8 +13,6 @@ import {
   ArrowUpRight,
   Plus,
   BarChart3,
-  CheckCircle2,
-  Clock,
   Send,
   ShieldCheck,
   FileSpreadsheet

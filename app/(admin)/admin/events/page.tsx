@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { INITIAL_EVENTS } from '@/lib/services/dataService';
 import { EventStatus } from '@/types';
 import { toast } from 'sonner';
-import { Calendar, Plus, Edit3, Copy, Archive, CheckCircle, XCircle } from 'lucide-react';
+import { Calendar, Plus, Edit3, Copy } from 'lucide-react';
 
 function formatDateDeterministic(dateString: string): string {
   const date = new Date(dateString);

@@ -2,11 +2,10 @@
 
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { INITIAL_EVENTS } from '@/lib/services/dataService';
 import { toast } from 'sonner';
-import { Trophy, Award, Zap, CheckCircle2, Send } from 'lucide-react';
+import { Trophy, Send } from 'lucide-react';
 
 export default function AdminWinnersPage() {
   const [selectedEventId, setSelectedEventId] = useState(INITIAL_EVENTS[0].eventId);

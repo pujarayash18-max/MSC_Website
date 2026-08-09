@@ -12,7 +12,6 @@ export default function AdminAttendanceScannerPage() {
     { id: 'MCC-AZ-2026-REG8801-VERIFIED', name: 'Rahul Sharma', time: '09:32 AM', status: 'Present' }
   ]);
   const [isScanning, setIsScanning] = useState(false);
-  const [_lastScanned, setLastScanned] = useState<{ id: string; name: string; time: string; status: string } | null>(null);
 
   const handleVerify = (token: string) => {
     if (!token) return;
@@ -33,7 +32,6 @@ export default function AdminAttendanceScannerPage() {
     };
 
     setScannedRecords([newRecord, ...scannedRecords]);
-    setLastScanned(newRecord);
     setManualQr('');
     toast.success(`Check-in verified for ${newRecord.name}!`);
   };

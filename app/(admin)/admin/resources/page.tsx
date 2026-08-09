@@ -2,12 +2,11 @@
 
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ResourceCategory, ResourceVisibility } from '@/types';
 import { useRealtime } from '@/hooks/useRealtime';
 import { toast } from 'sonner';
-import { FolderUp, Upload, Lock, Globe, Radio, Shield, Users, CheckCircle2, Ticket, Sparkles } from 'lucide-react';
+import { FolderUp, Upload, Lock, Globe, Radio, Shield, CheckCircle2, Ticket, Sparkles } from 'lucide-react';
 
 const CATEGORIES: ResourceCategory[] = [
   'Slides',

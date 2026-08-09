@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { INITIAL_EVENTS } from '@/lib/services/dataService';
 import { toast } from 'sonner';
-import { Award, Upload, Play, FileText, Image as ImageIcon, CheckCircle2, Sliders } from 'lucide-react';
+import { Award, Upload, Play, CheckCircle2, Sliders } from 'lucide-react';
 
 export default function AdminCertificatesTemplatesPage() {
   const [selectedEventId, setSelectedEventId] = useState(INITIAL_EVENTS[0].eventId);

@@ -243,7 +243,7 @@ export const authService = {
       if (matchedUser.passwordHash) {
         const isDemoAccount = matchedUser.studentId === 'MCC-2026-00042' || matchedUser.studentId === 'MCC-2026-00043';
         const isDemoPassword = inputPassword === 'password123';
-        const isValid = (isDemoAccount && isDemoPassword) || isDemoPassword || (await verifyPassword(inputPassword, matchedUser.passwordHash));
+        const isValid = (isDemoAccount && isDemoPassword) || (await verifyPassword(inputPassword, matchedUser.passwordHash));
 
         if (!isValid) {
           return { success: false, message: 'Invalid password. Please check your credentials.' };
