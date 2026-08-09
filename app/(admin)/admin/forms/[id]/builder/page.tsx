@@ -56,7 +56,7 @@ export default function FormBuilderEditorPage() {
 
   const addField = (type: FieldType) => {
     const newField: FormFieldItem = {
-      id: Date.now().toString(),
+      id: `f_${fields.length + 1}_${type.toLowerCase().replace(/\s+/g, '_')}`,
       label: `New ${type} Field`,
       type,
       required: false,

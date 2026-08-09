@@ -64,7 +64,7 @@ export default function AdminFeedbackPage() {
             </div>
 
             <p className="text-xs text-slate-700 dark:text-[#F5F7FA] italic bg-slate-50 dark:bg-[#0B0F14] p-3 rounded-xl border border-slate-200 dark:border-[#2A323D]">
-              "{f.comment}"
+              &quot;{f.comment}&quot;
             </p>
 
             <div className="flex justify-end pt-1">

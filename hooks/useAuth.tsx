@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import { User, SystemRoleName } from '@/types';
 import { authService, RegisterPayload, LoginPayload } from '@/lib/services/authService';
 
@@ -57,14 +58,17 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window === 'undefined') return null;
-    return authService.getSessionUser();
-  });
-  const [isLoading, setIsLoading] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    return !authService.getSessionUser();
-  });
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const sessionUser = authService.getSessionUser();
+    if (sessionUser) {
+      setUser(sessionUser);
+    }
+    setIsLoading(false);
+  }, []);
 
   useEffect(() => {
     if (user) return;
@@ -125,7 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (window.location.pathname.startsWith('/.auth')) {
         window.location.href = '/.auth/logout';
       } else {
-        window.location.href = '/login';
+        router.push('/login');
       }
     }
   };

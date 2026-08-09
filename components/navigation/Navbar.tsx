@@ -22,6 +22,7 @@ import {
 const NAV_ITEMS = [
   { label: 'Home', href: '/' },
   { label: 'Events', href: '/events' },
+  { label: 'About & Vision', href: '/about' },
   { label: 'Community', href: '/team' },
   { label: 'Resources', href: '/resources' },
   { label: 'Leaderboard', href: '/leaderboard' },
@@ -130,7 +131,7 @@ export function Navbar() {
             </button>
 
             {/* Auth Buttons */}
-            {isAuthenticated && user ? (
+            {mounted && isAuthenticated && user ? (
               <div className="flex items-center gap-2">
                 <Link href="/dashboard">
                   <Button variant="fluent" size="sm">

@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { QrCode, Camera, CheckCircle2, AlertTriangle, User, Calendar, RefreshCw } from 'lucide-react';
+import { QrCode, Camera, CheckCircle2, User, RefreshCw } from 'lucide-react';
 
 export default function AdminAttendanceScannerPage() {
   const [manualQr, setManualQr] = useState('');
@@ -12,7 +12,7 @@ export default function AdminAttendanceScannerPage() {
     { id: 'MCC-AZ-2026-REG8801-VERIFIED', name: 'Rahul Sharma', time: '09:32 AM', status: 'Present' }
   ]);
   const [isScanning, setIsScanning] = useState(false);
-  const [lastScanned, setLastScanned] = useState<any>(null);
+  const [_lastScanned, setLastScanned] = useState<{ id: string; name: string; time: string; status: string } | null>(null);
 
   const handleVerify = (token: string) => {
     if (!token) return;

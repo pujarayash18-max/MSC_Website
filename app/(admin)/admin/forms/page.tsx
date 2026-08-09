@@ -22,7 +22,7 @@ export default function AdminFormsCatalogPage() {
     if (!target) return;
     const duplicated = {
       ...target,
-      id: `frm_${Date.now()}`,
+      id: `frm_copy_${forms.length + 1}`,
       name: `${target.name} (Copy)`,
       responsesCount: 0,
       date: new Date().toISOString().split('T')[0]

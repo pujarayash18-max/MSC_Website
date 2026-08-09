@@ -42,7 +42,7 @@ export default function StudentDashboardPage() {
                 <Badge variant="primary">{user?.roleName || 'Student Member'}</Badge>
               </div>
               <p className="text-xs text-slate-600 dark:text-[#A8B0BB] mt-1">
-                Here's what's happening in MCC today • Enrollment: {user?.enrollmentNumber || '92100103045'}
+                Here&apos;s what&apos;s happening in MCC today • Enrollment: {user?.enrollmentNumber || '92100103045'}
               </p>
             </div>
           </div>
