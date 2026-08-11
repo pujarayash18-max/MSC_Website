@@ -1,32 +1,19 @@
 'use client';
 
+import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { Award, Download, ExternalLink } from 'lucide-react';
-
-const MOCK_CERTIFICATES = [
-  {
-    certificateId: 'cert_az_001',
-    eventName: 'Azure Cloud Architecture & Serverless Masterclass',
-    type: 'Participation',
-    verificationId: 'MCC-CERT-2026-AZ8801',
-    issueDate: 'Aug 25, 2026',
-    blobUrl: 'https://mccdevstorage.blob.core.windows.net/certificates/MCC-CERT-2026-AZ8801.pdf'
-  },
-  {
-    certificateId: 'cert_hk_002',
-    eventName: 'National Azure AI Hackathon 2026',
-    type: 'Winner (1st Place)',
-    verificationId: 'MCC-CERT-2026-HK9902',
-    issueDate: 'Aug 16, 2026',
-    blobUrl: 'https://mccdevstorage.blob.core.windows.net/certificates/MCC-CERT-2026-HK9902.pdf'
-  }
-];
+import { dynamicDb, CertificateRecord } from '@/lib/services/dataService';
 
 export default function StudentCertificatesPage() {
+  const [certificates] = useState<CertificateRecord[]>(() => {
+    return dynamicDb.getCertificates();
+  });
+
   const handleDownload = (verificationId: string) => {
     toast.success(`Downloading official certificate ${verificationId}.pdf`);
   };
@@ -43,11 +30,11 @@ export default function StudentCertificatesPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {MOCK_CERTIFICATES.map((cert) => (
-          <Card key={cert.certificateId} className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D] hover:border-[#7FBA00]/50 transition-all">
+        {certificates.map((cert) => (
+          <Card key={cert.verificationId} className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D] hover:border-[#7FBA00]/50 transition-all">
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1">
-                <Badge variant={cert.type.includes('Winner') ? 'warning' : 'primary'}>{cert.type}</Badge>
+                <Badge variant={cert.eventType.includes('Winner') ? 'warning' : 'primary'}>{cert.eventType}</Badge>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white pt-1">{cert.eventName}</h3>
                 <p className="text-xs font-mono text-[#00A4EF] font-bold">ID: {cert.verificationId}</p>
               </div>

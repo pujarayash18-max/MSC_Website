@@ -6,11 +6,16 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Plus } from 'lucide-react';
 
+import { useRouter } from 'next/navigation';
+import { dynamicDb } from '@/lib/services/dataService';
+import { Event } from '@/types';
+
 export default function NewEventPage() {
+  const router = useRouter();
   const [title, setTitle] = useState('');
   const [shortDesc, setShortDesc] = useState('');
-  const [category, setCategory] = useState('Workshop');
-  const [mode, setMode] = useState('Offline');
+  const [category, setCategory] = useState<Event['category']>('Workshop');
+  const [mode, setMode] = useState<Event['mode']>('Offline');
   const [venue, setVenue] = useState('Seminar Hall 4, Main Campus');
   const [capacity, setCapacity] = useState(150);
   const [agenda, setAgenda] = useState([
@@ -24,11 +29,60 @@ export default function NewEventPage() {
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!title.trim()) return;
     setIsSaving(true);
-    setTimeout(() => {
+    try {
+      const newId = `evt_${Date.now()}`;
+      const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      const newEvent: Event = {
+        id: newId,
+        eventId: newId,
+        title: title.trim(),
+        slug: slug || newId,
+        shortDescription: shortDesc.trim() || 'Join us for an exciting MCC session.',
+        description: shortDesc.trim() || 'Detailed event overview.',
+        banner: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&auto=format&fit=crop&q=80',
+        category,
+        mode,
+        venue,
+        startDate: new Date(Date.now() + 864000000).toISOString(),
+        endDate: new Date(Date.now() + 867600000).toISOString(),
+        registrationStart: new Date().toISOString(),
+        registrationEnd: new Date(Date.now() + 700000000).toISOString(),
+        capacity: Number(capacity) || 100,
+        remainingSeats: Number(capacity) || 100,
+        waitlistEnabled: true,
+        waitlistLimit: 50,
+        waitlistCount: 0,
+        registrationStatus: 'Open',
+        eventStatus: 'Draft',
+        speakerIds: ['spk_01'],
+        coordinatorIds: ['tm_01'],
+        sponsorIds: ['spn_01'],
+        tags: [category, mode, 'MCC'],
+        agenda: agenda.map((a) => ({
+          id: a.id,
+          time: a.time,
+          title: a.title,
+          speaker: a.speaker,
+          room: a.room,
+          duration: '60 mins',
+          sessionType: 'Hands-on'
+        })),
+        isDeleted: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        status: 'draft'
+      };
+
+      dynamicDb.saveEvent(newEvent);
+      toast.success(`Event "${title}" created as Draft!`);
+      router.push('/admin/events');
+    } catch {
+      toast.error('Failed to create event.');
+    } finally {
       setIsSaving(false);
-      toast.success(`Event "${title || 'New Event'}" created as Draft!`);
-    }, 600);
+    }
   };
 
   return (
@@ -63,7 +117,7 @@ export default function NewEventPage() {
                 <label className="text-slate-300 font-semibold block mb-1">Category</label>
                 <select
                   value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                  onChange={(e) => setCategory(e.target.value as Event['category'])}
                   className="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-white"
                 >
                   <option value="Workshop">Workshop</option>
@@ -77,7 +131,7 @@ export default function NewEventPage() {
                 <label className="text-slate-300 font-semibold block mb-1">Event Mode</label>
                 <select
                   value={mode}
-                  onChange={(e) => setMode(e.target.value)}
+                  onChange={(e) => setMode(e.target.value as Event['mode'])}
                   className="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-white"
                 >
                   <option value="Offline">Offline</option>

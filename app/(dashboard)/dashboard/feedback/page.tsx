@@ -3,27 +3,46 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { INITIAL_EVENTS } from '@/lib/services/dataService';
 import { toast } from 'sonner';
 import { MessageSquare, Star, Send, CheckCircle2 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { dynamicDb, INITIAL_EVENTS } from '@/lib/services/dataService';
 
 export default function StudentFeedbackPage() {
+  const { user, updateProfile } = useAuth();
   const [selectedEventId, setSelectedEventId] = useState(INITIAL_EVENTS[0].eventId);
   const [rating, setRating] = useState(5);
   const [feedbackText, setFeedbackText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!feedbackText) return;
+    if (!feedbackText.trim()) return;
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      dynamicDb.saveFeedback({
+        id: `fb_${Date.now()}`,
+        eventId: selectedEventId,
+        rating,
+        feedbackText: feedbackText.trim(),
+        userId: user?.userId || 'usr_student',
+        studentName: user?.fullName || 'Student Member',
+        createdAt: new Date().toISOString()
+      });
+
+      await updateProfile({
+        communityPoints: (user?.communityPoints || 0) + 5
+      });
+
       setSubmitted(true);
-      toast.success('Thank you! Your feedback has been submitted to the MCC event organizers.');
-    }, 600);
+      toast.success('Thank you! Your feedback has been saved and +5 Community Points were added to your account.');
+    } catch {
+      toast.error('Failed to submit feedback.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

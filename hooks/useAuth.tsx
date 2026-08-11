@@ -13,6 +13,7 @@ interface AuthContextType {
   login: (roleName?: SystemRoleName) => void;
   loginStudent: (payload: LoginPayload) => Promise<{ success: boolean; user?: User; message?: string }>;
   registerStudent: (payload: RegisterPayload) => Promise<{ success: boolean; user?: User; message?: string }>;
+  updateProfile: (updates: Partial<User>) => Promise<User | null>;
   logout: () => void;
   setMockUserRole: (role: SystemRoleName) => void;
 }
@@ -53,6 +54,7 @@ const AuthContext = createContext<AuthContextType>({
   login: () => {},
   loginStudent: async () => ({ success: false }),
   registerStudent: async () => ({ success: false }),
+  updateProfile: async () => null,
   logout: () => {},
   setMockUserRole: () => {}
 });
@@ -130,6 +132,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return res;
   };
 
+  const updateProfile = async (updates: Partial<User>): Promise<User | null> => {
+    const targetUserId = user?.userId || user?.id || 'usr_superadmin_001';
+    const updated = await authService.updateUserProfile(targetUserId, updates);
+    if (updated) {
+      setUser(updated);
+    }
+    return updated;
+  };
+
   const logout = () => {
     authService.clearSession();
     setUser(null);
@@ -162,6 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         loginStudent,
         registerStudent,
+        updateProfile,
         logout,
         setMockUserRole
       }}

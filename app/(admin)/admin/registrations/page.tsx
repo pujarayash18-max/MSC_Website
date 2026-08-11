@@ -6,6 +6,8 @@ import { DataTable, Column } from '@/components/ui/data-table';
 import { toast } from 'sonner';
 import { Users, FileSpreadsheet, CheckCircle, XCircle, Clock } from 'lucide-react';
 
+import { dynamicDb } from '@/lib/services/dataService';
+
 interface AdminRegistrationRow {
   registrationId: string;
   studentName: string;
@@ -47,12 +49,32 @@ const MOCK_DATA: AdminRegistrationRow[] = [
 ];
 
 export default function AdminRegistrationsPage() {
-  const [data, setData] = useState<AdminRegistrationRow[]>(MOCK_DATA);
+  const [data, setData] = useState<AdminRegistrationRow[]>(() => {
+    const saved = dynamicDb.getRegistrations();
+    if (saved && saved.length > 0) {
+      const mapped = saved.map((s: Record<string, unknown>) => ({
+        registrationId: String(s.registrationId || s.id || `reg_${Date.now()}`),
+        studentName: String(s.studentName || s.fullName || 'Student Member'),
+        enrollmentNumber: String(s.enrollmentNumber || '92100103045'),
+        email: String(s.email || 'student@marwadiuniversity.ac.in'),
+        eventName: String(s.eventTitle || s.eventName || 'Azure Masterclass'),
+        submittedAt: String(s.createdAt || '2026-08-05 10:15'),
+        status: (s.status || 'Approved') as AdminRegistrationRow['status']
+      }));
+      return [...mapped, ...MOCK_DATA];
+    }
+    return MOCK_DATA;
+  });
 
   const updateStatus = (id: string, newStatus: AdminRegistrationRow['status']) => {
-    setData((prev) =>
-      prev.map((item) => (item.registrationId === id ? { ...item, status: newStatus } : item))
-    );
+    setData((prev) => {
+      const updated = prev.map((item) => (item.registrationId === id ? { ...item, status: newStatus } : item));
+      const target = updated.find((item) => item.registrationId === id);
+      if (target) {
+        dynamicDb.saveRegistration(target as unknown as Record<string, unknown>);
+      }
+      return updated;
+    });
     toast.success(`Registration ${id} updated to ${newStatus}`);
   };
 

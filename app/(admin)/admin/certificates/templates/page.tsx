@@ -7,6 +7,8 @@ import { INITIAL_EVENTS } from '@/lib/services/dataService';
 import { toast } from 'sonner';
 import { Award, Upload, Play, CheckCircle2, Sliders } from 'lucide-react';
 
+import { dynamicDb } from '@/lib/services/dataService';
+
 export default function AdminCertificatesTemplatesPage() {
   const [selectedEventId, setSelectedEventId] = useState(INITIAL_EVENTS[0].eventId);
   const [certType, setCertType] = useState<'Participation' | 'Winner' | 'Volunteer' | 'Speaker'>('Participation');
@@ -38,8 +40,22 @@ export default function AdminCertificatesTemplatesPage() {
   const handleBatchGenerate = async () => {
     setIsGenerating(true);
     try {
-      await new Promise((res) => setTimeout(res, 800));
-      toast.success(`Batch generated and delivered ${certType} certificates for 142 students in ${selectedEvent.title}!`);
+      await new Promise((res) => setTimeout(res, 600));
+
+      const verId = `MCC-CERT-${Date.now().toString().slice(-6)}`;
+      dynamicDb.saveCertificate({
+        verificationId: verId,
+        studentName: 'Rahul Sharma',
+        studentId: 'MCC-2026-00042',
+        enrollmentNumber: '92100103045',
+        eventName: selectedEvent.title,
+        eventType: `${certType} Certificate`,
+        issueDate: new Date().toISOString().split('T')[0],
+        status: 'Verified',
+        issuer: 'Microsoft Campus Club (MCC) — Marwadi University'
+      });
+
+      toast.success(`Batch generated and delivered ${certType} certificates for ${selectedEvent.title}! (Ref: ${verId})`);
     } finally {
       setIsGenerating(false);
     }

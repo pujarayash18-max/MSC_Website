@@ -4,24 +4,28 @@ import { useState, use } from 'react';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { INITIAL_EVENTS } from '@/lib/services/dataService';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { dynamicDb, INITIAL_EVENTS } from '@/lib/services/dataService';
+import { Event } from '@/types';
 
 interface EditEventPageProps {
   params: Promise<{ eventId: string }>;
 }
 
 export default function EditEventPage({ params }: EditEventPageProps) {
+  const router = useRouter();
   const resolvedParams = use(params);
   const eventId = resolvedParams.eventId;
 
-  const targetEvent = INITIAL_EVENTS.find((e) => e.eventId === eventId || e.id === eventId) || INITIAL_EVENTS[0];
+  const allEvents = dynamicDb.getEvents();
+  const targetEvent = allEvents.find((e) => e.eventId === eventId || e.id === eventId) || INITIAL_EVENTS[0];
 
   const [title, setTitle] = useState(targetEvent.title);
   const [shortDesc, setShortDesc] = useState(targetEvent.shortDescription);
-  const [category, setCategory] = useState(targetEvent.category);
-  const [mode, setMode] = useState(targetEvent.mode);
+  const [category, setCategory] = useState<Event['category']>(targetEvent.category);
+  const [mode, setMode] = useState<Event['mode']>(targetEvent.mode);
   const [venue, setVenue] = useState(targetEvent.venue);
   const [capacity, setCapacity] = useState(targetEvent.capacity);
   const [agenda, setAgenda] = useState(
@@ -41,10 +45,35 @@ export default function EditEventPage({ params }: EditEventPageProps) {
   const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
+    try {
+      const updatedEvent: Event = {
+        ...targetEvent,
+        title: title.trim(),
+        shortDescription: shortDesc.trim(),
+        category,
+        mode,
+        venue,
+        capacity: Number(capacity),
+        agenda: agenda.map((a) => ({
+          id: a.id,
+          time: a.time,
+          title: a.title,
+          speaker: a.speaker || 'Speaker',
+          room: a.room || 'Hall 4',
+          duration: a.duration || '60 mins',
+          sessionType: 'Hands-on'
+        })),
+        updatedAt: new Date().toISOString()
+      };
+
+      dynamicDb.saveEvent(updatedEvent);
       toast.success(`Event "${title}" updated successfully!`);
-    }, 600);
+      router.push('/admin/events');
+    } catch {
+      toast.error('Failed to update event.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (

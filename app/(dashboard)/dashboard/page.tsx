@@ -18,9 +18,19 @@ import {
   Pin
 } from 'lucide-react';
 
+import { useState } from 'react';
+import { dynamicDb } from '@/lib/services/dataService';
+
 export default function StudentDashboardPage() {
   const { user } = useAuth();
-  const upcomingEvent = INITIAL_EVENTS[0];
+  const [events] = useState(() => dynamicDb.getEvents());
+  const [notices] = useState(() => dynamicDb.getNotices());
+  const [registrations] = useState(() => dynamicDb.getRegistrations());
+  const [certificates] = useState(() => dynamicDb.getCertificates());
+
+  const upcomingEvent = events[0] || INITIAL_EVENTS[0];
+  const registeredCount = registrations.length || 2;
+  const certificateCount = certificates.length || 2;
 
   return (
     <div className="space-y-8">
@@ -33,6 +43,7 @@ export default function StudentDashboardPage() {
               alt={user?.fullName || 'User Profile'}
               width={64}
               height={64}
+              unoptimized
               className="w-16 h-16 rounded-2xl object-cover border-2 border-[#00A4EF] shadow-md"
             />
             <div>
@@ -72,7 +83,7 @@ export default function StudentDashboardPage() {
           <Card className="p-4 bg-slate-50 dark:bg-[#0B0F14] border-slate-200 dark:border-[#2A323D] flex items-center justify-between">
             <div>
               <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-[#A8B0BB]">EVENTS</p>
-              <p className="text-2xl font-black text-[#00A4EF] mt-0.5">12</p>
+              <p className="text-2xl font-black text-[#00A4EF] mt-0.5">{registeredCount}</p>
             </div>
             <div className="p-2.5 rounded-xl bg-[#00A4EF]/10 border border-[#00A4EF]/30 text-[#00A4EF]">
               <Calendar className="w-5 h-5" />
@@ -82,7 +93,7 @@ export default function StudentDashboardPage() {
           <Card className="p-4 bg-slate-50 dark:bg-[#0B0F14] border-slate-200 dark:border-[#2A323D] flex items-center justify-between">
             <div>
               <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-[#A8B0BB]">CERTIFICATES</p>
-              <p className="text-2xl font-black text-[#7FBA00] mt-0.5">8</p>
+              <p className="text-2xl font-black text-[#7FBA00] mt-0.5">{certificateCount}</p>
             </div>
             <div className="p-2.5 rounded-xl bg-[#7FBA00]/10 border border-[#7FBA00]/30 text-[#7FBA00]">
               <Award className="w-5 h-5" />
@@ -92,7 +103,7 @@ export default function StudentDashboardPage() {
           <Card className="p-4 bg-slate-50 dark:bg-[#0B0F14] border-slate-200 dark:border-[#2A323D] flex items-center justify-between">
             <div>
               <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-[#A8B0BB]">RANK</p>
-              <p className="text-2xl font-black text-[#00A4EF] mt-0.5">#{user?.currentRank || 24}</p>
+              <p className="text-2xl font-black text-[#00A4EF] mt-0.5">#{user?.currentRank || 1}</p>
             </div>
             <div className="p-2.5 rounded-xl bg-[#00A4EF]/10 border border-[#00A4EF]/30 text-[#00A4EF]">
               <Zap className="w-5 h-5" />
@@ -138,8 +149,8 @@ export default function StudentDashboardPage() {
           </div>
 
           <div className="space-y-3">
-            {INITIAL_NOTICES.slice(0, 2).map((n) => (
-              <div key={n.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] space-y-1">
+            {notices.slice(0, 3).map((n) => (
+              <div key={n.noticeId || n.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] space-y-1">
                 <Badge variant={n.priority === 'Urgent' ? 'danger' : 'purple'} size="sm">{n.priority}</Badge>
                 <h5 className="text-xs font-bold text-slate-900 dark:text-[#F5F7FA]">{n.title}</h5>
                 <p className="text-[11px] text-slate-600 dark:text-[#A8B0BB] line-clamp-2">{n.description}</p>

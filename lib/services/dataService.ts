@@ -1,5 +1,34 @@
-// Data Service with Dynamic Persistence & Storage Sync (§10)
 import { Event, Speaker, TeamMember, Notice, Sponsor } from '@/types';
+export type { Event, Speaker, TeamMember, Notice, Sponsor };
+
+export interface AttendanceRecord {
+  recordId: string;
+  eventId: string;
+  eventName: string;
+  studentId: string;
+  studentName: string;
+  enrollmentNumber: string;
+  timestamp: string;
+  verifiedBy: string;
+  status: 'Verified' | 'Flagged' | 'Present' | 'Absent';
+  [key: string]: any;
+}
+
+export interface RegistrationRecord {
+  registrationId?: string;
+  id?: string;
+  eventId?: string;
+  eventTitle?: string;
+  userId?: string;
+  userName?: string;
+  fullName?: string;
+  enrollmentNumber?: string;
+  department?: string;
+  year?: string;
+  qrPassCode?: string;
+  status?: string;
+  [key: string]: any;
+}
 
 export interface BlogPost {
   id: string;
@@ -15,6 +44,10 @@ export interface BlogPost {
   category: string;
   tags: string[];
   banner: string;
+  status: 'Pending' | 'Published' | 'Rejected';
+  rejectionNote?: string;
+  isLeadership?: boolean;
+  authorUserId?: string;
 }
 
 export interface CertificateRecord {
@@ -305,7 +338,9 @@ export const INITIAL_BLOGS: BlogPost[] = [
     readTime: '5 min read',
     category: 'Cloud Architecture',
     tags: ['Azure', 'Next.js', 'Serverless', 'WebDev'],
-    banner: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&auto=format&fit=crop&q=80'
+    banner: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&auto=format&fit=crop&q=80',
+    status: 'Published',
+    isLeadership: true
   },
   {
     id: 'blg_ai_02',
@@ -328,7 +363,9 @@ export const INITIAL_BLOGS: BlogPost[] = [
     readTime: '7 min read',
     category: 'Artificial Intelligence',
     tags: ['AI', 'OpenAI', 'CosmosDB', 'Python'],
-    banner: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1200&auto=format&fit=crop&q=80'
+    banner: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1200&auto=format&fit=crop&q=80',
+    status: 'Published',
+    isLeadership: true
   }
 ];
 
@@ -364,10 +401,20 @@ const STORAGE_KEYS = {
   REGISTRATIONS: 'mcc_db_registrations',
   ATTENDANCE: 'mcc_db_attendance',
   NOTICES: 'mcc_db_notices',
-  FEEDBACK: 'mcc_db_feedback'
+  FEEDBACK: 'mcc_db_feedback',
+  CERTIFICATES: 'mcc_db_certificates',
+  BLOGS: 'mcc_db_blogs',
+  SPEAKERS: 'mcc_db_speakers',
+  TEAM: 'mcc_db_team',
+  WINNERS: 'mcc_db_winners',
+  RESOURCES: 'mcc_db_resources',
+  TICKETS: 'mcc_db_tickets',
+  FORMS: 'mcc_db_forms',
+  AUDIT_LOGS: 'mcc_db_audit_logs'
 };
 
 export const dynamicDb = {
+  // EVENTS
   getEvents(): Event[] {
     if (typeof window === 'undefined') return INITIAL_EVENTS;
     const stored = localStorage.getItem(STORAGE_KEYS.EVENTS);
@@ -397,20 +444,37 @@ export const dynamicDb = {
     }
   },
 
-  getRegistrations(): Record<string, unknown>[] {
+  deleteEvent(id: string): void {
+    const current = this.getEvents();
+    const updated = current.filter((e) => e.eventId !== id && e.id !== id);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(updated));
+    }
+  },
+
+  // REGISTRATIONS
+  getRegistrations(): RegistrationRecord[] {
     if (typeof window === 'undefined') return [];
     const stored = localStorage.getItem(STORAGE_KEYS.REGISTRATIONS);
     return stored ? JSON.parse(stored) : [];
   },
 
-  saveRegistration(reg: Record<string, unknown>): void {
+  saveRegistration(reg: RegistrationRecord): void {
     const current = this.getRegistrations();
-    const updated = [reg, ...current];
+    const idx = current.findIndex((r) => r.registrationId === reg.registrationId);
+    let updated: RegistrationRecord[];
+    if (idx >= 0) {
+      updated = [...current];
+      updated[idx] = { ...reg };
+    } else {
+      updated = [reg, ...current];
+    }
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEYS.REGISTRATIONS, JSON.stringify(updated));
     }
   },
 
+  // NOTICES
   getNotices(): Notice[] {
     if (typeof window === 'undefined') return INITIAL_NOTICES;
     const stored = localStorage.getItem(STORAGE_KEYS.NOTICES);
@@ -419,9 +483,245 @@ export const dynamicDb = {
 
   saveNotice(notice: Notice): void {
     const current = this.getNotices();
-    const updated = [notice, ...current];
+    const idx = current.findIndex((n) => n.noticeId === notice.noticeId || n.id === notice.id);
+    let updated: Notice[];
+    if (idx >= 0) {
+      updated = [...current];
+      updated[idx] = { ...notice, updatedAt: new Date().toISOString() };
+    } else {
+      updated = [notice, ...current];
+    }
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEYS.NOTICES, JSON.stringify(updated));
+    }
+  },
+
+  deleteNotice(id: string): void {
+    const current = this.getNotices();
+    const updated = current.filter((n) => n.noticeId !== id && n.id !== id);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.NOTICES, JSON.stringify(updated));
+    }
+  },
+
+  // FEEDBACK
+  getFeedbacks(): Record<string, unknown>[] {
+    if (typeof window === 'undefined') return [];
+    const stored = localStorage.getItem(STORAGE_KEYS.FEEDBACK);
+    return stored ? JSON.parse(stored) : [];
+  },
+
+  saveFeedback(fb: Record<string, unknown>): void {
+    const current = this.getFeedbacks();
+    const updated = [fb, ...current];
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.FEEDBACK, JSON.stringify(updated));
+    }
+  },
+
+  // CERTIFICATES
+  getCertificates(): CertificateRecord[] {
+    if (typeof window === 'undefined') return INITIAL_CERTIFICATES;
+    const stored = localStorage.getItem(STORAGE_KEYS.CERTIFICATES);
+    return stored ? JSON.parse(stored) : INITIAL_CERTIFICATES;
+  },
+
+  saveCertificate(cert: CertificateRecord): void {
+    const current = this.getCertificates();
+    const idx = current.findIndex((c) => c.verificationId === cert.verificationId);
+    let updated: CertificateRecord[];
+    if (idx >= 0) {
+      updated = [...current];
+      updated[idx] = cert;
+    } else {
+      updated = [cert, ...current];
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.CERTIFICATES, JSON.stringify(updated));
+    }
+  },
+
+  // ATTENDANCE
+  getAttendanceLogs(): AttendanceRecord[] {
+    if (typeof window === 'undefined') return [];
+    const stored = localStorage.getItem(STORAGE_KEYS.ATTENDANCE);
+    return stored ? JSON.parse(stored) : [];
+  },
+
+  recordAttendanceCheckIn(log: AttendanceRecord): void {
+    const current = this.getAttendanceLogs();
+    const updated = [log, ...current];
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.ATTENDANCE, JSON.stringify(updated));
+    }
+  },
+
+  // BLOGS
+  getBlogs(): BlogPost[] {
+    if (typeof window === 'undefined') return INITIAL_BLOGS;
+    const stored = localStorage.getItem(STORAGE_KEYS.BLOGS);
+    return stored ? JSON.parse(stored) : INITIAL_BLOGS;
+  },
+
+  saveBlog(blog: BlogPost): void {
+    const current = this.getBlogs();
+    const idx = current.findIndex((b) => b.id === blog.id || b.slug === blog.slug);
+    let updated: BlogPost[];
+    if (idx >= 0) {
+      updated = [...current];
+      updated[idx] = blog;
+    } else {
+      updated = [blog, ...current];
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.BLOGS, JSON.stringify(updated));
+    }
+  },
+
+  deleteBlog(id: string): void {
+    const current = this.getBlogs();
+    const updated = current.filter((b) => b.id !== id);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.BLOGS, JSON.stringify(updated));
+    }
+  },
+
+  updateBlogStatus(id: string, status: 'Pending' | 'Published' | 'Rejected', rejectionNote?: string): void {
+    const current = this.getBlogs();
+    const idx = current.findIndex((b) => b.id === id || b.slug === id);
+    if (idx >= 0) {
+      const updated = [...current];
+      updated[idx] = {
+        ...updated[idx],
+        status,
+        rejectionNote: status === 'Rejected' ? rejectionNote || 'Does not meet publishing standards.' : undefined
+      };
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(STORAGE_KEYS.BLOGS, JSON.stringify(updated));
+      }
+    }
+  },
+
+  // SPEAKERS
+  getSpeakers(): Speaker[] {
+    if (typeof window === 'undefined') return INITIAL_SPEAKERS;
+    const stored = localStorage.getItem(STORAGE_KEYS.SPEAKERS);
+    return stored ? JSON.parse(stored) : INITIAL_SPEAKERS;
+  },
+
+  saveSpeaker(spk: Speaker): void {
+    const current = this.getSpeakers();
+    const idx = current.findIndex((s) => s.speakerId === spk.speakerId || s.id === spk.id);
+    let updated: Speaker[];
+    if (idx >= 0) {
+      updated = [...current];
+      updated[idx] = spk;
+    } else {
+      updated = [spk, ...current];
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.SPEAKERS, JSON.stringify(updated));
+    }
+  },
+
+  deleteSpeaker(id: string): void {
+    const current = this.getSpeakers();
+    const updated = current.filter((s) => s.speakerId !== id && s.id !== id);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.SPEAKERS, JSON.stringify(updated));
+    }
+  },
+
+  // TEAM
+  getTeam(): TeamMember[] {
+    if (typeof window === 'undefined') return INITIAL_TEAM;
+    const stored = localStorage.getItem(STORAGE_KEYS.TEAM);
+    return stored ? JSON.parse(stored) : INITIAL_TEAM;
+  },
+
+  saveTeamMember(member: TeamMember): void {
+    const current = this.getTeam();
+    const idx = current.findIndex((t) => t.memberId === member.memberId || t.id === member.id);
+    let updated: TeamMember[];
+    if (idx >= 0) {
+      updated = [...current];
+      updated[idx] = member;
+    } else {
+      updated = [member, ...current];
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.TEAM, JSON.stringify(updated));
+    }
+  },
+
+  deleteTeamMember(id: string): void {
+    const current = this.getTeam();
+    const updated = current.filter((t) => t.memberId !== id && t.id !== id);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.TEAM, JSON.stringify(updated));
+    }
+  },
+
+  // RESOURCES
+  getResources(): Record<string, unknown>[] {
+    if (typeof window === 'undefined') return [];
+    const stored = localStorage.getItem(STORAGE_KEYS.RESOURCES);
+    return stored ? JSON.parse(stored) : [];
+  },
+
+  saveResource(res: Record<string, unknown>): void {
+    const current = this.getResources();
+    const updated = [res, ...current];
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.RESOURCES, JSON.stringify(updated));
+    }
+  },
+
+  deleteResource(id: string): void {
+    const current = this.getResources();
+    const updated = current.filter((r) => r.id !== id);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.RESOURCES, JSON.stringify(updated));
+    }
+  },
+
+  // FORMS
+  getForms(): Record<string, unknown>[] {
+    if (typeof window === 'undefined') return [];
+    const stored = localStorage.getItem(STORAGE_KEYS.FORMS);
+    return stored ? JSON.parse(stored) : [];
+  },
+
+  saveForm(form: Record<string, unknown>): void {
+    const current = this.getForms();
+    const idx = current.findIndex((f) => f.formId === form.formId || f.id === form.id);
+    let updated: Record<string, unknown>[];
+    if (idx >= 0) {
+      updated = [...current];
+      updated[idx] = form;
+    } else {
+      updated = [form, ...current];
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('mcc_db_forms', JSON.stringify(updated));
+    }
+  },
+
+  // SOCIAL COMMUNITY LINKS
+  getSocialLinks(): { whatsapp: string; instagram: string; linkedin: string } {
+    const defaults = {
+      whatsapp: 'https://chat.whatsapp.com/mcc-community-official',
+      instagram: 'https://instagram.com/microsoftstudentcommunity',
+      linkedin: 'https://linkedin.com/company/microsoft-student-community'
+    };
+    if (typeof window === 'undefined') return defaults;
+    const stored = localStorage.getItem('mcc_social_links');
+    return stored ? { ...defaults, ...JSON.parse(stored) } : defaults;
+  },
+
+  saveSocialLinks(links: { whatsapp: string; instagram: string; linkedin: string }): void {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('mcc_social_links', JSON.stringify(links));
     }
   }
 };

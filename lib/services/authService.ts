@@ -256,5 +256,24 @@ export const authService = {
       const msg = err instanceof Error ? err.message : 'Login failed.';
       return { success: false, message: msg };
     }
+  },
+
+  async updateUserProfile(userId: string, updates: Partial<User>): Promise<User | null> {
+    const usersDb = this.getUsersDb();
+    const idx = usersDb.findIndex((u) => u.userId === userId || u.id === userId);
+    if (idx === -1) return null;
+
+    const updatedUser: User = {
+      ...usersDb[idx],
+      ...updates,
+      updatedAt: new Date().toISOString()
+    };
+
+    usersDb[idx] = updatedUser;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY_USERS_DB, JSON.stringify(usersDb));
+    }
+    await this.setSession(updatedUser);
+    return updatedUser;
   }
 };

@@ -22,6 +22,7 @@ export default function StudentProfilePage() {
             alt={user?.fullName || 'Profile Photo'}
             width={96}
             height={96}
+            unoptimized
             className="w-24 h-24 rounded-2xl object-cover border-2 border-[#00A4EF] shadow-xl"
           />
           <div className="text-center md:text-left space-y-2 flex-1">

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Providers } from './providers';
+import { SocialCommunityModal } from '@/components/SocialCommunityModal';
 
 export const metadata: Metadata = {
   title: 'Microsoft Campus Club (MCC) - Marwadi University',
@@ -22,7 +23,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning className="dark">
       <body suppressHydrationWarning className="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen antialiased transition-colors duration-300 selection:bg-sky-500 selection:text-white">
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <SocialCommunityModal />
+        </Providers>
       </body>
     </html>
   );

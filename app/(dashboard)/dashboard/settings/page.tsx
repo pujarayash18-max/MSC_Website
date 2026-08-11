@@ -9,7 +9,7 @@ import { Settings, Save, Lock, User, Globe } from 'lucide-react';
 import { GithubIcon, LinkedinIcon } from '@/components/icons';
 
 export default function StudentSettingsPage() {
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
   const [bio, setBio] = useState(user?.bio || '');
   const [github, setGithub] = useState(user?.github || '');
   const [linkedin, setLinkedin] = useState(user?.linkedin || '');
@@ -17,13 +17,28 @@ export default function StudentSettingsPage() {
   const [skills, setSkills] = useState(user?.skills?.join(', ') || '');
   const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
+    try {
+      const parsedSkills = skills
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      await updateProfile({
+        bio,
+        github,
+        linkedin,
+        portfolio,
+        skills: parsedSkills
+      });
       toast.success('Profile settings updated successfully!');
-    }, 600);
+    } catch {
+      toast.error('Failed to update profile settings.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (

@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   FileCheck,
+  FileText,
   FolderDown,
   Award,
   QrCode,
@@ -18,6 +19,7 @@ import {
 const SIDEBAR_ITEMS = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'My Registrations', href: '/dashboard/registrations', icon: FileCheck },
+  { label: 'My Articles & Blogs', href: '/dashboard/blogs', icon: FileText },
   { label: 'Resources', href: '/dashboard/resources', icon: FolderDown },
   { label: 'Certificates', href: '/dashboard/certificates', icon: Award },
   { label: 'Attendance', href: '/dashboard/attendance', icon: QrCode },

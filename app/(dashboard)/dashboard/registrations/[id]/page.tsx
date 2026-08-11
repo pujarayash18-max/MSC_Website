@@ -5,15 +5,29 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { INITIAL_EVENTS } from '@/lib/services/dataService';
 import { toast } from 'sonner';
 import { ArrowLeft, Users, CheckCircle2, Download } from 'lucide-react';
 import { GithubIcon } from '@/components/icons';
+import { useAuth } from '@/hooks/useAuth';
+import { dynamicDb, INITIAL_EVENTS } from '@/lib/services/dataService';
 
 export default function RegistrationDetailPage() {
   const params = useParams();
   const regId = params?.id as string;
-  const event = INITIAL_EVENTS[0];
+  const { user } = useAuth();
+
+  const allEvents = dynamicDb.getEvents();
+  const savedRegs = dynamicDb.getRegistrations();
+  const matchingReg = savedRegs.find((r) => r.registrationId === regId || r.id === regId);
+
+  const eventItem = (matchingReg
+    ? allEvents.find((e) => e.eventId === matchingReg.eventId || e.title === matchingReg.eventTitle)
+    : allEvents.find((e) => e.eventId === regId)) || allEvents[0] || INITIAL_EVENTS[0];
+
+  const studentName = user?.fullName || 'Student Member';
+  const enrollmentNum = user?.enrollmentNumber || '92100103045';
+  const deptYear = `${user?.department || 'Computer Engineering'} (${user?.year || '3rd Year'})`;
+  const passCode = matchingReg?.qrPassCode ? String(matchingReg.qrPassCode) : `MCC-PASS-${regId || 'AZ8801'}`;
 
   return (
     <div className="max-w-4xl space-y-6">
@@ -27,8 +41,8 @@ export default function RegistrationDetailPage() {
         <div className="flex flex-col sm:flex-row items-start justify-between gap-4 border-b border-slate-200 dark:border-[#2A323D] pb-4">
           <div>
             <span className="text-xs font-mono text-[#00A4EF] font-bold">Registration Reference: {regId || 'reg_az_8801'}</span>
-            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white mt-1">{event.title}</h1>
-            <p className="text-xs text-slate-500 dark:text-[#A8B0BB] mt-1">Submitted on Aug 05, 2026 • Venue: {event.venue}</p>
+            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white mt-1">{eventItem.title}</h1>
+            <p className="text-xs text-slate-500 dark:text-[#A8B0BB] mt-1">Submitted on Aug 05, 2026 • Venue: {eventItem.venue}</p>
           </div>
           <Badge variant="success" className="text-sm px-3 py-1">Registration Approved</Badge>
         </div>
@@ -37,9 +51,9 @@ export default function RegistrationDetailPage() {
         <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-2 text-center md:text-left">
             <Badge variant="primary">Verified QR Entry Pass</Badge>
-            <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">Rahul Sharma</h3>
-            <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">Enrollment: 92100103045 • Computer Engineering (3rd Year)</p>
-            <p className="text-xs font-mono text-[#00A4EF] font-bold">Pass Code: MCC-PASS-2026-AZ8801</p>
+            <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">{studentName}</h3>
+            <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">Enrollment: {enrollmentNum} • {deptYear}</p>
+            <p className="text-xs font-mono text-[#00A4EF] font-bold">Pass Code: {passCode}</p>
           </div>
 
           <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-lg text-center">

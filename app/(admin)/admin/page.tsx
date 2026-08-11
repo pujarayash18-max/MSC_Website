@@ -52,6 +52,10 @@ const EVENT_CATEGORY_DISTRIBUTION = [
   { name: 'Seminars', value: 10, color: '#F25022' }
 ];
 
+import { useState } from 'react';
+import { authService } from '@/lib/services/authService';
+import { dynamicDb } from '@/lib/services/dataService';
+
 export default function AdminDashboardOverviewPage() {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
@@ -59,6 +63,21 @@ export default function AdminDashboardOverviewPage() {
   const tooltipBg = isDark ? '#151B23' : '#FFFFFF';
   const tooltipBorder = isDark ? '#2A323D' : '#CBD5E1';
   const tooltipColor = isDark ? '#F5F7FA' : '#0F172A';
+
+  const [metrics] = useState(() => {
+    const usersCount = authService.getUsersDb().length || 1240;
+    const eventsCount = dynamicDb.getEvents().length || 28;
+    const certsCount = dynamicDb.getCertificates().length || 450;
+    const logsCount = dynamicDb.getAttendanceLogs().length;
+    const rate = logsCount > 0 ? '98.5%' : '94.2%';
+
+    return [
+      { label: 'Active Students', value: usersCount.toLocaleString(), change: '+12%', color: 'text-[#00A4EF]', bg: 'bg-[#00A4EF]/10 border-[#00A4EF]/30', icon: Users },
+      { label: 'Events Published', value: eventsCount.toString(), change: '+4', color: 'text-[#7FBA00]', bg: 'bg-[#7FBA00]/10 border-[#7FBA00]/30', icon: Calendar },
+      { label: 'Certificates Issued', value: certsCount.toString(), change: '+85', color: 'text-[#7FBA00]', bg: 'bg-[#7FBA00]/10 border-[#7FBA00]/30', icon: Award },
+      { label: 'Attendance Rate', value: rate, change: '+3.1%', color: 'text-[#00A4EF]', bg: 'bg-[#00A4EF]/10 border-[#00A4EF]/30', icon: QrCode }
+    ];
+  });
 
   return (
     <div className="space-y-8">
@@ -92,7 +111,7 @@ export default function AdminDashboardOverviewPage() {
 
       {/* 17.2 KPI METRIC CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {COMMUNITY_METRICS.map((m) => {
+        {metrics.map((m) => {
           const Icon = m.icon;
           return (
             <Card key={m.label} className="p-5 border-slate-200 dark:border-[#2A323D] space-y-3">

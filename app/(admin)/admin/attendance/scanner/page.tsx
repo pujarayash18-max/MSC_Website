@@ -6,34 +6,69 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { QrCode, Camera, CheckCircle2, User, RefreshCw } from 'lucide-react';
 
+import { dynamicDb, AttendanceRecord } from '@/lib/services/dataService';
+
 export default function AdminAttendanceScannerPage() {
   const [manualQr, setManualQr] = useState('');
-  const [scannedRecords, setScannedRecords] = useState<Array<{ name: string; time: string; status: string; id: string }>>([
-    { id: 'MCC-AZ-2026-REG8801-VERIFIED', name: 'Rahul Sharma', time: '09:32 AM', status: 'Present' }
-  ]);
+  const [scannedRecords, setScannedRecords] = useState<AttendanceRecord[]>(() => {
+    const logs = dynamicDb.getAttendanceLogs();
+    if (logs && logs.length > 0) {
+      return logs;
+    }
+    return [
+      {
+        recordId: 'MCC-AZ-2026-REG8801-VERIFIED',
+        id: 'MCC-AZ-2026-REG8801-VERIFIED',
+        eventId: 'evt_azure_01',
+        eventName: 'Azure Cloud Masterclass',
+        studentId: 'MCC-2026-00042',
+        studentName: 'Rahul Sharma',
+        name: 'Rahul Sharma',
+        enrollmentNumber: '92100103045',
+        time: '09:32 AM',
+        timestamp: new Date().toISOString(),
+        verifiedBy: 'QR Camera Scanner',
+        status: 'Verified'
+      }
+    ];
+  });
   const [isScanning, setIsScanning] = useState(false);
 
   const handleVerify = (token: string) => {
-    if (!token) return;
+    if (!token.trim()) return;
+    const cleanToken = token.trim();
 
     // Check duplicate scan
-    if (scannedRecords.some((r) => r.id === token)) {
+    if (scannedRecords.some((r) => r.id === cleanToken)) {
       toast.error('Duplicate Scan Blocked! Student is already checked in.', {
         description: 'Duplicate attendance scans are strictly prevented per §46 security policy.'
       });
       return;
     }
 
-    const newRecord = {
-      id: token,
-      name: token.includes('8801') ? 'Rahul Sharma' : 'Ananya Verma',
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      status: 'Present'
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const nameStr = cleanToken.includes('8801') ? 'Rahul Sharma' : cleanToken.includes('9902') ? 'Ananya Verma' : 'Verified Student';
+
+    const newRecord: AttendanceRecord = {
+      recordId: cleanToken,
+      id: cleanToken,
+      eventId: 'evt_azure_01',
+      eventName: 'Azure Cloud Architecture Masterclass',
+      studentId: 'MCC-2026-00042',
+      studentName: nameStr,
+      name: nameStr,
+      enrollmentNumber: '92100103045',
+      time: timeStr,
+      timestamp: new Date().toISOString(),
+      verifiedBy: 'QR Camera Scanner',
+      status: 'Verified',
+      createdAt: new Date().toISOString()
     };
 
+    dynamicDb.recordAttendanceCheckIn(newRecord);
     setScannedRecords([newRecord, ...scannedRecords]);
     setManualQr('');
-    toast.success(`Check-in verified for ${newRecord.name}!`);
+    toast.success(`Check-in verified for ${newRecord.studentName}!`);
   };
 
   return (
@@ -116,21 +151,21 @@ export default function AdminAttendanceScannerPage() {
           </h3>
 
           <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
-            {scannedRecords.map((rec) => (
-              <div key={rec.id} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4">
+            {scannedRecords.map((rec, idx) => (
+              <div key={rec.recordId || rec.id || idx} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 dark:text-emerald-400 flex items-center justify-center">
                     <User className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">{rec.name}</h4>
-                    <p className="text-[11px] font-mono text-sky-400">{rec.id}</p>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">{rec.studentName || rec.name || 'Student Member'}</h4>
+                    <p className="text-[11px] font-mono text-sky-400">{rec.recordId || rec.id}</p>
                   </div>
                 </div>
 
                 <div className="text-right">
                   <Badge variant="success" size="sm">Checked In</Badge>
-                  <p className="text-[10px] text-slate-500 mt-1">{rec.time}</p>
+                  <p className="text-[10px] text-slate-500 mt-1">{rec.time || '09:30 AM'}</p>
                 </div>
               </div>
             ))}
