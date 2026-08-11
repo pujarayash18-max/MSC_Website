@@ -1,0 +1,1078 @@
+// MCC Platform — Prisma Schema
+// Derived from: types/*.ts, lib/services/dataService.ts, lib/services/authService.ts, docs/DATABASE.md
+// Target: PostgreSQL (replaces Cosmos DB mock)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// ENUMS (mirroring TypeScript union types)
+// ─────────────────────────────────────────────
+
+enum SystemRoleName {
+  SUPER_ADMIN         @map("Super Admin")
+  WEBSITE_ADMIN       @map("Website Admin")
+  EVENT_MANAGER       @map("Event Manager")
+  CONTENT_MANAGER     @map("Content Manager")
+  MEDIA_MANAGER       @map("Media Manager")
+  FACULTY_COORDINATOR @map("Faculty Coordinator")
+  PRESIDENT           @map("President")
+  VICE_PRESIDENT      @map("Vice President")
+  TECHNICAL_LEAD      @map("Technical Lead")
+  STUDENT             @map("Student")
+  VOLUNTEER           @map("Volunteer")
+}
+
+enum EventCategory {
+  WORKSHOP         @map("Workshop")
+  HACKATHON        @map("Hackathon")
+  WEBINAR          @map("Webinar")
+  BOOTCAMP         @map("Bootcamp")
+  AZURE            @map("Azure")
+  AI               @map("AI")
+  GITHUB           @map("GitHub")
+  COMMUNITY_MEETUP @map("Community Meetup")
+  CONFERENCE       @map("Conference")
+}
+
+enum EventMode {
+  ONLINE  @map("Online")
+  OFFLINE @map("Offline")
+  HYBRID  @map("Hybrid")
+}
+
+enum EventStatus {
+  DRAFT               @map("Draft")
+  PUBLISHED           @map("Published")
+  REGISTRATION_OPEN   @map("Registration Open")
+  REGISTRATION_CLOSED @map("Registration Closed")
+  UPCOMING            @map("Upcoming")
+  ONGOING             @map("Ongoing")
+  COMPLETED           @map("Completed")
+  CANCELLED           @map("Cancelled")
+  ARCHIVED            @map("Archived")
+}
+
+enum RegistrationStatus {
+  PENDING    @map("Pending")
+  APPROVED   @map("Approved")
+  REJECTED   @map("Rejected")
+  WAITLISTED @map("Waitlisted")
+  CHECKED_IN @map("Checked In")
+  COMPLETED  @map("Completed")
+}
+
+enum AttendanceStatus {
+  PRESENT @map("Present")
+  LATE    @map("Late")
+  ABSENT  @map("Absent")
+  EXCUSED @map("Excused")
+}
+
+enum CertificateStatus {
+  PENDING      @map("Pending")
+  GENERATED    @map("Generated")
+  SENT         @map("Sent")
+  FAILED       @map("Failed")
+  NOT_ELIGIBLE @map("Not Eligible")
+}
+
+enum CertificateType {
+  PARTICIPATION @map("Participation")
+  WINNER        @map("Winner")
+  VOLUNTEER     @map("Volunteer")
+  SPEAKER       @map("Speaker")
+  ORGANIZER     @map("Organizer")
+}
+
+enum EmailStatus {
+  SENT    @map("Sent")
+  PENDING @map("Pending")
+  FAILED  @map("Failed")
+}
+
+enum ResourceCategory {
+  SLIDES           @map("Slides")
+  PDF              @map("PDF")
+  ASSIGNMENT       @map("Assignment")
+  RECORDING        @map("Recording")
+  SOURCE_CODE      @map("Source Code")
+  GITHUB           @map("GitHub")
+  MICROSOFT_LEARN  @map("Microsoft Learn")
+  PRACTICE_DATASET @map("Practice Dataset")
+  ZIP              @map("ZIP")
+  DOCUMENTATION    @map("Documentation")
+  EXTERNAL_LINK    @map("External Link")
+}
+
+enum ResourceVisibility {
+  PUBLIC              @map("Public")
+  REGISTERED_STUDENTS @map("Registered Students")
+  CHECKED_IN_ONLY     @map("Checked-in Students Only")
+  CORE_TEAM_ONLY      @map("Core Team Only")
+  ADMIN_ONLY          @map("Admin Only")
+}
+
+enum SessionType {
+  PRESENTATION @map("Presentation")
+  HANDS_ON     @map("Hands-on")
+  QUIZ         @map("Quiz")
+  KEYNOTE      @map("Keynote")
+  BREAKOUT     @map("Breakout")
+  NETWORKING   @map("Networking")
+}
+
+enum FormType {
+  COLLEGE_REGISTRATION       @map("College Registration")
+  INTER_COLLEGE_REGISTRATION @map("Inter-College Registration")
+  HACKATHON_REGISTRATION     @map("Hackathon Registration")
+  CUSTOM_REGISTRATION        @map("Custom Registration")
+}
+
+enum FieldType {
+  SHORT_TEXT       @map("Short Text")
+  LONG_TEXT        @map("Long Text")
+  EMAIL            @map("Email")
+  PHONE            @map("Phone")
+  ENROLLMENT_NUM   @map("Enrollment Number")
+  COLLEGE_NAME     @map("College Name")
+  DEPARTMENT       @map("Department")
+  YEAR             @map("Year")
+  DIVISION         @map("Division")
+  TEAM_NAME        @map("Team Name")
+  TEAM_MEMBERS     @map("Team Members")
+  TEAM_SIZE        @map("Team Size")
+  DROPDOWN         @map("Dropdown")
+  RADIO            @map("Radio")
+  CHECKBOX         @map("Checkbox")
+  MULTI_SELECT     @map("Multi-select")
+  DATE             @map("Date")
+  TIME             @map("Time")
+  NUMBER           @map("Number")
+  URL              @map("URL")
+  GITHUB_PROFILE   @map("GitHub Profile")
+  LINKEDIN_PROFILE @map("LinkedIn Profile")
+  PORTFOLIO        @map("Portfolio")
+  RESUME_UPLOAD    @map("Resume Upload")
+  IMAGE_UPLOAD     @map("Image Upload")
+  FILE_UPLOAD      @map("File Upload")
+}
+
+enum TeamCategory {
+  FACULTY_COORDINATORS @map("Faculty Coordinators")
+  PRESIDENT            @map("President")
+  VICE_PRESIDENT       @map("Vice President")
+  TECHNICAL_TEAM       @map("Technical Team")
+  EVENTS_TEAM          @map("Events Team")
+  MEDIA_TEAM           @map("Media Team")
+  CONTENT_TEAM         @map("Content Team")
+  DESIGN_TEAM          @map("Design Team")
+  VOLUNTEERS           @map("Volunteers")
+}
+
+enum SponsorTier {
+  TITLE             @map("Title")
+  PLATINUM          @map("Platinum")
+  GOLD              @map("Gold")
+  SILVER            @map("Silver")
+  COMMUNITY_PARTNER @map("Community Partner")
+}
+
+enum NoticePriority {
+  GENERAL         @map("General")
+  EVENT           @map("Event")
+  URGENT          @map("Urgent")
+  RECRUITMENT     @map("Recruitment")
+  PLACEMENT       @map("Placement")
+  MICROSOFT_LEARN @map("Microsoft Learn")
+}
+
+enum NotificationType {
+  REGISTRATION_APPROVED   @map("Registration Approved")
+  REGISTRATION_WAITLISTED @map("Registration Waitlisted")
+  REGISTRATION_REJECTED   @map("Registration Rejected")
+  EVENT_REMINDER          @map("Event Reminder")
+  LIVE_RESOURCE_AVAILABLE @map("Live Resource Available")
+  CERTIFICATE_READY       @map("Certificate Ready")
+  WINNER_ANNOUNCEMENT     @map("Winner Announcement")
+  NEW_BLOG                @map("New Blog")
+  NEW_NOTICE              @map("New Notice")
+  RECRUITMENT_OPEN        @map("Recruitment Open")
+}
+
+enum WinnerRank {
+  FIRST       @map("First")
+  SECOND      @map("Second")
+  THIRD       @map("Third")
+  PARTICIPANT @map("Participant")
+}
+
+enum TicketStatus {
+  OPEN        @map("Open")
+  ASSIGNED    @map("Assigned")
+  IN_PROGRESS @map("In Progress")
+  RESOLVED    @map("Resolved")
+  CLOSED      @map("Closed")
+}
+
+enum AuditStatus {
+  SUCCESS @map("success")
+  FAILURE @map("failure")
+  WARNING @map("warning")
+}
+
+enum SystemModule {
+  DASHBOARD          @map("Dashboard")
+  EVENTS             @map("Events")
+  REGISTRATION_FORMS @map("Registration Forms")
+  REGISTRATIONS      @map("Registrations")
+  ATTENDANCE         @map("Attendance")
+  EVENT_RESOURCES    @map("Event Resources")
+  CERTIFICATES       @map("Certificates")
+  WINNERS            @map("Winners")
+  LEADERBOARD        @map("Leaderboard")
+  TEAM_PROFILES      @map("Team Profiles")
+  SPEAKER_PROFILES   @map("Speaker Profiles")
+  GALLERY            @map("Gallery")
+  BLOGS              @map("Blogs")
+  NOTICES            @map("Notices")
+  CONTACT_TICKETS    @map("Contact Tickets")
+  REPORTS            @map("Reports")
+  AUDIT_LOGS         @map("Audit Logs")
+  RBAC               @map("RBAC")
+  SETTINGS           @map("Settings")
+}
+
+enum AlbumCategory {
+  WORKSHOPS         @map("Workshops")
+  HACKATHONS        @map("Hackathons")
+  COMMUNITY_MEETUPS @map("Community Meetups")
+  BEHIND_THE_SCENES @map("Behind the Scenes")
+  CONFERENCES       @map("Conferences")
+}
+
+// ─────────────────────────────────────────────
+// USER & ROLE
+// ─────────────────────────────────────────────
+
+/// System roles with granular RBAC permissions stored as JSON (§85, §89, §90, §126)
+model Role {
+  id          String         @id @default(cuid())
+  roleName    SystemRoleName @unique
+  description String
+  // JSON: Record<SystemModule, ActionPermission> — stored as Json for flexibility
+  permissions Json
+  users       User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("roles")
+}
+
+/// Student / staff / admin accounts (§88, §89)
+model User {
+  id                   String   @id @default(cuid())
+  studentId            String?  @unique // MCC-2026-00042 format
+  fullName             String
+  email                String   @unique
+  enrollmentNumber     String?
+  college              String
+  department           String
+  year                 String
+  division             String?
+  profilePhoto         String?
+  github               String?
+  linkedin             String?
+  portfolio            String?
+  bio                  String?
+  skills               String[] // array of skill strings
+  communityPoints      Int      @default(0)
+  currentRank          Int      @default(9999)
+  attendancePercentage Float    @default(100)
+  passwordHash         String
+  isDeleted            Boolean  @default(false)
+  status               String   @default("active")
+
+  roleId   String
+  role     Role           @relation(fields: [roleId], references: [id])
+  roleName SystemRoleName @default(STUDENT)
+
+  // Relations
+  registrations   Registration[]
+  attendances     Attendance[]
+  certificates    Certificate[]
+  pointsLedger    PointsLedger[]
+  achievements    Achievement[]
+  feedbacks       Feedback[]
+  notifications   Notification[]
+  auditLogs       AuditLog[]
+  blogPosts       BlogPost[]
+  winnerShowcases WinnerShowcase[]
+  teamMemberships RegistrationTeamMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([studentId])
+  @@index([enrollmentNumber])
+  @@index([roleName])
+  @@index([communityPoints])
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────
+// EVENTS & RELATED
+// ─────────────────────────────────────────────
+
+/// Events: workshops, hackathons, webinars, etc. (§63, §64)
+model Event {
+  id                 String        @id @default(cuid())
+  title              String
+  slug               String        @unique
+  shortDescription   String
+  description        String        @db.Text
+  banner             String
+  category           EventCategory
+  mode               EventMode
+  venue              String
+  startDate          DateTime
+  endDate            DateTime
+  registrationStart  DateTime
+  registrationEnd    DateTime
+  capacity           Int
+  remainingSeats     Int
+  waitlistEnabled    Boolean       @default(false)
+  waitlistLimit      Int           @default(0)
+  waitlistCount      Int           @default(0)
+  registrationStatus String        @default("Open") // Open | Closed | Waitlist
+  eventStatus        EventStatus   @default(PUBLISHED)
+  resourceFolder     String?
+  tags               String[]
+  isDeleted          Boolean       @default(false)
+  status             String        @default("published")
+
+  // Relations
+  agendaItems       AgendaItem[]
+  speakers          EventSpeaker[]
+  sponsors          EventSponsor[]
+  registrationForms RegistrationForm[]
+  registrations     Registration[]
+  attendances       Attendance[]
+  certificates      Certificate[]
+  resources         Resource[]
+  feedbacks         Feedback[]
+  galleryAlbum      GalleryAlbum?      @relation(fields: [galleryAlbumId], references: [id])
+  galleryAlbumId    String?
+  galleryImages     GalleryImage[]
+  winnerShowcases   WinnerShowcase[]
+  teams             Team[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([startDate])
+  @@index([eventStatus])
+  @@index([slug])
+  @@map("events")
+}
+
+/// Event agenda items (§64)
+model AgendaItem {
+  id           String       @id @default(cuid())
+  eventId      String
+  event        Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  time         String // e.g. "09:30 AM"
+  title        String
+  description  String?
+  speaker      String?
+  room         String?
+  duration     String?
+  sessionType  SessionType?
+  displayOrder Int          @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+  @@map("agenda_items")
+}
+
+/// Speakers who present at events (§96)
+model Speaker {
+  id           String   @id @default(cuid())
+  name         String
+  organization String
+  designation  String
+  bio          String   @db.Text
+  photo        String
+  linkedin     String?
+  website      String?
+  expertise    String[]
+  isDeleted    Boolean  @default(false)
+  status       String   @default("active")
+
+  events EventSpeaker[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("speakers")
+}
+
+/// M2M join: Event ↔ Speaker
+model EventSpeaker {
+  eventId   String
+  speakerId String
+  event     Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  speaker   Speaker @relation(fields: [speakerId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, speakerId])
+  @@map("event_speakers")
+}
+
+/// Sponsors for events (§97)
+model Sponsor {
+  id          String      @id @default(cuid())
+  name        String
+  logo        String
+  website     String
+  description String
+  tier        SponsorTier
+  isDeleted   Boolean     @default(false)
+  status      String      @default("active")
+
+  events EventSponsor[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("sponsors")
+}
+
+/// M2M join: Event ↔ Sponsor
+model EventSponsor {
+  eventId   String
+  sponsorId String
+  event     Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  sponsor   Sponsor @relation(fields: [sponsorId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, sponsorId])
+  @@map("event_sponsors")
+}
+
+// ─────────────────────────────────────────────
+// REGISTRATION FORMS (Dynamic Form Builder)
+// ─────────────────────────────────────────────
+
+/// Dynamic registration forms per event (§91, §92)
+model RegistrationForm {
+  id           String   @id @default(cuid())
+  eventId      String
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  formName     String
+  formType     FormType
+  isEnabled    Boolean  @default(true)
+  displayOrder Int      @default(0)
+  isDeleted    Boolean  @default(false)
+  status       String   @default("active")
+
+  sections      FormSection[]
+  registrations Registration[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+  @@map("registration_forms")
+}
+
+/// Sections within a form (§92)
+model FormSection {
+  id           String           @id @default(cuid())
+  formId       String
+  form         RegistrationForm @relation(fields: [formId], references: [id], onDelete: Cascade)
+  title        String
+  description  String?
+  displayOrder Int              @default(0)
+
+  fields FormField[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([formId])
+  @@map("form_sections")
+}
+
+/// Individual fields within a form section (§92)
+model FormField {
+  id                     String      @id @default(cuid())
+  sectionId              String
+  section                FormSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  label                  String
+  placeholder            String?
+  type                   FieldType
+  required               Boolean     @default(false)
+  options                String[] // for Dropdown, Radio, Checkbox, Multi-select
+  defaultValue           String?
+  displayOrder           Int         @default(0)
+  helpText               String?
+  validationRegex        String?
+  validationErrorMessage String?
+  visibilityRule         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sectionId])
+  @@map("form_fields")
+}
+
+// ─────────────────────────────────────────────
+// REGISTRATIONS & TEAMS
+// ─────────────────────────────────────────────
+
+/// Student event registrations with QR tokens (§93, §94)
+model Registration {
+  id                 String             @id @default(cuid())
+  eventId            String
+  event              Event              @relation(fields: [eventId], references: [id])
+  userId             String
+  user               User               @relation(fields: [userId], references: [id])
+  formId             String
+  form               RegistrationForm   @relation(fields: [formId], references: [id])
+  formType           String
+  responses          Json // fieldId → answer map
+  registrationStatus RegistrationStatus @default(PENDING)
+  qrToken            String             @unique // secure QR scan token
+  attendanceStatus   AttendanceStatus   @default(ABSENT)
+  certificateStatus  CertificateStatus  @default(PENDING)
+  submittedAt        DateTime           @default(now())
+  notes              String?
+  isDeleted          Boolean            @default(false)
+
+  // Team membership
+  teamId String?
+  team   Team?   @relation(fields: [teamId], references: [id])
+
+  attendances Attendance[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([userId])
+  @@index([qrToken])
+  @@index([registrationStatus])
+  @@map("registrations")
+}
+
+/// Hackathon teams (§93)
+model Team {
+  id               String  @id @default(cuid())
+  eventId          String
+  event            Event   @relation(fields: [eventId], references: [id])
+  teamName         String
+  leaderId         String
+  repository       String?
+  problemStatement String?
+  track            String?
+  submissionStatus String? // Draft | Submitted | Under Review | Evaluated
+  finalResult      String?
+  isDeleted        Boolean @default(false)
+
+  registrations Registration[]
+  members       RegistrationTeamMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+  @@map("teams")
+}
+
+/// M2M: Team members (Users on a Team)
+model RegistrationTeamMember {
+  teamId String
+  userId String
+  team   Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   String? // e.g. "Leader", "Member"
+
+  @@id([teamId, userId])
+  @@map("registration_team_members")
+}
+
+// ─────────────────────────────────────────────
+// ATTENDANCE
+// ─────────────────────────────────────────────
+
+/// QR check-in attendance records (§95)
+model Attendance {
+  id             String           @id @default(cuid())
+  registrationId String
+  registration   Registration     @relation(fields: [registrationId], references: [id])
+  eventId        String
+  event          Event            @relation(fields: [eventId], references: [id])
+  userId         String
+  user           User             @relation(fields: [userId], references: [id])
+  checkInTime    DateTime
+  checkOutTime   DateTime?
+  status         AttendanceStatus @default(PRESENT)
+  verifiedBy     String // Volunteer / Admin user ID
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([userId])
+  @@index([registrationId])
+  @@map("attendances")
+}
+
+// ─────────────────────────────────────────────
+// CERTIFICATES
+// ─────────────────────────────────────────────
+
+/// Certificate canvas templates with placeholder positions (§103)
+model CertificateTemplate {
+  id                String          @id @default(cuid())
+  templateName      String
+  certificateType   CertificateType
+  backgroundBlobUrl String
+  // JSON: PlaceholderPosition[] — {fieldName, x, y, fontSize, fontColor}
+  placeholders      Json
+  isDeleted         Boolean         @default(false)
+  status            String          @default("active")
+
+  certificates Certificate[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("certificate_templates")
+}
+
+/// Issued certificates per student per event (§103)
+model Certificate {
+  id               String               @id @default(cuid())
+  eventId          String
+  event            Event                @relation(fields: [eventId], references: [id])
+  userId           String
+  user             User                 @relation(fields: [userId], references: [id])
+  templateId       String?
+  template         CertificateTemplate? @relation(fields: [templateId], references: [id])
+  type             CertificateType
+  verificationCode String               @unique // MCC-CERT-2026-XXXXX format
+  blobUrl          String
+  qrCodeUrl        String?
+  generatedAt      DateTime             @default(now())
+  emailStatus      EmailStatus          @default(PENDING)
+  isDeleted        Boolean              @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([eventId])
+  @@index([verificationCode])
+  @@map("certificates")
+}
+
+// ─────────────────────────────────────────────
+// RESOURCES
+// ─────────────────────────────────────────────
+
+/// Event resources: slides, recordings, code samples (§96)
+model Resource {
+  id          String             @id @default(cuid())
+  eventId     String
+  event       Event              @relation(fields: [eventId], references: [id])
+  title       String
+  description String
+  category    ResourceCategory
+  blobUrl     String
+  visibility  ResourceVisibility @default(PUBLIC)
+  uploadedBy  String // user ID
+  downloads   Int                @default(0)
+  views       Int                @default(0)
+  publishTime DateTime           @default(now())
+  expiryTime  DateTime?
+  isDeleted   Boolean            @default(false)
+  status      String             @default("active")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([category])
+  @@map("resources")
+}
+
+// ─────────────────────────────────────────────
+// POINTS & ACHIEVEMENTS
+// ─────────────────────────────────────────────
+
+/// Community points ledger / transaction history (§100, §101)
+model PointsLedger {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  eventId   String? // nullable — some points not tied to an event
+  reason    String
+  points    Int
+  awardedBy String // admin user ID
+  awardedAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([eventId])
+  @@map("points_ledger")
+}
+
+/// Unlocked student badges / achievements (§102)
+model Achievement {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  badge       String // badge slug / identifier
+  title       String
+  description String
+  icon        String
+  earnedAt    DateTime @default(now())
+  isDeleted   Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("achievements")
+}
+
+// ─────────────────────────────────────────────
+// FEEDBACK
+// ─────────────────────────────────────────────
+
+/// Post-event student feedback (§104)
+model Feedback {
+  id                   String   @id @default(cuid())
+  eventId              String
+  event                Event    @relation(fields: [eventId], references: [id])
+  userId               String
+  user                 User     @relation(fields: [userId], references: [id])
+  rating               Int // 1–5
+  speakerRating        Int?
+  organizationRating   Int?
+  venueRating          Int?
+  contentQualityRating Int?
+  suggestions          String?
+  comments             String?
+  submittedAt          DateTime @default(now())
+  isDeleted            Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([userId])
+  @@map("feedbacks")
+}
+
+// ─────────────────────────────────────────────
+// NOTIFICATIONS
+// ─────────────────────────────────────────────
+
+/// Per-user in-app notifications (§106)
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  type      NotificationType
+  link      String?
+  isRead    Boolean          @default(false)
+  isDeleted Boolean          @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+// ─────────────────────────────────────────────
+// BLOG
+// ─────────────────────────────────────────────
+
+/// Blog posts (§98)
+model BlogPost {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  excerpt     String
+  content     String   @db.Text
+  banner      String
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  authorName  String // denormalized for public display
+  authorRole  String
+  authorPhoto String?
+  category    String
+  tags        String[]
+  readTime    String
+  publishedAt DateTime @default(now())
+  isDeleted   Boolean  @default(false)
+  status      String   @default("published") // draft | published | archived
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([publishedAt])
+  @@index([category])
+  @@map("blog_posts")
+}
+
+// ─────────────────────────────────────────────
+// PROJECTS
+// ─────────────────────────────────────────────
+
+/// Student / club projects showcase (§99)
+model Project {
+  id           String   @id @default(cuid())
+  title        String
+  description  String   @db.Text
+  thumbnail    String
+  technologies String[]
+  githubRepo   String?
+  liveDemo     String?
+  teamMembers  String[] // names or user IDs
+  awards       String[]
+  isDeleted    Boolean  @default(false)
+  status       String   @default("published")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("projects")
+}
+
+// ─────────────────────────────────────────────
+// GALLERY
+// ─────────────────────────────────────────────
+
+/// Gallery albums grouping images by event / category (§97)
+model GalleryAlbum {
+  id          String        @id @default(cuid())
+  title       String
+  description String?
+  coverImage  String?
+  category    AlbumCategory
+  isDeleted   Boolean       @default(false)
+  status      String        @default("active")
+
+  event  Event[]
+  images GalleryImage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("gallery_albums")
+}
+
+/// Individual gallery images / videos (§97)
+model GalleryImage {
+  id         String       @id @default(cuid())
+  albumId    String
+  album      GalleryAlbum @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  eventId    String?
+  event      Event?       @relation(fields: [eventId], references: [id])
+  title      String
+  type       String       @default("image") // image | video
+  blobUrl    String
+  thumbnail  String?
+  tags       String[]
+  uploadedBy String // user ID
+  isDeleted  Boolean      @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([albumId])
+  @@index([eventId])
+  @@map("gallery_images")
+}
+
+// ─────────────────────────────────────────────
+// TEAM MEMBERS (Public "Our Team" page)
+// ─────────────────────────────────────────────
+
+/// MCC core team members shown on the public Team page (§97)
+model TeamMember {
+  id                 String       @id @default(cuid())
+  name               String
+  photo              String
+  position           String
+  department         String
+  category           TeamCategory
+  bio                String
+  skills             String[]
+  quote              String?
+  linkedin           String?
+  github             String?
+  email              String?
+  portfolio          String?
+  displayOrder       Int          @default(0)
+  isFeaturedHomepage Boolean      @default(false)
+  isDeleted          Boolean      @default(false)
+  status             String       @default("active")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@map("team_members")
+}
+
+// ─────────────────────────────────────────────
+// NOTICES
+// ─────────────────────────────────────────────
+
+/// Announcement notices / bulletin board (§105)
+model Notice {
+  id          String         @id @default(cuid())
+  title       String
+  description String
+  priority    NoticePriority @default(GENERAL)
+  publishDate DateTime       @default(now())
+  expiryDate  DateTime?
+  attachments String[]
+  isPinned    Boolean        @default(false)
+  isDeleted   Boolean        @default(false)
+  status      String         @default("active")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([priority])
+  @@index([publishDate])
+  @@map("notices")
+}
+
+// ─────────────────────────────────────────────
+// CONTACT TICKETS
+// ─────────────────────────────────────────────
+
+/// Contact form submissions / support tickets (§107)
+model ContactTicket {
+  id           String       @id @default(cuid())
+  name         String
+  email        String
+  subject      String
+  message      String       @db.Text
+  status       TicketStatus @default(OPEN)
+  assignedTo   String? // admin user ID
+  responseNote String?
+  isDeleted    Boolean      @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@map("contact_tickets")
+}
+
+// ─────────────────────────────────────────────
+// WINNER SHOWCASE
+// ─────────────────────────────────────────────
+
+/// Winners per event (§100)
+model WinnerShowcase {
+  id              String     @id @default(cuid())
+  eventId         String
+  event           Event      @relation(fields: [eventId], references: [id])
+  userId          String
+  user            User       @relation(fields: [userId], references: [id])
+  registrationId  String
+  studentName     String // denormalized
+  college         String
+  teamName        String?
+  rank            WinnerRank
+  points          Int        @default(0)
+  badge           String
+  prize           String?
+  certificateType String?
+  photo           String?
+  published       Boolean    @default(false)
+  isDeleted       Boolean    @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([userId])
+  @@map("winner_showcases")
+}
+
+// ─────────────────────────────────────────────
+// AUDIT LOG
+// ─────────────────────────────────────────────
+
+/// Admin action audit trail (§108)
+model AuditLog {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id])
+  userName  String // denormalized
+  role      String
+  action    String
+  module    SystemModule
+  details   String?
+  ipAddress String?
+  browser   String?
+  status    AuditStatus  @default(SUCCESS)
+  timestamp DateTime     @default(now())
+
+  @@index([userId])
+  @@index([module])
+  @@index([timestamp])
+  @@map("audit_logs")
+}
+
+// ─────────────────────────────────────────────
+// SETTINGS (singleton)
+// ─────────────────────────────────────────────
+
+/// Global club settings (singleton row, id = "global") (§109)
+model Settings {
+  id              String  @id @default("global")
+  clubName        String  @default("Microsoft Campus Club - Marwadi University")
+  logoUrl         String?
+  theme           String  @default("dark") // dark | light | system
+  // JSON: defaultPoints config object
+  defaultPoints   Json    @default("{\"firstPlace\":100,\"secondPlace\":75,\"thirdPlace\":50,\"finalist\":25,\"participant\":10,\"workshopCheckin\":15}")
+  // JSON: registration / storage limits
+  limits          Json    @default("{\"maxPerStudentPerMonth\":3,\"maxUploadSizeBytes\":10485760}")
+  maintenanceMode Boolean @default(false)
+  contactEmail    String  @default("mcc@marwadiuniversity.ac.in")
+  // JSON: social links
+  socialLinks     Json    @default("{}")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}
