@@ -12,58 +12,48 @@ interface OrgBadgeProps {
 
 export function OrgBadge({
   size = 'md',
-  variant = 'navbar',
   showLink = true,
   className = ''
 }: OrgBadgeProps) {
-  const isNavbar = variant === 'navbar';
   const isSmall = size === 'sm';
 
   const content = (
-    <div className={`inline-flex items-center gap-3 ${className}`}>
-      {/* MSC Logo Lockup */}
-      <div className="flex items-center gap-2">
-        <div className="relative shrink-0 overflow-hidden rounded-xl border border-sky-500/20 bg-white/10 dark:bg-slate-900/40 p-1 shadow-md">
-          <Image
-            src="/logos/msc-logo.png"
-            alt="Microsoft Student Community Logo"
-            width={isSmall ? 32 : 40}
-            height={isSmall ? 32 : 40}
-            className="object-contain"
-            priority
-          />
-        </div>
-        {!isSmall && (
-          <div className="flex flex-col">
-            <span className="text-xs font-black tracking-tight text-slate-900 dark:text-white leading-tight">
-              Microsoft Student Community
-            </span>
-            <span className="text-[10px] font-semibold text-sky-600 dark:text-sky-400 leading-none">
-              Marwadi University
-            </span>
-          </div>
-        )}
+    <div className={`inline-flex items-center gap-2 sm:gap-2.5 ${className}`}>
+      {/* 1. MSC Logo — square 1:1 image
+             We fix its height and let width be auto (square ≈ h × h),
+             then set a reasonable max-w so the logo+text is legible */}
+      <div className="shrink-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white shadow-sm flex items-center justify-center p-1 transition-transform hover:scale-[1.02]">
+        <Image
+          src="/logos/msc-logo.png"
+          alt="Microsoft Student Community Logo"
+          width={200}
+          height={200}
+          unoptimized
+          className={isSmall
+            ? 'object-contain h-8 w-8'
+            : 'object-contain h-10 w-10'}
+          priority
+        />
       </div>
 
       {/* Separator */}
-      <span className="text-slate-300 dark:text-slate-700 font-light text-lg select-none">×</span>
+      <span className="text-slate-300 dark:text-slate-600 font-light text-lg select-none leading-none shrink-0">×</span>
 
-      {/* Marwadi University & Dept of Computer Engineering Logo Lockup */}
-      <div className="flex items-center gap-2">
-        <div className="relative shrink-0 overflow-hidden rounded-xl border border-teal-500/20 bg-white/10 dark:bg-slate-900/40 p-1 shadow-md">
-          <Image
-            src="/logos/marwadi-university.png"
-            alt="Marwadi University Department of Computer Engineering Logo"
-            width={isSmall ? 80 : 120}
-            height={isSmall ? 28 : 36}
-            className="object-contain h-7 w-auto"
-          />
-        </div>
-        {isNavbar && isSmall && (
-          <span className="hidden lg:inline-block text-[10px] font-medium text-slate-500 dark:text-slate-400">
-            Dept. of Computer Engineering
-          </span>
-        )}
+      {/* 2. Marwadi University CE Dept Logo — wide landscape image (aspect ~4:1)
+             Always use a white bg so its light-blue background stays consistent
+             in both light and dark themes */}
+      <div className="shrink-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white shadow-sm flex items-center justify-center px-2 py-1 transition-transform hover:scale-[1.02]">
+        <Image
+          src="/logos/marwadi-university.png"
+          alt="Marwadi University — Department of Computer Engineering"
+          width={320}
+          height={80}
+          unoptimized
+          className={isSmall
+            ? 'object-contain h-7 w-auto max-w-[130px]'
+            : 'object-contain h-9 w-auto max-w-[160px]'}
+          priority
+        />
       </div>
     </div>
   );

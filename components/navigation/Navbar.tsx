@@ -26,7 +26,8 @@ const NAV_ITEMS = [
   { label: 'Community', href: '/team' },
   { label: 'Resources', href: '/resources' },
   { label: 'Leaderboard', href: '/leaderboard' },
-  { label: 'Blog', href: '/blog' }
+  { label: 'Blog', href: '/blog' },
+  { label: 'Gallery', href: '/gallery' }
 ];
 
 export function Navbar() {
