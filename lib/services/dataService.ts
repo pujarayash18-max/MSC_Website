@@ -334,6 +334,39 @@ export const INITIAL_BLOGS: BlogPost[] = [
 
 export const INITIAL_CERTIFICATES: CertificateRecord[] = [
   {
+    verificationId: 'MCC-CERT-2026-AZ8801',
+    studentName: 'Rahul Sharma',
+    studentId: 'MCC-2026-00042',
+    enrollmentNumber: '92100103045',
+    eventName: 'Azure Cloud Architecture & Serverless Masterclass',
+    eventType: 'Certificate of Participation',
+    issueDate: '2026-08-25',
+    status: 'Verified',
+    issuer: 'Microsoft Campus Club (MCC) — Marwadi University'
+  },
+  {
+    verificationId: 'MCC-CERT-2026-HK9902',
+    studentName: 'Rahul Sharma',
+    studentId: 'MCC-2026-00042',
+    enrollmentNumber: '92100103045',
+    eventName: 'National Azure AI Hackathon 2026',
+    eventType: 'Winner Certificate (1st Place)',
+    issueDate: '2026-08-16',
+    status: 'Verified',
+    issuer: 'Microsoft Campus Club (MCC) — Marwadi University'
+  },
+  {
+    verificationId: 'CERT-2026-AZ-001',
+    studentName: 'Rahul Sharma',
+    studentId: 'MCC-2026-00042',
+    enrollmentNumber: '92100103045',
+    eventName: 'Azure Cloud Architecture Masterclass',
+    eventType: 'Certificate of Excellence',
+    issueDate: '2026-08-20',
+    status: 'Verified',
+    issuer: 'Microsoft Campus Club (MCC) — Marwadi University'
+  },
+  {
     verificationId: 'MCC-2026-AZ-98214',
     studentName: 'Rahul Sharma',
     studentId: 'MCC-2026-00042',
