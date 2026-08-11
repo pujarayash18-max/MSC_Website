@@ -85,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async function checkSwaAuth() {
       try {
         const res = await fetch('/.auth/me');
+        if (!res.ok) return;
         const data = await res.json();
         if (data.clientPrincipal && active) {
           const principal = data.clientPrincipal;

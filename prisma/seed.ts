@@ -13,6 +13,10 @@ import { PrismaClient, SystemRoleName, EventCategory, EventMode, EventStatus,
   TeamCategory, SponsorTier, AlbumCategory, FormType, FieldType, SessionType } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
+if (!process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = "postgresql://neondb_owner:npg_AKm1McSBTkR7@ep-steep-pond-aynabyxu.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require";
+}
+
 const prisma = new PrismaClient();
 
 async function main() {
