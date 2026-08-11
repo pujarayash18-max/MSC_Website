@@ -8,7 +8,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { User, Mail, BookOpen, Lock, Building2, GraduationCap, CheckCircle2, ArrowRight } from 'lucide-react';
-import { MicrosoftFourSquareIcon } from '@/components/icons';
+import { MicrosoftFourSquareIcon, WhatsappIcon, InstagramIcon, LinkedinIcon } from '@/components/icons';
+import { SOCIAL_LINKS } from '@/lib/constants/social';
 import Link from 'next/link';
 
 export default function StudentRegisterPage() {
@@ -118,14 +119,68 @@ export default function StudentRegisterPage() {
                   <span className="font-bold text-slate-900 dark:text-white">{department} • {year}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Email:</span>
+                  <span className="text-slate-500">Registered Email:</span>
                   <span className="font-bold text-slate-900 dark:text-white">{email}</span>
                 </div>
               </div>
 
-              <div className="pt-2 flex justify-center gap-3">
-                <Button variant="fluent" size="lg" onClick={() => router.push('/dashboard')}>
-                  Proceed to Student Dashboard <ArrowRight className="w-4 h-4" />
+              {/* Post-Registration Social Join Modal Card */}
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-sky-500/10 via-purple-500/10 to-indigo-500/10 border border-sky-500/30 text-left space-y-3.5 shadow-lg">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">🎉</span>
+                  <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">Welcome to MCC! Connect with our Community</h4>
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-300">
+                  Join our official WhatsApp group, follow us on Instagram, and connect on LinkedIn to get real-time bootcamp alerts, hackathon team calls, and mentorship!
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                  <a
+                    href={SOCIAL_LINKS.whatsapp}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors shadow-md"
+                  >
+                    <WhatsappIcon className="w-4 h-4" />
+                    <span>WhatsApp</span>
+                  </a>
+                  <a
+                    href={SOCIAL_LINKS.instagram}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors shadow-md"
+                  >
+                    <InstagramIcon className="w-4 h-4" />
+                    <span>Instagram</span>
+                  </a>
+                  <a
+                    href={SOCIAL_LINKS.linkedin}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors shadow-md"
+                  >
+                    <LinkedinIcon className="w-4 h-4" />
+                    <span>LinkedIn</span>
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <Button
+                  variant="outline"
+                  size="md"
+                  className="w-full text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  onClick={() => router.push('/dashboard')}
+                >
+                  Maybe Later
+                </Button>
+                <Button
+                  variant="fluent"
+                  size="md"
+                  className="w-full font-bold gap-2 justify-center"
+                  onClick={() => router.push('/dashboard')}
+                >
+                  Continue to Student Dashboard <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>
             </div>

@@ -112,6 +112,9 @@ export interface Gallery extends BaseEntity {
   uploadedBy: string;
 }
 
+export type BlogStatus = 'Draft' | 'Pending' | 'Published' | 'Rejected';
+export type BlogAuthorType = 'Community' | 'CoreTeam';
+
 export interface Blog extends BaseEntity {
   blogId: string;
   title: string;
@@ -120,11 +123,18 @@ export interface Blog extends BaseEntity {
   content: string; // Markdown / Rich Text
   authorId: string;
   authorName: string;
+  authorRole?: string;
   authorPhoto?: string;
   category: string;
   tags: string[];
-  readingTime: string;
+  readingTime?: string;
+  readTime?: string;
   publishedAt: string;
+  status: BlogStatus;
+  authorType: BlogAuthorType;
+  rejectionNote?: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
 }
 
 export type NoticePriority = 'General' | 'Event' | 'Urgent' | 'Recruitment' | 'Placement' | 'Microsoft Learn';

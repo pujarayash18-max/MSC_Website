@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { MicrosoftFourSquareIcon } from '@/components/icons';
+import { OrgBadge } from '@/components/branding/OrgBadge';
 import {
   Sun,
   Moon,
@@ -66,19 +66,7 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           {/* Logo & Identity */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="p-2 rounded-xl bg-slate-100 dark:bg-[#151B23] border border-slate-200 dark:border-[#2A323D] shadow-sm group-hover:scale-105 transition-transform">
-              <MicrosoftFourSquareIcon className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="font-extrabold text-lg tracking-tight text-slate-900 dark:text-[#F5F7FA] flex items-center gap-1.5">
-                Microsoft <span className="text-[#0078D4] dark:text-[#00A4EF]">Campus Club</span>
-              </span>
-              <p className="text-[10px] text-slate-500 dark:text-[#A8B0BB] -mt-0.5 tracking-wider uppercase font-semibold">
-                Marwadi University
-              </p>
-            </div>
-          </Link>
+          <OrgBadge size="sm" variant="navbar" />
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-1 bg-slate-100/70 dark:bg-[#151B23]/70 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/80 dark:border-[#2A323D]">

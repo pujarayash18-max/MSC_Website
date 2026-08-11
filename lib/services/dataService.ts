@@ -1,5 +1,4 @@
-// Data Service with Dynamic Persistence & Storage Sync (§10)
-import { Event, Speaker, TeamMember, Notice, Sponsor } from '@/types';
+import { Event, Speaker, TeamMember, Notice, Sponsor, Blog, Attendance } from '@/types';
 
 export interface BlogPost {
   id: string;
@@ -277,9 +276,10 @@ export const INITIAL_SPONSORS: Sponsor[] = [
   }
 ];
 
-export const INITIAL_BLOGS: BlogPost[] = [
+export const INITIAL_BLOGS: (BlogPost & Blog)[] = [
   {
     id: 'blg_azure_01',
+    blogId: 'blg_azure_01',
     slug: 'getting-started-with-azure-static-web-apps',
     title: 'Getting Started with Azure Static Web Apps and Next.js 16',
     excerpt: 'A comprehensive guide on deploying full-stack Next.js applications to Azure Static Web Apps with serverless functions API backend.',
@@ -299,16 +299,26 @@ export const INITIAL_BLOGS: BlogPost[] = [
       Connecting your GitHub repository triggers GitHub Actions workflow automatically on every push to main branch.
     `,
     author: 'Rahul Sharma',
+    authorName: 'Rahul Sharma',
+    authorId: 'usr_superadmin_001',
     authorRole: 'President & Microsoft Student Ambassador',
     authorPhoto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
     publishedDate: '2026-08-01',
+    publishedAt: '2026-08-01T00:00:00.000Z',
     readTime: '5 min read',
+    readingTime: '5 min read',
     category: 'Cloud Architecture',
     tags: ['Azure', 'Next.js', 'Serverless', 'WebDev'],
-    banner: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&auto=format&fit=crop&q=80'
+    banner: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&auto=format&fit=crop&q=80',
+    status: 'Published',
+    authorType: 'CoreTeam',
+    isDeleted: false,
+    createdAt: '2026-08-01T00:00:00.000Z',
+    updatedAt: '2026-08-01T00:00:00.000Z'
   },
   {
     id: 'blg_ai_02',
+    blogId: 'blg_ai_02',
     slug: 'building-genai-agents-with-openai-and-cosmosdb',
     title: 'Building Intelligent GenAI Agents with Azure OpenAI and Cosmos DB',
     excerpt: 'Learn how to leverage Azure Cosmos DB NoSQL vector search alongside Azure OpenAI services to build RAG-powered student assistants.',
@@ -322,13 +332,22 @@ export const INITIAL_BLOGS: BlogPost[] = [
       By embedding document vectors into Cosmos DB, your AI agent can query campus event guidelines and documentation with low latency.
     `,
     author: 'Ananya Verma',
+    authorName: 'Ananya Verma',
+    authorId: 'usr_student_002',
     authorRole: 'Vice President & AI Community Lead',
     authorPhoto: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
     publishedDate: '2026-08-05',
+    publishedAt: '2026-08-05T00:00:00.000Z',
     readTime: '7 min read',
+    readingTime: '7 min read',
     category: 'Artificial Intelligence',
     tags: ['AI', 'OpenAI', 'CosmosDB', 'Python'],
-    banner: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1200&auto=format&fit=crop&q=80'
+    banner: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1200&auto=format&fit=crop&q=80',
+    status: 'Published',
+    authorType: 'CoreTeam',
+    isDeleted: false,
+    createdAt: '2026-08-05T00:00:00.000Z',
+    updatedAt: '2026-08-05T00:00:00.000Z'
   }
 ];
 
@@ -390,12 +409,55 @@ export const INITIAL_CERTIFICATES: CertificateRecord[] = [
   }
 ];
 
+export const INITIAL_ATTENDANCE: Attendance[] = [
+  {
+    id: 'att_001',
+    attendanceId: 'att_001',
+    eventId: 'evt_azure_01',
+    registrationId: 'reg_001',
+    userId: 'usr_superadmin_001',
+    checkInTime: '2026-08-25T09:15:00.000Z',
+    status: 'Present',
+    verifiedBy: 'tm_01',
+    isDeleted: false,
+    createdAt: '2026-08-25T09:15:00.000Z',
+    updatedAt: '2026-08-25T09:15:00.000Z'
+  },
+  {
+    id: 'att_002',
+    attendanceId: 'att_002',
+    eventId: 'evt_hack_01',
+    registrationId: 'reg_002',
+    userId: 'usr_superadmin_001',
+    checkInTime: '2026-08-15T09:40:00.000Z',
+    status: 'Present',
+    verifiedBy: 'tm_02',
+    isDeleted: false,
+    createdAt: '2026-08-15T09:40:00.000Z',
+    updatedAt: '2026-08-15T09:40:00.000Z'
+  },
+  {
+    id: 'att_003',
+    attendanceId: 'att_003',
+    eventId: 'evt_copilot_01',
+    registrationId: 'reg_003',
+    userId: 'usr_superadmin_001',
+    checkInTime: '2026-08-10T10:05:00.000Z',
+    status: 'Present',
+    verifiedBy: 'tm_01',
+    isDeleted: false,
+    createdAt: '2026-08-10T10:05:00.000Z',
+    updatedAt: '2026-08-10T10:05:00.000Z'
+  }
+];
+
 // --- DYNAMIC DATABASE PERSISTENCE ENGINE (§7, §10) ---
 
 const STORAGE_KEYS = {
   EVENTS: 'mcc_db_events',
   REGISTRATIONS: 'mcc_db_registrations',
   ATTENDANCE: 'mcc_db_attendance',
+  BLOGS: 'mcc_db_blogs',
   NOTICES: 'mcc_db_notices',
   FEEDBACK: 'mcc_db_feedback'
 };
@@ -427,6 +489,59 @@ export const dynamicDb = {
     }
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(updated));
+    }
+  },
+
+  getBlogs(): (BlogPost & Blog)[] {
+    if (typeof window === 'undefined') return INITIAL_BLOGS;
+    const stored = localStorage.getItem(STORAGE_KEYS.BLOGS);
+    if (!stored) {
+      localStorage.setItem(STORAGE_KEYS.BLOGS, JSON.stringify(INITIAL_BLOGS));
+      return INITIAL_BLOGS;
+    }
+    try {
+      return JSON.parse(stored) as (BlogPost & Blog)[];
+    } catch {
+      return INITIAL_BLOGS;
+    }
+  },
+
+  saveBlog(blog: Blog | BlogPost): void {
+    const current = this.getBlogs();
+    const blogObj = blog as BlogPost & Blog;
+    const idToMatch = blogObj.blogId || blogObj.id;
+    const idx = current.findIndex((b) => (b.blogId || b.id) === idToMatch || b.slug === blogObj.slug);
+    let updated: (BlogPost & Blog)[];
+    if (idx >= 0) {
+      updated = [...current];
+      updated[idx] = { ...current[idx], ...blogObj, updatedAt: new Date().toISOString() };
+    } else {
+      updated = [blogObj, ...current];
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.BLOGS, JSON.stringify(updated));
+    }
+  },
+
+  getAttendance(): Attendance[] {
+    if (typeof window === 'undefined') return INITIAL_ATTENDANCE;
+    const stored = localStorage.getItem(STORAGE_KEYS.ATTENDANCE);
+    if (!stored) {
+      localStorage.setItem(STORAGE_KEYS.ATTENDANCE, JSON.stringify(INITIAL_ATTENDANCE));
+      return INITIAL_ATTENDANCE;
+    }
+    try {
+      return JSON.parse(stored) as Attendance[];
+    } catch {
+      return INITIAL_ATTENDANCE;
+    }
+  },
+
+  saveAttendance(record: Attendance): void {
+    const current = this.getAttendance();
+    const updated = [record, ...current];
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.ATTENDANCE, JSON.stringify(updated));
     }
   },
 

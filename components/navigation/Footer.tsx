@@ -1,7 +1,9 @@
 'use client';
 import Link from 'next/link';
-import { ExternalLink, Mail, Phone, MapPin } from 'lucide-react';
-import { GithubIcon, LinkedinIcon, MicrosoftFourSquareIcon } from '@/components/icons';
+import { ExternalLink, MapPin, Mail, Phone } from 'lucide-react';
+import { GithubIcon, LinkedinIcon, WhatsappIcon, InstagramIcon } from '@/components/icons';
+import { SOCIAL_LINKS } from '@/lib/constants/social';
+import { OrgBadge } from '@/components/branding/OrgBadge';
 
 export function Footer() {
   return (
@@ -13,42 +15,55 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-slate-200 dark:border-[#2A323D]">
           {/* Col 1: About */}
           <div className="lg:col-span-2 space-y-4">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-white dark:bg-[#151B23] border border-slate-200 dark:border-[#2A323D] shadow-sm">
-                <MicrosoftFourSquareIcon className="w-6 h-6" />
-              </div>
-              <span className="font-extrabold text-lg text-slate-900 dark:text-[#F5F7FA]">
-                Microsoft <span className="text-[#0078D4] dark:text-[#00A4EF]">Campus Club</span>
-              </span>
-            </Link>
+            <OrgBadge size="md" variant="footer" />
             <p className="text-slate-600 dark:text-[#A8B0BB] text-xs leading-relaxed max-w-sm">
-              The official digital student ecosystem for Microsoft Campus Club (MCC) at Marwadi University, Rajkot. Driving technical excellence, workshops, hackathons, and community innovation.
+              The official student community ecosystem for Microsoft Student Community (MSC) & Department of Computer Engineering at Marwadi University, Rajkot.
             </p>
-            <div className="flex items-center gap-3 pt-2">
+            <div className="flex items-center gap-2.5 pt-2">
               <a
-                href="https://github.com"
+                href={SOCIAL_LINKS.whatsapp}
                 target="_blank"
                 rel="noreferrer"
-                className="p-2 rounded-xl bg-white dark:bg-[#151B23] border border-slate-200 dark:border-[#2A323D] hover:text-slate-900 dark:hover:text-white hover:border-[#00A4EF]/50 transition-colors shadow-sm"
+                title="WhatsApp Community"
+                className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors shadow-sm"
               >
-                <GithubIcon className="w-4 h-4" />
+                <WhatsappIcon className="w-4 h-4" />
               </a>
               <a
-                href="https://linkedin.com"
+                href={SOCIAL_LINKS.instagram}
                 target="_blank"
                 rel="noreferrer"
-                className="p-2 rounded-xl bg-white dark:bg-[#151B23] border border-slate-200 dark:border-[#2A323D] hover:text-slate-900 dark:hover:text-white hover:border-[#00A4EF]/50 transition-colors shadow-sm"
+                title="Instagram Profile"
+                className="p-2 rounded-xl bg-pink-500/10 text-pink-600 dark:text-pink-400 border border-pink-500/20 hover:bg-pink-500/20 transition-colors shadow-sm"
+              >
+                <InstagramIcon className="w-4 h-4" />
+              </a>
+              <a
+                href={SOCIAL_LINKS.linkedin}
+                target="_blank"
+                rel="noreferrer"
+                title="LinkedIn Page"
+                className="p-2 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 hover:bg-sky-500/20 transition-colors shadow-sm"
               >
                 <LinkedinIcon className="w-4 h-4" />
               </a>
               <a
-                href="https://learn.microsoft.com"
+                href={SOCIAL_LINKS.github}
                 target="_blank"
                 rel="noreferrer"
-                className="p-2.5 rounded-xl bg-white dark:bg-[#151B23] border border-slate-200 dark:border-[#2A323D] hover:text-[#0078D4] dark:hover:text-[#00A4EF] transition-colors flex items-center gap-1.5 text-xs font-semibold shadow-sm"
+                title="GitHub Repository"
+                className="p-2 rounded-xl bg-white dark:bg-[#151B23] border border-slate-200 dark:border-[#2A323D] hover:text-slate-900 dark:hover:text-white transition-colors shadow-sm"
+              >
+                <GithubIcon className="w-4 h-4" />
+              </a>
+              <a
+                href={SOCIAL_LINKS.msLearn}
+                target="_blank"
+                rel="noreferrer"
+                className="p-2 rounded-xl bg-sky-500/10 border border-sky-500/20 hover:bg-sky-500/20 transition-colors flex items-center gap-1.5 text-xs font-semibold text-sky-600 dark:text-sky-400 shadow-sm"
               >
                 <span>MS Learn</span>
-                <ExternalLink className="w-3.5 h-3.5 text-[#00A4EF]" />
+                <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </div>
           </div>

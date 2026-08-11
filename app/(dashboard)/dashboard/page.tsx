@@ -92,13 +92,33 @@ export default function StudentDashboardPage() {
           <Card className="p-4 bg-slate-50 dark:bg-[#0B0F14] border-slate-200 dark:border-[#2A323D] flex items-center justify-between">
             <div>
               <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-[#A8B0BB]">RANK</p>
-              <p className="text-2xl font-black text-[#00A4EF] mt-0.5">#{user?.currentRank || 24}</p>
+              <p className="text-2xl font-black text-[#00A4EF] mt-0.5">#{user?.currentRank || 1}</p>
             </div>
             <div className="p-2.5 rounded-xl bg-[#00A4EF]/10 border border-[#00A4EF]/30 text-[#00A4EF]">
               <Zap className="w-5 h-5" />
             </div>
           </Card>
         </div>
+
+        {/* Compact Attendance Summary Widget */}
+        <Link href="/dashboard/attendance" className="block mt-4 group">
+          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-sky-500/10 to-teal-500/10 border border-emerald-500/30 flex items-center justify-between transition-all group-hover:border-emerald-500/60 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                <QrCode className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+                  Attendance: 100% Rate <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 font-mono">(3 Verified Check-ins)</span>
+                </p>
+                <p className="text-[11px] text-slate-600 dark:text-[#A8B0BB]">
+                  All QR entry passes verified • Eligible for all event completion certificates
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-emerald-500 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </Link>
       </div>
 
       {/* Grid Section: Events & Notices */}
