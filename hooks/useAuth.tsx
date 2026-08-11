@@ -1,156 +1,132 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { User, SystemRoleName } from '@/types';
-import { authService, RegisterPayload, LoginPayload } from '@/lib/services/authService';
+
+export interface RegisterPayload {
+  fullName: string;
+  email: string;
+  enrollmentNumber: string;
+  college: string;
+  department: string;
+  year: string;
+  division?: string;
+  password: string;
+}
+
+export interface LoginPayload {
+  identifier: string;
+  password: string;
+}
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   role: SystemRoleName;
-  login: (roleName?: SystemRoleName) => void;
   loginStudent: (payload: LoginPayload) => Promise<{ success: boolean; user?: User; message?: string }>;
   registerStudent: (payload: RegisterPayload) => Promise<{ success: boolean; user?: User; message?: string }>;
-  logout: () => void;
-  setMockUserRole: (role: SystemRoleName) => void;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
-
-const defaultUser: User = {
-  id: 'usr_student_default',
-  userId: 'usr_student_default',
-  studentId: 'MCC-2026-00042',
-  fullName: 'Rahul Sharma',
-  email: 'rahul.sharma@marwadiuniversity.ac.in',
-  enrollmentNumber: '92100103045',
-  college: 'Marwadi University',
-  department: 'Computer Engineering',
-  year: '3rd Year',
-  division: 'CE-A',
-  profilePhoto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-  github: 'rahulsharma-dev',
-  linkedin: 'rahulsharma-dev',
-  portfolio: 'https://rahulsharma.dev',
-  bio: 'Passionate Cloud & Full-Stack Developer | Microsoft Student Ambassador',
-  skills: ['TypeScript', 'Next.js', 'Azure Functions', 'Cosmos DB', 'Tailwind CSS'],
-  communityPoints: 340,
-  currentRank: 1,
-  attendancePercentage: 95,
-  roleId: 'role_superadmin',
-  roleName: 'Super Admin',
-  isDeleted: false,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-  status: 'active'
-};
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   isLoading: true,
   isAuthenticated: false,
   role: 'Student',
-  login: () => {},
   loginStudent: async () => ({ success: false }),
   registerStudent: async () => ({ success: false }),
-  logout: () => {},
-  setMockUserRole: () => {}
+  logout: async () => {},
+  refreshUser: async () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Synchronize initial session state post-hydration to match server SSR tree (React 19 hydration safety)
-  useEffect(() => {
-    let active = true;
-    requestAnimationFrame(() => {
-      if (!active) return;
-      const sessionUser = authService.getSessionUser();
-      if (sessionUser) {
-        setUser(sessionUser);
+  // Load session from server on mount (reads HttpOnly cookie server-side)
+  const refreshUser = useCallback(async () => {
+    try {
+      const res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data?.user) {
+          setUser(json.data.user as User);
+          return;
+        }
       }
+      setUser(null);
+    } catch {
+      setUser(null);
+    } finally {
       setIsLoading(false);
-    });
-    return () => {
-      active = false;
-    };
+    }
   }, []);
 
   useEffect(() => {
-    if (user) return;
+    refreshUser();
+  }, [refreshUser]);
 
-    let active = true;
-    async function checkSwaAuth() {
-      try {
-        const res = await fetch('/.auth/me');
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.clientPrincipal && active) {
-          const principal = data.clientPrincipal;
-          setUser((prev) => ({
-            ...(prev || defaultUser),
-            userId: principal.userId,
-            fullName: principal.userDetails || 'Student User',
-            email: principal.userDetails || 'student@marwadiuniversity.ac.in'
-          }));
-        }
-      } catch {
-        // SWA auth fallback
-      } finally {
-        if (active) setIsLoading(false);
+  const loginStudent = async (
+    payload: LoginPayload
+  ): Promise<{ success: boolean; user?: User; message?: string }> => {
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (res.ok && json.success && json.data?.user) {
+        setUser(json.data.user as User);
+        return { success: true, user: json.data.user as User };
       }
+      return { success: false, message: json.error || 'Login failed.' };
+    } catch {
+      return { success: false, message: 'Network error. Please try again.' };
     }
-
-    checkSwaAuth();
-    return () => {
-      active = false;
-    };
-  }, [user]);
-
-  const login = (roleName: SystemRoleName = 'Student') => {
-    const updatedUser = { ...defaultUser, roleName };
-    setUser(updatedUser);
-    authService.setSession(updatedUser).catch(() => {});
   };
 
-  const loginStudent = async (payload: LoginPayload) => {
-    const res = await authService.loginStudent(payload);
-    if (res.success && res.user) {
-      setUser(res.user);
+  const registerStudent = async (
+    payload: RegisterPayload
+  ): Promise<{ success: boolean; user?: User; message?: string }> => {
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if ((res.status === 200 || res.status === 201) && json.success && json.data?.user) {
+        setUser(json.data.user as User);
+        return {
+          success: true,
+          user: json.data.user as User,
+          message: json.data.message,
+        };
+      }
+      return { success: false, message: json.error || 'Registration failed.' };
+    } catch {
+      return { success: false, message: 'Network error. Please try again.' };
     }
-    return res;
   };
 
-  const registerStudent = async (payload: RegisterPayload) => {
-    const res = await authService.registerStudent(payload);
-    if (res.success && res.user) {
-      setUser(res.user);
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch {
+      // Proceed with local cleanup even if the request fails
     }
-    return res;
-  };
-
-  const logout = () => {
-    authService.clearSession();
     setUser(null);
-    if (typeof window !== 'undefined') {
-      if (window.location.pathname.startsWith('/.auth')) {
-        // True external SWA provider endpoint
-        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-        window.location.href = '/.auth/logout';
-      } else {
-        // Client-side Next.js route navigation
-        router.push('/login');
-      }
-    }
+    router.push('/login');
   };
 
-  const setMockUserRole = (role: SystemRoleName) => {
-    setUser((prev) => (prev ? { ...prev, roleName: role } : null));
-  };
-
-  const role: SystemRoleName = user?.roleName || 'Student';
+  const role: SystemRoleName = (user?.roleName as SystemRoleName) || 'Student';
   const isAuthenticated = !!user;
 
   return (
@@ -160,11 +136,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isAuthenticated,
         role,
-        login,
         loginStudent,
         registerStudent,
         logout,
-        setMockUserRole
+        refreshUser,
       }}
     >
       {children}

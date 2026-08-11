@@ -1,67 +1,73 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { jwtVerify } from 'jose';
 import { ADMIN_ROLES } from '@/lib/constants/roles';
+import type { SystemRoleName } from '@/types';
+
+const COOKIE_NAME = 'mcc_session';
+
+function getSecret(): Uint8Array {
+  const secret =
+    process.env.NEXTAUTH_SECRET ||
+    process.env.SESSION_SECRET ||
+    'mcc-platform-fallback-key-change-in-production';
+  return new TextEncoder().encode(secret);
+}
 
 interface SessionPayload {
   userId: string;
   email: string;
   roleName: string;
   fullName: string;
-  exp: number;
 }
 
 /**
- * Lightweight token decoder for Edge runtime.
- * Decodes the base64url payload segment without HMAC re-verification
- * (the full HMAC check is done in authService on every client hydration).
- * This is appropriate for a frontend-only mock app running without a backend.
+ * Cryptographically verify the session JWT using jose.
+ * Rejects forged, expired, or tampered tokens — no plain base64-decode.
  */
-function decodeSessionToken(token: string): SessionPayload | null {
+async function verifySession(token: string): Promise<SessionPayload | null> {
   try {
-    if (!token || !token.includes('.')) return null;
-    const [payloadBase64] = token.split('.');
-    // Convert base64url to standard base64
-    const base64 = payloadBase64
-      .replace(/-/g, '+')
-      .replace(/_/g, '/');
-    const pad = base64.length % 4;
-    const padded = pad ? base64 + '='.repeat(4 - pad) : base64;
-    const json = atob(padded);
-    const payload: SessionPayload = JSON.parse(json);
-    // Reject expired tokens
-    if (!payload.userId || !payload.roleName) return null;
-    if (payload.exp && Date.now() > payload.exp) return null;
-    return payload;
+    const { payload } = await jwtVerify(token, getSecret());
+    const { userId, email, roleName, fullName } = payload as Record<string, unknown>;
+    if (!userId || !email || !roleName) return null;
+    return { userId, email, roleName, fullName } as SessionPayload;
   } catch {
+    // Expired, invalid signature, malformed — all result in null
     return null;
   }
 }
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const sessionToken = request.cookies.get('mcc_user_session')?.value;
 
-  if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
-    if (!sessionToken) {
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(loginUrl);
-    }
+  // Only guard dashboard and admin routes
+  if (!pathname.startsWith('/dashboard') && !pathname.startsWith('/admin')) {
+    return NextResponse.next();
+  }
 
-    const session = decodeSessionToken(sessionToken);
-    if (!session || !session.roleName) {
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('redirect', pathname);
-      const response = NextResponse.redirect(loginUrl);
-      response.cookies.delete('mcc_user_session');
-      return response;
-    }
+  const token = request.cookies.get(COOKIE_NAME)?.value;
 
-    // RBAC Guard for /admin/*
-    if (pathname.startsWith('/admin')) {
-      if (!ADMIN_ROLES.includes(session.roleName as import('@/types').SystemRoleName)) {
-        return NextResponse.redirect(new URL('/unauthorized', request.url));
-      }
+  if (!token) {
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  const session = await verifySession(token);
+
+  if (!session) {
+    // Token invalid/expired — clear cookie and redirect to login
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('redirect', pathname);
+    const response = NextResponse.redirect(loginUrl);
+    response.cookies.delete(COOKIE_NAME);
+    return response;
+  }
+
+  // RBAC guard for /admin/* routes
+  if (pathname.startsWith('/admin')) {
+    if (!ADMIN_ROLES.includes(session.roleName as SystemRoleName)) {
+      return NextResponse.redirect(new URL('/unauthorized', request.url));
     }
   }
 
@@ -71,5 +77,5 @@ export async function proxy(request: NextRequest) {
 export const middleware = proxy;
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/admin/:path*']
+  matcher: ['/dashboard/:path*', '/admin/:path*'],
 };

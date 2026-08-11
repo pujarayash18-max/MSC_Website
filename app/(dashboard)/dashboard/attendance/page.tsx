@@ -3,46 +3,69 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from 'recharts';
-import { QrCode, Calendar, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { dynamicDb } from '@/lib/services/dataService';
-import { useEffect, useState } from 'react';
-import { Attendance } from '@/types/event';
+import { QrCode, Calendar, Clock, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+
+interface AttendanceRecord {
+  id: string;
+  checkInTime: string;
+  status: string;
+  event: {
+    id: string;
+    title: string;
+    startDate: string;
+    category: string;
+  };
+}
+
+async function fetchAttendance() {
+  const res = await fetch('/api/attendance', { credentials: 'include' });
+  if (!res.ok) throw new Error('Failed to fetch attendance');
+  const json = await res.json();
+  return json.data as { attendances: AttendanceRecord[]; attendancePercentage: number };
+}
 
 export default function StudentAttendancePage() {
-  const { user } = useAuth();
-  const [attendanceRecords, setAttendanceRecords] = useState<Attendance[]>([]);
-  const [mounted, setMounted] = useState(false);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['attendance'],
+    queryFn: fetchAttendance,
+  });
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setMounted(true);
-      const allRecords = dynamicDb.getAttendance();
-      const userRecords = user
-        ? allRecords.filter((r) => r.userId === user.userId || r.userId === user.id || r.userId === 'usr_superadmin_001')
-        : allRecords;
-      setAttendanceRecords(userRecords);
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [user]);
+  const attendanceRecords = data?.attendances ?? [];
+  const attendancePercentage = data?.attendancePercentage ?? 100;
+  const presentCount = attendanceRecords.filter((r) => r.status === 'PRESENT').length;
 
-  const presentCount = attendanceRecords.filter((r) => r.status === 'Present').length;
-  const totalEvents = Math.max(attendanceRecords.length, 4);
-  const attendancePercentage = totalEvents > 0 ? Math.round((presentCount / totalEvents) * 100) : 100;
+  // Build chart from real data grouped by month
+  const monthMap = new Map<string, number>();
+  attendanceRecords.forEach((r) => {
+    const month = new Date(r.checkInTime).toLocaleString('default', { month: 'short' });
+    monthMap.set(month, (monthMap.get(month) ?? 0) + 1);
+  });
+  const chartData = Array.from(monthMap.entries())
+    .slice(-6)
+    .map(([month, count]) => ({ month, attendance: count }));
 
-  const chartData = [
-    { month: 'Jun', attendance: 100 },
-    { month: 'Jul', attendance: 100 },
-    { month: 'Aug', attendance: attendancePercentage }
-  ];
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-[#00A4EF]" />
+      </div>
+    );
+  }
 
-  if (!mounted) return null;
+  if (error) {
+    return (
+      <div className="text-center py-20 text-red-500">
+        Failed to load attendance data. Please refresh.
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-          <QrCode className="w-7 h-7 text-[#00A4EF]" /> Attendance History & Analytics
+          <QrCode className="w-7 h-7 text-[#00A4EF]" /> Attendance History &amp; Analytics
         </h1>
         <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
           Track your QR check-in history, entry timestamps, and monthly attendance percentages.
@@ -70,55 +93,78 @@ export default function StudentAttendancePage() {
         </Card>
       </div>
 
-      {/* Chart & History List */}
+      {/* Chart & History */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recharts Bar Chart */}
         <Card className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D]">
-          <h3 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-[#2A323D] pb-3">Monthly Attendance Trend</h3>
+          <h3 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-[#2A323D] pb-3">
+            Monthly Attendance Trend
+          </h3>
           <div className="h-48 w-full pt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <XAxis dataKey="month" stroke="#A8B0BB" fontSize={12} tickLine={false} />
-                <YAxis stroke="#A8B0BB" fontSize={12} tickLine={false} domain={[0, 100]} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#151B23', borderColor: '#2A323D', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
-                />
-                <Bar dataKey="attendance" radius={[4, 4, 0, 0]}>
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={index === chartData.length - 1 ? '#00A4EF' : '#7FBA00'} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            {chartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <XAxis dataKey="month" stroke="#A8B0BB" fontSize={12} tickLine={false} />
+                  <YAxis stroke="#A8B0BB" fontSize={12} tickLine={false} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#151B23', borderColor: '#2A323D', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                  />
+                  <Bar dataKey="attendance" radius={[4, 4, 0, 0]}>
+                    {chartData.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={index === chartData.length - 1 ? '#00A4EF' : '#7FBA00'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-sm text-slate-500">No data yet</div>
+            )}
           </div>
         </Card>
 
-        {/* History Table */}
         <Card className="lg:col-span-2 p-6 space-y-4 border-slate-200 dark:border-[#2A323D]">
-          <h3 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-[#2A323D] pb-3">Verified Event Check-ins</h3>
-          
-          <div className="divide-y divide-slate-200 dark:divide-[#2A323D]">
-            {attendanceRecords.map((item) => (
-              <div key={item.attendanceId || item.id} className="py-3 flex items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">{item.eventId}</h4>
-                  <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-[#A8B0BB]">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5 text-[#00A4EF]" /> {new Date(item.checkInTime).toLocaleDateString()}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5 text-[#7FBA00]" /> {new Date(item.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  </div>
-                </div>
+          <h3 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-[#2A323D] pb-3">
+            Verified Event Check-ins
+          </h3>
 
-                <Badge variant={item.status === 'Present' ? 'success' : 'danger'} className="flex items-center gap-1">
-                  {item.status === 'Present' ? <CheckCircle2 className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
-                  {item.status}
-                </Badge>
-              </div>
-            ))}
-          </div>
+          {attendanceRecords.length === 0 ? (
+            <div className="text-center py-10 text-slate-500 dark:text-slate-400 text-sm">
+              No attendance records yet. Register for an event and check in via QR!
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-200 dark:divide-[#2A323D]">
+              {attendanceRecords.map((item) => (
+                <div key={item.id} className="py-3 flex items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">
+                      {item.event?.title ?? item.id}
+                    </h4>
+                    <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-[#A8B0BB]">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5 text-[#00A4EF]" />
+                        {new Date(item.checkInTime).toLocaleDateString()}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5 text-[#7FBA00]" />
+                        {new Date(item.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  </div>
+
+                  <Badge
+                    variant={item.status === 'PRESENT' ? 'success' : 'danger'}
+                    className="flex items-center gap-1"
+                  >
+                    {item.status === 'PRESENT' ? (
+                      <CheckCircle2 className="w-3 h-3" />
+                    ) : (
+                      <AlertCircle className="w-3 h-3" />
+                    )}
+                    {item.status}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          )}
         </Card>
       </div>
     </div>
