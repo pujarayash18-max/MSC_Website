@@ -3,8 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth/jwt';
 import { ok, ERR } from '@/lib/api/response';
-import { ADMIN_ROLES } from '@/lib/constants/roles';
-import type { SystemRoleName } from '@/types';
+import { isAdminRole } from '@/lib/constants/roles';
 
 const BlogCreateSchema = z.object({
   title: z.string().min(5),
@@ -26,7 +25,7 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
 
     const session = await getSession();
-    const isAdmin = session && ADMIN_ROLES.includes(session.roleName as SystemRoleName);
+    const isAdmin = session && isAdminRole(session.roleName);
 
     // Public users see only published posts; admins see all
     const blogs = await prisma.blogPost.findMany({
@@ -65,7 +64,7 @@ export async function POST(req: NextRequest) {
     if (!user) return ERR.UNAUTHORIZED();
 
     // Admins can publish directly; others submit for review
-    const isAdmin = ADMIN_ROLES.includes(session.roleName as SystemRoleName);
+    const isAdmin = isAdminRole(session.roleName);
     const status = isAdmin ? parsed.data.status : 'pending';
 
     const blog = await prisma.blogPost.create({

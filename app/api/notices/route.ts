@@ -2,8 +2,8 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth/jwt';
 import { ok, ERR } from '@/lib/api/response';
-import { ADMIN_ROLES } from '@/lib/constants/roles';
-import type { SystemRoleName } from '@/types';
+import { isAdminRole } from '@/lib/constants/roles';
+import { broadcastEvent } from '@/app/api/realtime/route';
 
 export async function GET() {
   try {
@@ -26,10 +26,11 @@ export async function POST(req: NextRequest) {
   try {
     const session = await getSession();
     if (!session) return ERR.UNAUTHORIZED();
-    if (!ADMIN_ROLES.includes(session.roleName as SystemRoleName)) return ERR.FORBIDDEN();
+    if (!isAdminRole(session.roleName)) return ERR.FORBIDDEN();
 
     const body = await req.json();
     const notice = await prisma.notice.create({ data: body });
+    broadcastEvent('notice_published', { notice });
     return ok({ notice }, 201);
   } catch (e) {
     console.error('[POST /api/notices]', e);

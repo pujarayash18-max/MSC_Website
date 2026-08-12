@@ -5,16 +5,52 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { INITIAL_EVENTS, INITIAL_SPEAKERS, INITIAL_TEAM, INITIAL_NOTICES } from '@/lib/services/dataService';
-import { Search } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import type { Event, Speaker, TeamMember, Notice } from '@/types';
+
+async function fetchSearchData() {
+  const [eventsRes, speakersRes, teamRes, noticesRes] = await Promise.all([
+    fetch('/api/events'),
+    fetch('/api/speakers'),
+    fetch('/api/team'),
+    fetch('/api/notices'),
+  ]);
+
+  const [eventsData, speakersData, teamData, noticesData] = await Promise.all([
+    eventsRes.ok ? eventsRes.json() : { data: {} },
+    speakersRes.ok ? speakersRes.json() : { data: {} },
+    teamRes.ok ? teamRes.json() : { data: {} },
+    noticesRes.ok ? noticesRes.json() : { data: {} },
+  ]);
+
+  return {
+    events: (eventsData.data?.events || []) as Event[],
+    speakers: (speakersData.data?.speakers || []) as Speaker[],
+    team: (teamData.data?.members || []) as TeamMember[],
+    notices: (noticesData.data?.notices || []) as Notice[],
+  };
+}
 
 export default function GlobalSearchPage() {
   const [query, setQuery] = useState('');
 
-  const matchingEvents = query ? INITIAL_EVENTS.filter((e) => e.title.toLowerCase().includes(query.toLowerCase()) || e.tags.some((t) => t.toLowerCase().includes(query.toLowerCase()))) : [];
-  const matchingSpeakers = query ? INITIAL_SPEAKERS.filter((s) => s.name.toLowerCase().includes(query.toLowerCase()) || s.expertise.some((e) => e.toLowerCase().includes(query.toLowerCase()))) : [];
-  const matchingTeam = query ? INITIAL_TEAM.filter((t) => t.name.toLowerCase().includes(query.toLowerCase()) || t.position.toLowerCase().includes(query.toLowerCase())) : [];
-  const matchingNotices = query ? INITIAL_NOTICES.filter((n) => n.title.toLowerCase().includes(query.toLowerCase()) || n.description.toLowerCase().includes(query.toLowerCase())) : [];
+  const { data, isLoading } = useQuery({
+    queryKey: ['global-search-data'],
+    queryFn: fetchSearchData,
+  });
+
+  const events = data?.events || [];
+  const speakers = data?.speakers || [];
+  const team = data?.team || [];
+  const notices = data?.notices || [];
+
+  const q = query.trim().toLowerCase();
+
+  const matchingEvents = q ? events.filter((e) => e.title?.toLowerCase().includes(q) || e.tags?.some((t) => t.toLowerCase().includes(q))) : [];
+  const matchingSpeakers = q ? speakers.filter((s) => s.name?.toLowerCase().includes(q) || s.expertise?.some((e) => e.toLowerCase().includes(q))) : [];
+  const matchingTeam = q ? team.filter((t) => t.name?.toLowerCase().includes(q) || t.position?.toLowerCase().includes(q)) : [];
+  const matchingNotices = q ? notices.filter((n) => n.title?.toLowerCase().includes(q) || n.description?.toLowerCase().includes(q)) : [];
 
   const totalResults = matchingEvents.length + matchingSpeakers.length + matchingTeam.length + matchingNotices.length;
 
@@ -38,7 +74,13 @@ export default function GlobalSearchPage() {
         />
       </div>
 
-      {query && (
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-[#00A4EF]" />
+        </div>
+      )}
+
+      {!isLoading && query && (
         <div className="space-y-6">
           <p className="text-xs font-semibold text-slate-600 dark:text-[#A8B0BB]">Found {totalResults} matching results for &quot;{query}&quot;</p>
 
@@ -52,7 +94,7 @@ export default function GlobalSearchPage() {
                     <h4 className="text-sm font-bold text-slate-900 dark:text-white">{evt.title}</h4>
                     <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">{evt.category} • {evt.venue}</p>
                   </div>
-                  <Link href={`/events/${evt.slug}`}>
+                  <Link href={`/events/${evt.slug || evt.id}`}>
                     <Button variant="fluent" size="sm">View</Button>
                   </Link>
                 </Card>
@@ -68,9 +110,9 @@ export default function GlobalSearchPage() {
                 <Card key={spk.id} className="p-4 flex items-center justify-between gap-4 border-slate-200 dark:border-[#2A323D]">
                   <div>
                     <h4 className="text-sm font-bold text-slate-900 dark:text-white">{spk.name}</h4>
-                    <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">{spk.designation} - {spk.organization}</p>
+                    <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">{spk.designation} at {spk.organization}</p>
                   </div>
-                  <Link href={`/speakers/${spk.speakerId}`}>
+                  <Link href={`/speakers/${spk.id}`}>
                     <Button variant="outline" size="sm">Profile</Button>
                   </Link>
                 </Card>
@@ -78,10 +120,10 @@ export default function GlobalSearchPage() {
             </div>
           )}
 
-          {/* Core Team Results */}
+          {/* Team Results */}
           {matchingTeam.length > 0 && (
             <div className="space-y-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#F25022]">Core Team ({matchingTeam.length})</h3>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-purple-400">Team ({matchingTeam.length})</h3>
               {matchingTeam.map((tm) => (
                 <Card key={tm.id} className="p-4 flex items-center justify-between gap-4 border-slate-200 dark:border-[#2A323D]">
                   <div>
@@ -89,7 +131,7 @@ export default function GlobalSearchPage() {
                     <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">{tm.position} • {tm.department}</p>
                   </div>
                   <Link href="/team">
-                    <Button variant="outline" size="sm">View Team</Button>
+                    <Button variant="ghost" size="sm">Team Page</Button>
                   </Link>
                 </Card>
               ))}
@@ -99,14 +141,13 @@ export default function GlobalSearchPage() {
           {/* Notices Results */}
           {matchingNotices.length > 0 && (
             <div className="space-y-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#FFB900]">Notices ({matchingNotices.length})</h3>
-              {matchingNotices.map((ntc) => (
-                <Card key={ntc.id} className="p-4 flex items-center justify-between gap-4 border-slate-200 dark:border-[#2A323D]">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400">Notices ({matchingNotices.length})</h3>
+              {matchingNotices.map((n) => (
+                <Card key={n.id} className="p-4 flex items-center justify-between gap-4 border-slate-200 dark:border-[#2A323D]">
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">{ntc.title}</h4>
-                    <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">{ntc.description}</p>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">{n.title}</h4>
+                    <p className="text-xs text-slate-600 dark:text-[#A8B0BB] line-clamp-1">{n.description}</p>
                   </div>
-                  <Badge variant="warning" size="sm">{ntc.priority}</Badge>
                 </Card>
               ))}
             </div>

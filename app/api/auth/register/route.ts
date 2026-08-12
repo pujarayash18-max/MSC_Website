@@ -3,7 +3,7 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { createSession } from '@/lib/auth/jwt';
-import { ok, err, ERR } from '@/lib/api/response';
+import { ok, ERR } from '@/lib/api/response';
 
 const RegisterSchema = z.object({
   fullName: z.string().min(2, 'Full name must be at least 2 characters'),

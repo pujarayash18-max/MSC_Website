@@ -166,6 +166,7 @@ enum FieldType {
 
 enum TeamCategory {
   FACULTY_COORDINATORS @map("Faculty Coordinators")
+  FOUNDING_MEMBER      @map("Founding Member")
   PRESIDENT            @map("President")
   VICE_PRESIDENT       @map("Vice President")
   TECHNICAL_TEAM       @map("Technical Team")

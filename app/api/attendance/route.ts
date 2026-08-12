@@ -2,8 +2,7 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth/jwt';
 import { ok, ERR } from '@/lib/api/response';
-import { ADMIN_ROLES } from '@/lib/constants/roles';
-import type { SystemRoleName } from '@/types';
+import { isAdminRole } from '@/lib/constants/roles';
 
 export async function GET(req: NextRequest) {
   try {
@@ -12,7 +11,7 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = req.nextUrl;
     const eventId = searchParams.get('eventId');
-    const isAdmin = ADMIN_ROLES.includes(session.roleName as SystemRoleName);
+    const isAdmin = isAdminRole(session.roleName);
 
     const attendances = await prisma.attendance.findMany({
       where: {
@@ -53,8 +52,8 @@ export async function POST(req: NextRequest) {
     if (!session) return ERR.UNAUTHORIZED();
 
     const isAdminOrVolunteer =
-      ADMIN_ROLES.includes(session.roleName as SystemRoleName) ||
-      session.roleName === 'Volunteer';
+      isAdminRole(session.roleName) ||
+      session.roleName.toUpperCase() === 'VOLUNTEER';
     if (!isAdminOrVolunteer) return ERR.FORBIDDEN();
 
     const body = await req.json();

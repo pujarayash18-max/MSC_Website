@@ -6,7 +6,8 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { INITIAL_EVENTS, INITIAL_NOTICES } from '@/lib/services/dataService';
+import { useRealtime } from '@/hooks/useRealtime';
+import { useQuery } from '@tanstack/react-query';
 import {
   Calendar,
   Award,
@@ -17,10 +18,49 @@ import {
   ChevronRight,
   Pin
 } from 'lucide-react';
+import type { Event, Notice } from '@/types';
+
+async function fetchDashboardData() {
+  const [eventsRes, noticesRes] = await Promise.all([
+    fetch('/api/events'),
+    fetch('/api/notices')
+  ]);
+
+  const [eventsData, noticesData] = await Promise.all([
+    eventsRes.ok ? eventsRes.json() : { data: {} },
+    noticesRes.ok ? noticesRes.json() : { data: {} }
+  ]);
+
+  return {
+    events: (eventsData.data?.events || []) as Event[],
+    notices: (noticesData.data?.notices || []) as Notice[]
+  };
+}
 
 export default function StudentDashboardPage() {
   const { user } = useAuth();
-  const upcomingEvent = INITIAL_EVENTS[0];
+  const { data, refetch } = useQuery({
+    queryKey: ['student-dashboard-data'],
+    queryFn: fetchDashboardData
+  });
+
+  useRealtime({
+    notice_published: () => refetch(),
+    registration_created: () => refetch(),
+  });
+
+  const events = data?.events || [];
+  const notices = data?.notices || [];
+
+  const upcomingEvent = events[0] || {
+    id: 'evt_default',
+    title: 'Azure Cloud Masterclass',
+    shortDescription: 'Deep dive into Azure Serverless architecture and Cloud Computing.',
+    venue: 'Seminar Hall 4, Main Campus',
+    startDate: new Date().toISOString(),
+    banner: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600',
+    slug: 'azure-cloud-masterclass'
+  };
 
   return (
     <div className="space-y-8">
@@ -58,142 +98,130 @@ export default function StudentDashboardPage() {
         </div>
 
         {/* 15.2 MICROSOFT 365 STAT CARDS */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-200 dark:border-[#2A323D]">
-          <Card className="p-4 bg-slate-50 dark:bg-[#0B0F14] border-slate-200 dark:border-[#2A323D] flex items-center justify-between">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8 pt-6 border-t border-slate-200 dark:border-[#2A323D]">
+          <Card className="p-4 bg-slate-50/80 dark:bg-[#0B0F14]/80 border-slate-200 dark:border-[#2A323D] flex items-center justify-between">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-[#A8B0BB]">POINTS</p>
-              <p className="text-2xl font-black text-[#FFB900] mt-0.5">{user?.communityPoints || 340}</p>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Community Rank</p>
+              <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white mt-0.5">#{user?.currentRank || 1}</h3>
             </div>
-            <div className="p-2.5 rounded-xl bg-[#FFB900]/10 border border-[#FFB900]/30 text-[#FFB900]">
+            <div className="p-3 rounded-xl bg-[#00A4EF]/10 border border-[#00A4EF]/30 text-[#00A4EF]">
               <Trophy className="w-5 h-5" />
             </div>
           </Card>
 
-          <Card className="p-4 bg-slate-50 dark:bg-[#0B0F14] border-slate-200 dark:border-[#2A323D] flex items-center justify-between">
+          <Card className="p-4 bg-slate-50/80 dark:bg-[#0B0F14]/80 border-slate-200 dark:border-[#2A323D] flex items-center justify-between">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-[#A8B0BB]">EVENTS</p>
-              <p className="text-2xl font-black text-[#00A4EF] mt-0.5">12</p>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Community Points</p>
+              <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white mt-0.5">{user?.communityPoints || 50} pts</h3>
             </div>
-            <div className="p-2.5 rounded-xl bg-[#00A4EF]/10 border border-[#00A4EF]/30 text-[#00A4EF]">
+            <div className="p-3 rounded-xl bg-[#7FBA00]/10 border border-[#7FBA00]/30 text-[#7FBA00]">
+              <Zap className="w-5 h-5" />
+            </div>
+          </Card>
+
+          <Card className="p-4 bg-slate-50/80 dark:bg-[#0B0F14]/80 border-slate-200 dark:border-[#2A323D] flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Attendance Rate</p>
+              <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white mt-0.5">{user?.attendancePercentage || 100}%</h3>
+            </div>
+            <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-400">
               <Calendar className="w-5 h-5" />
             </div>
           </Card>
 
-          <Card className="p-4 bg-slate-50 dark:bg-[#0B0F14] border-slate-200 dark:border-[#2A323D] flex items-center justify-between">
+          <Card className="p-4 bg-slate-50/80 dark:bg-[#0B0F14]/80 border-slate-200 dark:border-[#2A323D] flex items-center justify-between">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-[#A8B0BB]">CERTIFICATES</p>
-              <p className="text-2xl font-black text-[#7FBA00] mt-0.5">8</p>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Certificates Earned</p>
+              <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white mt-0.5">1 Verified</h3>
             </div>
-            <div className="p-2.5 rounded-xl bg-[#7FBA00]/10 border border-[#7FBA00]/30 text-[#7FBA00]">
+            <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
               <Award className="w-5 h-5" />
             </div>
           </Card>
+        </div>
+      </div>
 
-          <Card className="p-4 bg-slate-50 dark:bg-[#0B0F14] border-slate-200 dark:border-[#2A323D] flex items-center justify-between">
-            <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-[#A8B0BB]">RANK</p>
-              <p className="text-2xl font-black text-[#00A4EF] mt-0.5">#{user?.currentRank || 1}</p>
+      {/* 15.3 DASHBOARD CORE GRID */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Next Workshop & Action Hub */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D]">
+            <div className="flex items-center justify-between">
+              <Badge variant="primary" className="font-bold">Next Registered Workshop</Badge>
+              <Link href="/events" className="text-xs text-[#00A4EF] font-bold hover:underline flex items-center gap-1">
+                All Events <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
-            <div className="p-2.5 rounded-xl bg-[#00A4EF]/10 border border-[#00A4EF]/30 text-[#00A4EF]">
-              <Zap className="w-5 h-5" />
+
+            <div className="flex flex-col sm:flex-row gap-5 items-start">
+              <div className="relative w-full sm:w-44 h-28 rounded-xl overflow-hidden shrink-0 bg-slate-900">
+                <Image
+                  src={upcomingEvent.banner || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600'}
+                  alt={upcomingEvent.title}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+
+              <div className="space-y-2 flex-1">
+                <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">{upcomingEvent.title}</h3>
+                <p className="text-xs text-slate-600 dark:text-[#A8B0BB] line-clamp-2">{upcomingEvent.shortDescription}</p>
+                <div className="flex items-center gap-3 text-xs text-slate-500">
+                  <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5 text-[#00A4EF]" /> {new Date(upcomingEvent.startDate).toLocaleDateString()}</span>
+                  <span>•</span>
+                  <span>{upcomingEvent.venue}</span>
+                </div>
+              </div>
             </div>
           </Card>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Link href="/dashboard/attendance">
+              <Card className="p-5 hover:border-[#00A4EF] transition-all space-y-2 cursor-pointer border-slate-200 dark:border-[#2A323D]">
+                <div className="p-2.5 rounded-xl bg-[#00A4EF]/10 text-[#00A4EF] w-fit">
+                  <QrCode className="w-5 h-5" />
+                </div>
+                <h4 className="font-bold text-sm text-slate-900 dark:text-white">QR Entry Check-in</h4>
+                <p className="text-xs text-slate-500">View entry pass QR code for workshop check-in.</p>
+              </Card>
+            </Link>
+
+            <Link href="/dashboard/resources">
+              <Card className="p-5 hover:border-[#00A4EF] transition-all space-y-2 cursor-pointer border-slate-200 dark:border-[#2A323D]">
+                <div className="p-2.5 rounded-xl bg-[#7FBA00]/10 text-[#7FBA00] w-fit">
+                  <FolderDown className="w-5 h-5" />
+                </div>
+                <h4 className="font-bold text-sm text-slate-900 dark:text-white">Event Slide Decks</h4>
+                <p className="text-xs text-slate-500">Download GitHub code samples &amp; PPT slides.</p>
+              </Card>
+            </Link>
+          </div>
         </div>
 
-        {/* Compact Attendance Summary Widget */}
-        <Link href="/dashboard/attendance" className="block mt-4 group">
-          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-sky-500/10 to-teal-500/10 border border-emerald-500/30 flex items-center justify-between transition-all group-hover:border-emerald-500/60 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-                <QrCode className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5">
-                  Attendance: 100% Rate <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 font-mono">(3 Verified Check-ins)</span>
-                </p>
-                <p className="text-[11px] text-slate-600 dark:text-[#A8B0BB]">
-                  All QR entry passes verified • Eligible for all event completion certificates
-                </p>
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-emerald-500 group-hover:translate-x-1 transition-transform" />
-          </div>
-        </Link>
-      </div>
-
-      {/* Grid Section: Events & Notices */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Next Registered Event */}
-        <Card className="lg:col-span-2 p-6 space-y-4 border-slate-200 dark:border-[#2A323D]">
-          <div className="flex items-center justify-between border-b border-slate-200 dark:border-[#2A323D] pb-3">
-            <h3 className="text-base font-bold text-slate-900 dark:text-[#F5F7FA] flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-[#00A4EF]" /> Next Registered Event
+        {/* Right Col: Announcements */}
+        <div className="space-y-6">
+          <Card className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D]">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200 dark:border-[#2A323D] pb-3">
+              <Pin className="w-4 h-4 text-[#00A4EF]" /> Live Notices
             </h3>
-            <Link href="/events" className="text-xs text-[#0078D4] dark:text-[#00A4EF] hover:underline flex items-center font-semibold">
-              View All <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D]">
-            <Image src={upcomingEvent.banner} alt={upcomingEvent.title} width={144} height={96} className="w-full sm:w-36 h-24 rounded-xl object-cover" />
-            <div className="space-y-1 text-center sm:text-left flex-1">
-              <Badge variant="primary" size="sm">{upcomingEvent.category}</Badge>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-[#F5F7FA]">{upcomingEvent.title}</h4>
-              <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">Aug 25, 2026 • {upcomingEvent.venue}</p>
-            </div>
-            <Link href={`/dashboard/registrations/reg_az_8801`}>
-              <Button variant="fluent" size="sm">
-                QR Pass
-              </Button>
-            </Link>
-          </div>
-        </Card>
-
-        {/* Notices */}
-        <Card className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D]">
-          <div className="flex items-center justify-between border-b border-slate-200 dark:border-[#2A323D] pb-3">
-            <h3 className="text-base font-bold text-slate-900 dark:text-[#F5F7FA] flex items-center gap-2">
-              <Pin className="w-4 h-4 text-[#00A4EF]" /> Active Notices
-            </h3>
-          </div>
-
-          <div className="space-y-3">
-            {INITIAL_NOTICES.slice(0, 2).map((n) => (
-              <div key={n.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] space-y-1">
-                <Badge variant={n.priority === 'Urgent' ? 'danger' : 'purple'} size="sm">{n.priority}</Badge>
-                <h5 className="text-xs font-bold text-slate-900 dark:text-[#F5F7FA]">{n.title}</h5>
-                <p className="text-[11px] text-slate-600 dark:text-[#A8B0BB] line-clamp-2">{n.description}</p>
+            {notices.length === 0 ? (
+              <p className="text-xs text-slate-500">No active notices.</p>
+            ) : (
+              <div className="space-y-3">
+                {notices.slice(0, 3).map((notice) => (
+                  <div key={notice.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] space-y-1">
+                    <Badge variant={notice.priority === 'Urgent' ? 'danger' : 'purple'} size="sm">
+                      {notice.priority}
+                    </Badge>
+                    <h4 className="font-bold text-xs text-slate-900 dark:text-white">{notice.title}</h4>
+                    <p className="text-[11px] text-slate-500 line-clamp-2">{notice.description}</p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </Card>
-      </div>
-
-      {/* Quick Action Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <Link href="/dashboard/resources">
-          <Card className="p-6 text-center space-y-2 hover:border-[#00A4EF]/50 transition-all cursor-pointer border-slate-200 dark:border-[#2A323D]">
-            <FolderDown className="w-8 h-8 text-[#00A4EF] mx-auto" />
-            <h4 className="text-sm font-bold text-slate-900 dark:text-[#F5F7FA]">Event Resources</h4>
-            <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">Download slides & starter code</p>
+            )}
           </Card>
-        </Link>
-
-        <Link href="/dashboard/certificates">
-          <Card className="p-6 text-center space-y-2 hover:border-[#7FBA00]/50 transition-all cursor-pointer border-slate-200 dark:border-[#2A323D]">
-            <Award className="w-8 h-8 text-[#7FBA00] mx-auto" />
-            <h4 className="text-sm font-bold text-slate-900 dark:text-[#F5F7FA]">My Certificates</h4>
-            <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">Download verified PDF certificates</p>
-          </Card>
-        </Link>
-
-        <Link href="/dashboard/leaderboard">
-          <Card className="p-6 text-center space-y-2 hover:border-[#FFB900]/50 transition-all cursor-pointer border-slate-200 dark:border-[#2A323D]">
-            <Trophy className="w-8 h-8 text-[#FFB900] mx-auto" />
-            <h4 className="text-sm font-bold text-slate-900 dark:text-[#F5F7FA]">Leaderboard</h4>
-            <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">Check overall & monthly ranks</p>
-          </Card>
-        </Link>
+        </div>
       </div>
     </div>
   );

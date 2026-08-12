@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,13 +23,42 @@ export default function NewEventPage() {
     setAgenda([...agenda, { id: Date.now().toString(), time: '10:00 AM', title: 'Technical Session', speaker: 'Speaker', room: 'Lab 204' }]);
   };
 
-  const handleCreate = (e: React.FormEvent) => {
+  const router = useRouter();
+
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!title) {
+      toast.error('Event title is required.');
+      return;
+    }
+
     setIsSaving(true);
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          shortDescription: shortDesc || 'Hands-on intensive workshop by Microsoft Campus Club.',
+          category: category.toUpperCase(),
+          mode: mode.toUpperCase(),
+          venue: venue || 'Seminar Hall 4, Main Campus',
+          capacity: capacity || 150,
+        }),
+      });
+
+      const json = await res.json();
+      if (res.ok && json.success) {
+        toast.success(`Event "${title}" created and published!`);
+        router.push('/admin/events');
+      } else {
+        toast.error(json.error || 'Failed to create event.');
+      }
+    } catch {
+      toast.error('Network error creating event.');
+    } finally {
       setIsSaving(false);
-      toast.success(`Event "${title || 'New Event'}" created as Draft!`);
-    }, 600);
+    }
   };
 
   return (

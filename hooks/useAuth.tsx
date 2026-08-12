@@ -67,8 +67,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    refreshUser();
-  }, [refreshUser]);
+    let isSubscribed = true;
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (!isSubscribed) return;
+        if (json?.success && json?.data?.user) {
+          setUser(json.data.user as User);
+        } else {
+          setUser(null);
+        }
+      })
+      .catch(() => {
+        if (isSubscribed) setUser(null);
+      })
+      .finally(() => {
+        if (isSubscribed) setIsLoading(false);
+      });
+    return () => {
+      isSubscribed = false;
+    };
+  }, []);
 
   const loginStudent = async (
     payload: LoginPayload

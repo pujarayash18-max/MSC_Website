@@ -2,8 +2,7 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth/jwt';
 import { ok, ERR } from '@/lib/api/response';
-import { ADMIN_ROLES } from '@/lib/constants/roles';
-import type { SystemRoleName } from '@/types';
+import { isAdminRole } from '@/lib/constants/roles';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -38,7 +37,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   try {
     const session = await getSession();
     if (!session) return ERR.UNAUTHORIZED();
-    if (!ADMIN_ROLES.includes(session.roleName as SystemRoleName)) return ERR.FORBIDDEN();
+    if (!isAdminRole(session.roleName)) return ERR.FORBIDDEN();
 
     const { id } = await params;
     const body = await req.json();
@@ -63,7 +62,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   try {
     const session = await getSession();
     if (!session) return ERR.UNAUTHORIZED();
-    if (!ADMIN_ROLES.includes(session.roleName as SystemRoleName)) return ERR.FORBIDDEN();
+    if (!isAdminRole(session.roleName)) return ERR.FORBIDDEN();
 
     const { id } = await params;
     await prisma.event.update({ where: { id }, data: { isDeleted: true } });

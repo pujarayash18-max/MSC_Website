@@ -119,7 +119,7 @@ const PUBLIC_RESOURCES = [
 const CATEGORIES = ['All', 'Source Code', 'Presentation Slides', 'Workshops & Curricula'];
 
 export default function PublicResourcesPage() {
-  const { user, isAuthenticated, login } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
@@ -179,9 +179,11 @@ export default function PublicResourcesPage() {
                 <UserPlus className="w-4 h-4 text-[#00A4EF]" /> Register Account
               </Button>
             </Link>
-            <Button variant="outline" size="lg" onClick={() => login('Student')} className="gap-2 px-6">
-              <MicrosoftFourSquareIcon className="w-4 h-4" /> Microsoft SSO
-            </Button>
+            <Link href="/login">
+              <Button variant="outline" size="lg" className="gap-2 px-6">
+                <MicrosoftFourSquareIcon className="w-4 h-4" /> Microsoft SSO
+              </Button>
+            </Link>
           </div>
         </Card>
       ) : (

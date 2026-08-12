@@ -5,15 +5,40 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { INITIAL_EVENTS } from '@/lib/services/dataService';
 import { toast } from 'sonner';
-import { ArrowLeft, Users, CheckCircle2, Download } from 'lucide-react';
-import { GithubIcon } from '@/components/icons';
+import { ArrowLeft, Download, Loader2 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useQuery } from '@tanstack/react-query';
+
+async function fetchRegistrations() {
+  const res = await fetch('/api/registrations', { credentials: 'include' });
+  if (!res.ok) return [];
+  const json = await res.json();
+  return json.data?.registrations || [];
+}
 
 export default function RegistrationDetailPage() {
   const params = useParams();
   const regId = params?.id as string;
-  const event = INITIAL_EVENTS[0];
+  const { user } = useAuth();
+
+  const { data: registrations = [], isLoading } = useQuery({
+    queryKey: ['my-registrations-detail', regId],
+    queryFn: fetchRegistrations,
+  });
+
+  const reg = registrations.find((r: { id: string }) => r.id === regId) || registrations[0];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-[#00A4EF]" />
+      </div>
+    );
+  }
+
+  const eventTitle = reg?.event?.title || 'Microsoft Campus Club Workshop';
+  const qrPassCode = reg?.qrToken || `MCC-PASS-${regId || 'AZ8801'}`;
 
   return (
     <div className="max-w-4xl space-y-6">
@@ -27,8 +52,8 @@ export default function RegistrationDetailPage() {
         <div className="flex flex-col sm:flex-row items-start justify-between gap-4 border-b border-slate-200 dark:border-[#2A323D] pb-4">
           <div>
             <span className="text-xs font-mono text-[#00A4EF] font-bold">Registration Reference: {regId || 'reg_az_8801'}</span>
-            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white mt-1">{event.title}</h1>
-            <p className="text-xs text-slate-500 dark:text-[#A8B0BB] mt-1">Submitted on Aug 05, 2026 • Venue: {event.venue}</p>
+            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white mt-1">{eventTitle}</h1>
+            <p className="text-xs text-slate-500 dark:text-[#A8B0BB] mt-1">Submitted on {reg?.submittedAt ? new Date(reg.submittedAt).toLocaleDateString() : 'N/A'}</p>
           </div>
           <Badge variant="success" className="text-sm px-3 py-1">Registration Approved</Badge>
         </div>
@@ -37,9 +62,9 @@ export default function RegistrationDetailPage() {
         <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-2 text-center md:text-left">
             <Badge variant="primary">Verified QR Entry Pass</Badge>
-            <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">Rahul Sharma</h3>
-            <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">Enrollment: 92100103045 • Computer Engineering (3rd Year)</p>
-            <p className="text-xs font-mono text-[#00A4EF] font-bold">Pass Code: MCC-PASS-2026-AZ8801</p>
+            <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">{user?.fullName || 'MCC Member'}</h3>
+            <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">Student ID: {user?.studentId || 'MCC-2026-00042'} • {user?.department || 'Engineering'}</p>
+            <p className="text-xs font-mono text-[#00A4EF] font-bold">Pass Code: {qrPassCode}</p>
           </div>
 
           <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-lg text-center">
@@ -49,31 +74,6 @@ export default function RegistrationDetailPage() {
             <Button variant="fluent" size="sm" className="mt-3 w-full" onClick={() => toast.success('QR Code Entry Pass downloaded successfully!')}>
               <Download className="w-4 h-4" /> Save Pass
             </Button>
-          </div>
-        </div>
-
-        {/* Hackathon Team Details (§44) */}
-        <div className="space-y-4 pt-2">
-          <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Users className="w-5 h-5 text-[#00A4EF]" /> Team & Project Submission
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] space-y-2">
-              <span className="text-[11px] text-slate-500 font-semibold uppercase">Team Identity</span>
-              <p className="text-sm font-bold text-slate-900 dark:text-white">Azure Innovators</p>
-              <p className="text-slate-600 dark:text-[#A8B0BB]">Track: Generative AI & HealthTech</p>
-            </div>
-
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] space-y-2">
-              <span className="text-[11px] text-slate-500 font-semibold uppercase">Project Submission</span>
-              <p className="text-sm font-bold text-[#7FBA00] flex items-center gap-1">
-                <CheckCircle2 className="w-4 h-4" /> GitHub Repository Verified
-              </p>
-              <a href="https://github.com/rahulsharma-mu/azure-health-ai" target="_blank" rel="noreferrer" className="text-[#0078D4] dark:text-[#00A4EF] hover:underline flex items-center gap-1 font-semibold">
-                <GithubIcon className="w-3.5 h-3.5" /> github.com/rahulsharma-mu/azure-health-ai
-              </a>
-            </div>
           </div>
         </div>
       </Card>

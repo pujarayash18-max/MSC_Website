@@ -1,16 +1,18 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
-import { ADMIN_ROLES } from '@/lib/constants/roles';
-import type { SystemRoleName } from '@/types';
+import { isAdminRole } from '@/lib/constants/roles';
 
 const COOKIE_NAME = 'mcc_session';
 
 function getSecret(): Uint8Array {
-  const secret =
-    process.env.NEXTAUTH_SECRET ||
-    process.env.SESSION_SECRET ||
-    'mcc-platform-fallback-key-change-in-production';
+  const secret = process.env.NEXTAUTH_SECRET || process.env.SESSION_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('NEXTAUTH_SECRET or SESSION_SECRET must be set in production!');
+    }
+    return new TextEncoder().encode('mcc-platform-fallback-key-change-in-production');
+  }
   return new TextEncoder().encode(secret);
 }
 
@@ -21,10 +23,6 @@ interface SessionPayload {
   fullName: string;
 }
 
-/**
- * Cryptographically verify the session JWT using jose.
- * Rejects forged, expired, or tampered tokens — no plain base64-decode.
- */
 async function verifySession(token: string): Promise<SessionPayload | null> {
   try {
     const { payload } = await jwtVerify(token, getSecret());
@@ -32,41 +30,37 @@ async function verifySession(token: string): Promise<SessionPayload | null> {
     if (!userId || !email || !roleName) return null;
     return { userId, email, roleName, fullName } as SessionPayload;
   } catch {
-    // Expired, invalid signature, malformed — all result in null
     return null;
   }
 }
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  // Only guard dashboard and admin routes
-  if (!pathname.startsWith('/dashboard') && !pathname.startsWith('/admin')) {
-    return NextResponse.next();
-  }
-
   const token = request.cookies.get(COOKIE_NAME)?.value;
+  const session = token ? await verifySession(token) : null;
+  const isAdmin = session ? isAdminRole(session.roleName) : false;
 
-  if (!token) {
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(loginUrl);
+  // Maintenance mode check (full lockdown: UI pages + API write routes)
+  const isMaintenanceActive = process.env.MAINTENANCE_MODE === 'true';
+  if (isMaintenanceActive && !isAdmin && !pathname.startsWith('/_next') && !pathname.startsWith('/maintenance') && pathname !== '/login') {
+    if (pathname.startsWith('/api')) {
+      return NextResponse.json(
+        { success: false, error: 'System is currently under scheduled maintenance. Please try again later.' },
+        { status: 503 }
+      );
+    }
+    return NextResponse.rewrite(new URL('/maintenance', request.url));
   }
 
-  const session = await verifySession(token);
+  // Guard dashboard and admin routes
+  if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
+    if (!session) {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
 
-  if (!session) {
-    // Token invalid/expired — clear cookie and redirect to login
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirect', pathname);
-    const response = NextResponse.redirect(loginUrl);
-    response.cookies.delete(COOKIE_NAME);
-    return response;
-  }
-
-  // RBAC guard for /admin/* routes
-  if (pathname.startsWith('/admin')) {
-    if (!ADMIN_ROLES.includes(session.roleName as SystemRoleName)) {
+    if (pathname.startsWith('/admin') && !isAdmin) {
       return NextResponse.redirect(new URL('/unauthorized', request.url));
     }
   }
@@ -77,5 +71,5 @@ export async function proxy(request: NextRequest) {
 export const middleware = proxy;
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/admin/:path*'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };

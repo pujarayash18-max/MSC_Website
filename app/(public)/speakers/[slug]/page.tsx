@@ -3,29 +3,37 @@ import { notFound } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { INITIAL_SPEAKERS } from '@/lib/services/dataService';
 import Link from 'next/link';
 import { ArrowLeft, Mic } from 'lucide-react';
+import type { Speaker } from '@/types';
 
 interface SpeakerPageProps {
   params: Promise<{ slug: string }>;
 }
 
-export function generateStaticParams() {
-  return INITIAL_SPEAKERS.map((s) => ({
-    slug: s.speakerId,
-  }));
+async function getSpeaker(id: string): Promise<Speaker | null> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const res = await fetch(`${baseUrl}/api/speakers/${encodeURIComponent(id)}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data?.speaker || null;
+  } catch {
+    return null;
+  }
 }
 
 export default async function SpeakerDetailPage({ params }: SpeakerPageProps) {
   const { slug } = await params;
-  const speaker = INITIAL_SPEAKERS.find(
-    (s) => s.speakerId === slug || s.id === slug || s.name.toLowerCase().replace(/\s+/g, '-') === slug
-  );
+  const speaker = await getSpeaker(slug);
 
   if (!speaker) {
     notFound();
   }
+
+  const events = (speaker as unknown as { events?: Array<{ event: { id: string; title: string; startDate: string; banner: string } }> }).events || [];
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-8">
@@ -48,30 +56,45 @@ export default async function SpeakerDetailPage({ params }: SpeakerPageProps) {
               {speaker.designation} at {speaker.organization}
             </p>
 
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
-              {speaker.expertise.map((exp) => (
-                <Badge key={exp} variant="purple">
-                  {exp}
-                </Badge>
-              ))}
-            </div>
+            {speaker.expertise && speaker.expertise.length > 0 && (
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
+                {speaker.expertise.map((exp) => (
+                  <Badge key={exp} variant="purple">
+                    {exp}
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="space-y-3 border-t border-slate-200 dark:border-[#2A323D] pt-6">
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">Biography</h3>
+        <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-[#2A323D]">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">Biography</h2>
           <p className="text-sm text-slate-600 dark:text-[#A8B0BB] leading-relaxed">{speaker.bio}</p>
         </div>
 
-        <div className="space-y-3 border-t border-slate-200 dark:border-[#2A323D] pt-6">
-          <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Mic className="w-4 h-4 text-[#00A4EF]" /> Keynote Sessions Delivered at MCC
-          </h3>
-          <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] space-y-1">
-            <h4 className="text-sm font-bold text-slate-900 dark:text-white">Azure Cloud Architecture & Serverless Masterclass</h4>
-            <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">Delivered on Aug 25, 2026 • Marwadi University Campus</p>
+        {/* Sessions Section */}
+        {events.length > 0 && (
+          <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-[#2A323D]">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Mic className="w-5 h-5 text-[#00A4EF]" /> Sessions Delivered at MCC
+            </h2>
+
+            <div className="grid grid-cols-1 gap-3">
+              {events.map(({ event: evt }) => (
+                <Link key={evt.id} href={`/events/${evt.id}`}>
+                  <Card className="p-4 flex items-center justify-between hover:border-[#00A4EF] transition-all">
+                    <div>
+                      <h3 className="font-bold text-sm text-slate-900 dark:text-white">{evt.title}</h3>
+                      <p className="text-xs text-slate-500">{new Date(evt.startDate).toLocaleDateString()}</p>
+                    </div>
+                    <Button variant="ghost" size="sm">View Event</Button>
+                  </Card>
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </Card>
     </div>
   );

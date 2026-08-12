@@ -22,17 +22,17 @@ export function Providers({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    let active = true;
-    requestAnimationFrame(() => {
-      if (active) setMounted(true);
-    });
-    return () => {
-      active = false;
-    };
+    setMounted(true);
   }, []);
 
   return (
-    <NextThemesProvider attribute="class" defaultTheme="dark" enableSystem>
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme="dark"
+      enableSystem={false}
+      disableTransitionOnChange
+      enableColorScheme={false}
+    >
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           {children}

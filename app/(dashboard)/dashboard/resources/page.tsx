@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { useRealtime, RealtimeEvent } from '@/hooks/useRealtime';
+import { useRealtime } from '@/hooks/useRealtime';
 import { toast } from 'sonner';
 import { FolderDown, Download, Lock, Sparkles, LogIn, ShieldCheck, UserPlus, Ticket, Globe } from 'lucide-react';
 import { MicrosoftFourSquareIcon } from '@/components/icons';
@@ -51,7 +51,7 @@ const INITIAL_STUDENT_RESOURCES = [
 
 export default function StudentResourcesPage() {
   const router = useRouter();
-  const { isAuthenticated, login, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const [resources, setResources] = useState(INITIAL_STUDENT_RESOURCES);
 
   useEffect(() => {
@@ -61,23 +61,23 @@ export default function StudentResourcesPage() {
   }, [isLoading, isAuthenticated, router]);
 
   // Real-time listener for live resource uploads during event (§48, §123)
-  useRealtime('LIVE_RESOURCE_UPLOADED', (event: RealtimeEvent<{ title: string; eventTitle?: string; eventId?: string; category: string; visibility: string; blobUrl: string }>) => {
-    toast.success(`⚡ Live Resource Broadcast Received: "${event.payload.title}"`, {
-      description: `Target Event: ${event.payload.eventTitle || 'Event Workshop'}`
-    });
-    setResources((prev) => [
-      {
-        resourceId: `res_${Date.now()}`,
-        eventId: event.payload.eventId || 'evt_01',
-        eventTitle: event.payload.eventTitle || 'Azure Masterclass',
-        title: event.payload.title,
-        category: event.payload.category,
-        visibility: event.payload.visibility,
-        blobUrl: event.payload.blobUrl,
-        uploadedAt: 'Just Now'
-      },
-      ...prev
-    ]);
+  useRealtime({
+    LIVE_RESOURCE_UPLOADED: (payload) => {
+      toast.success(`⚡ Live Resource Broadcast Received: "${payload.title || 'New Resource'}"`);
+      setResources((prev) => [
+        {
+          resourceId: `res_${Date.now()}`,
+          eventId: (payload.eventId as string) || 'evt_01',
+          eventTitle: (payload.eventTitle as string) || 'Azure Masterclass',
+          title: (payload.title as string) || 'Resource',
+          category: (payload.category as string) || 'Slides',
+          visibility: (payload.visibility as string) || 'Public',
+          blobUrl: (payload.blobUrl as string) || '#',
+          uploadedAt: 'Just Now',
+        },
+        ...prev,
+      ]);
+    },
   });
 
   if (!isAuthenticated) {
@@ -110,7 +110,7 @@ export default function StudentResourcesPage() {
               <UserPlus className="w-4 h-4 text-[#00A4EF]" /> Register Account
             </Button>
           </Link>
-          <Button variant="outline" size="lg" onClick={() => login('Student')} className="gap-2 px-6">
+          <Button variant="outline" size="lg" onClick={() => router.push('/login')} className="gap-2 px-6">
             <MicrosoftFourSquareIcon className="w-4 h-4" /> Microsoft SSO
           </Button>
         </div>

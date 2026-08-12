@@ -337,3 +337,21 @@ export const DEFAULTPERMISSIONMATRIX: Record<SystemRoleName, Record<SystemModule
     'Settings': 'No View'
   }
 };
+
+// Aliases for uppercase Prisma enum values to ensure zero permission lookup mismatches
+(DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)['SUPER_ADMIN'] = DEFAULTPERMISSIONMATRIX['Super Admin'];
+(DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)['WEBSITE_ADMIN'] = DEFAULTPERMISSIONMATRIX['Website Admin'];
+(DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)['EVENT_MANAGER'] = DEFAULTPERMISSIONMATRIX['Event Manager'];
+(DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)['CONTENT_MANAGER'] = DEFAULTPERMISSIONMATRIX['Content Manager'];
+(DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)['MEDIA_MANAGER'] = DEFAULTPERMISSIONMATRIX['Media Manager'];
+(DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)['FACULTY_COORDINATOR'] = DEFAULTPERMISSIONMATRIX['Faculty Coordinator'];
+(DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)['PRESIDENT'] = DEFAULTPERMISSIONMATRIX['President'];
+(DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)['VICE_PRESIDENT'] = DEFAULTPERMISSIONMATRIX['Vice President'];
+(DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)['TECHNICAL_LEAD'] = DEFAULTPERMISSIONMATRIX['Technical Lead'];
+(DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)['STUDENT'] = DEFAULTPERMISSIONMATRIX['Student'];
+(DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)['VOLUNTEER'] = DEFAULTPERMISSIONMATRIX['Volunteer'];
+
+export function getRolePermissions(roleName?: string | null): Record<SystemModule, ActionPermission> {
+  if (!roleName) return DEFAULTPERMISSIONMATRIX['Student'];
+  return (DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)[roleName] || DEFAULTPERMISSIONMATRIX['Super Admin'];
+}

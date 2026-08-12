@@ -5,18 +5,56 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { INITIAL_CERTIFICATES } from '@/lib/services/dataService';
 import { toast } from 'sonner';
-import { ShieldCheck, ShieldAlert, ArrowLeft, Download } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, ArrowLeft, Download, Loader2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+
+interface VerifiedCert {
+  verificationCode: string;
+  type: string;
+  generatedAt: string;
+  blobUrl: string;
+  student: {
+    fullName: string;
+    studentId: string;
+    college: string;
+  };
+  event: {
+    title: string;
+    startDate: string;
+    category: string;
+  };
+  template?: string;
+  status: string;
+}
+
+async function verifyCertificate(code: string): Promise<VerifiedCert | null> {
+  if (!code) return null;
+  const res = await fetch(`/api/certificates/${encodeURIComponent(code)}/verify`);
+  if (!res.ok) return null;
+  const json = await res.json();
+  return json.data?.certificate || null;
+}
 
 export default function CertificateVerificationResultPage() {
   const params = useParams();
   const rawId = (params?.verificationId as string) || '';
   const verificationId = decodeURIComponent(rawId).trim();
 
-  const cert = INITIAL_CERTIFICATES.find(
-    (c) => c.verificationId.toLowerCase() === verificationId.toLowerCase()
-  );
+  const { data: cert, isLoading } = useQuery({
+    queryKey: ['certificate-verify', verificationId],
+    queryFn: () => verifyCertificate(verificationId),
+    enabled: !!verificationId,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-20 text-center space-y-4">
+        <Loader2 className="w-8 h-8 animate-spin text-[#00A4EF] mx-auto" />
+        <p className="text-sm text-slate-500">Verifying certificate credentials...</p>
+      </div>
+    );
+  }
 
   if (!cert) {
     return (
@@ -63,42 +101,38 @@ export default function CertificateVerificationResultPage() {
 
         <div>
           <Badge variant="success" className="mb-2 text-xs font-extrabold px-3 py-1">
-            ✓ Authenticity Verified
+            ✓ Authenticated Official Certificate
           </Badge>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white">Official Certificate Verified</h1>
-          <p className="text-xs font-mono text-[#7FBA00] font-bold mt-1">Verification ID: {cert.verificationId}</p>
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white">Verification Successful</h1>
+          <p className="text-xs font-mono text-[#00A4EF] font-bold mt-1">ID: {cert.verificationCode}</p>
         </div>
 
-        <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] text-left space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-            <div>
-              <span className="text-slate-500 font-semibold uppercase block">Student Recipient</span>
-              <p className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">{cert.studentName}</p>
-              <p className="text-slate-500 dark:text-[#A8B0BB]">Enrollment: {cert.enrollmentNumber}</p>
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left p-6 rounded-2xl bg-slate-50 dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] text-xs">
+          <div>
+            <span className="text-slate-500 dark:text-[#A8B0BB] font-semibold block">Student Recipient</span>
+            <span className="text-slate-900 dark:text-white font-extrabold text-sm block mt-0.5">{cert.student.fullName}</span>
+            <span className="text-slate-500 dark:text-[#A8B0BB] block mt-0.5">{cert.student.studentId} • {cert.student.college}</span>
+          </div>
 
-            <div>
-              <span className="text-slate-500 font-semibold uppercase block">Issuing Organization</span>
-              <p className="text-sm font-bold text-[#00A4EF] mt-0.5">{cert.issuer}</p>
-            </div>
-
-            <div>
-              <span className="text-slate-500 font-semibold uppercase block">Event Title</span>
-              <p className="text-xs font-bold text-slate-900 dark:text-white mt-0.5">{cert.eventName}</p>
-              <p className="text-xs text-sky-400 font-semibold">{cert.eventType}</p>
-            </div>
-
-            <div>
-              <span className="text-slate-500 font-semibold uppercase block">Issue Date</span>
-              <p className="text-xs font-bold text-slate-900 dark:text-white mt-0.5">{cert.issueDate}</p>
-            </div>
+          <div>
+            <span className="text-slate-500 dark:text-[#A8B0BB] font-semibold block">Event / Achievement</span>
+            <span className="text-slate-900 dark:text-white font-extrabold text-sm block mt-0.5">{cert.event.title}</span>
+            <span className="text-[#00A4EF] font-bold block mt-0.5">{cert.type} Certificate</span>
           </div>
         </div>
 
-        <div className="pt-2 flex justify-center">
-          <Button variant="fluent" size="lg" onClick={() => toast.success(`Official PDF Certificate downloaded for ${cert.studentName}!`)}>
-            <Download className="w-4 h-4" /> Download Official PDF Certificate
-          </Button>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+          <span className="text-xs text-slate-500 dark:text-[#A8B0BB]">
+            Issued on {new Date(cert.generatedAt).toLocaleDateString()} by Microsoft Campus Club
+          </span>
+
+          {cert.blobUrl && (
+            <a href={cert.blobUrl} target="_blank" rel="noopener noreferrer">
+              <Button variant="fluent" size="sm" onClick={() => toast.success('Downloading official PDF certificate...')}>
+                <Download className="w-4 h-4" /> Download Certified PDF
+              </Button>
+            </a>
+          )}
         </div>
       </Card>
     </div>

@@ -2,8 +2,9 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth/jwt';
 import { ok, ERR } from '@/lib/api/response';
-import { ADMIN_ROLES } from '@/lib/constants/roles';
-import type { SystemRoleName } from '@/types';
+import { isAdminRole } from '@/lib/constants/roles';
+import { sendRegistrationConfirmation } from '@/lib/email';
+import { broadcastEvent } from '@/app/api/realtime/route';
 import crypto from 'crypto';
 
 export async function GET(req: NextRequest) {
@@ -13,7 +14,7 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = req.nextUrl;
     const eventId = searchParams.get('eventId');
-    const isAdmin = ADMIN_ROLES.includes(session.roleName as SystemRoleName);
+    const isAdmin = isAdminRole(session.roleName);
 
     const registrations = await prisma.registration.findMany({
       where: {
@@ -49,15 +50,13 @@ export async function POST(req: NextRequest) {
       where: { id: eventId, isDeleted: false },
     });
     if (!event) return ERR.NOT_FOUND('Event');
-    if (event.remainingSeats <= 0 && !event.waitlistEnabled) {
-      return ERR.CONFLICT('This event is fully booked.');
-    }
-
-    // Prevent duplicate registration
-    const existing = await prisma.registration.findFirst({
-      where: { eventId, userId: session.userId, isDeleted: false },
+    // Count existing approved / confirmed registrations
+    const approvedCount = await prisma.registration.count({
+      where: { eventId, registrationStatus: 'APPROVED', isDeleted: false },
     });
-    if (existing) return ERR.CONFLICT('You are already registered for this event.');
+
+    const isAtCapacity = event.capacity > 0 && approvedCount >= event.capacity;
+    const initialStatus = isAtCapacity ? 'WAITLISTED' : 'PENDING';
 
     const qrToken = crypto.randomUUID();
 
@@ -70,7 +69,7 @@ export async function POST(req: NextRequest) {
           formType: 'College Registration',
           responses: responses || {},
           qrToken,
-          registrationStatus: 'PENDING',
+          registrationStatus: initialStatus,
         },
         include: {
           event: { select: { id: true, title: true, startDate: true } },
@@ -80,10 +79,22 @@ export async function POST(req: NextRequest) {
         where: { id: eventId },
         data: {
           remainingSeats: Math.max(0, event.remainingSeats - 1),
-          waitlistCount: event.remainingSeats <= 0 ? { increment: 1 } : undefined,
+          waitlistCount: isAtCapacity ? { increment: 1 } : undefined,
         },
       }),
     ]);
+
+    // Send confirmation email asynchronously
+    if (session.email) {
+      sendRegistrationConfirmation(
+        session.email,
+        session.fullName || 'Student',
+        registration.event?.title || 'Event',
+        qrToken
+      ).catch((e) => console.error('[Email Send Failed]', e));
+    }
+
+    broadcastEvent('registration_created', { registration });
 
     return ok({ registration }, 201);
   } catch (e) {

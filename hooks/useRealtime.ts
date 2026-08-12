@@ -1,56 +1,55 @@
 'use client';
-import { useEffect, useState } from 'react';
 
-export interface RealtimeEvent<T = unknown> {
-  type: 
-    | 'LIVE_RESOURCE_UPLOADED'
-    | 'ATTENDANCE_MARKED'
-    | 'REGISTRATION_UPDATED'
-    | 'NOTICE_PUBLISHED'
-    | 'WINNER_ANNOUNCED'
-    | 'LEADERBOARD_RECALCULATED'
-    | 'NOTIFICATION_RECEIVED';
-  payload: T;
-  timestamp: string;
-}
+import { useEffect, useRef } from 'react';
 
-export function useRealtime<T = unknown>(
-  eventType?: RealtimeEvent['type'],
-  callback?: (event: RealtimeEvent<T>) => void
-) {
-  const [isConnected] = useState(true);
-  const [lastEvent, setLastEvent] = useState<RealtimeEvent<T> | null>(null);
+type EventCallback = (data: Record<string, unknown>) => void;
+
+export function useRealtime(eventListeners?: Record<string, EventCallback>) {
+  const listenersRef = useRef(eventListeners);
 
   useEffect(() => {
-    // Local SSE or SignalR client simulation helper
-    const handleCustomEvent = (e: Event) => {
-      const custom = e as CustomEvent<RealtimeEvent<T>>;
-      if (!eventType || custom.detail.type === eventType) {
-        setLastEvent(custom.detail);
-        if (callback) callback(custom.detail);
-      }
-    };
+    listenersRef.current = eventListeners;
+  }, [eventListeners]);
 
-    window.addEventListener('mcc-realtime', handleCustomEvent);
+  useEffect(() => {
+    let eventSource: EventSource | null = null;
+    let reconnectTimeout: NodeJS.Timeout;
+
+    function connect() {
+      eventSource = new EventSource('/api/realtime');
+
+      eventSource.onmessage = (e) => {
+        try {
+          const payload = JSON.parse(e.data);
+          listenersRef.current?.onMessage?.(payload);
+        } catch {}
+      };
+
+      // Add custom event listeners
+      if (listenersRef.current) {
+        Object.entries(listenersRef.current).forEach(([eventName, callback]) => {
+          if (eventName !== 'onMessage') {
+            eventSource?.addEventListener(eventName, (e: MessageEvent) => {
+              try {
+                const payload = JSON.parse(e.data);
+                callback(payload);
+              } catch {}
+            });
+          }
+        });
+      }
+
+      eventSource.onerror = () => {
+        eventSource?.close();
+        reconnectTimeout = setTimeout(connect, 5000);
+      };
+    }
+
+    connect();
+
     return () => {
-      window.removeEventListener('mcc-realtime', handleCustomEvent);
+      clearTimeout(reconnectTimeout);
+      eventSource?.close();
     };
-  }, [eventType, callback]);
-
-  const emitLocalEvent = (type: RealtimeEvent['type'], payload: T) => {
-    const evt = new CustomEvent<RealtimeEvent<T>>('mcc-realtime', {
-      detail: {
-        type,
-        payload,
-        timestamp: new Date().toISOString()
-      }
-    });
-    window.dispatchEvent(evt);
-  };
-
-  return {
-    isConnected,
-    lastEvent,
-    emitLocalEvent
-  };
+  }, []);
 }

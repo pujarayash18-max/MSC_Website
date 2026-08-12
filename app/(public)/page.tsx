@@ -6,8 +6,8 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { INITIAL_EVENTS, INITIAL_TEAM, INITIAL_NOTICES, INITIAL_SPONSORS } from '@/lib/services/dataService';
 import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
 import {
   Sparkles,
   Calendar,
@@ -24,6 +24,7 @@ import {
   Star,
   Code
 } from 'lucide-react';
+import type { Event, TeamMember, Notice, Sponsor } from '@/types';
 
 const STATS = [
   { label: 'Community Members', value: 1200, icon: Users, suffix: '+' },
@@ -62,8 +63,51 @@ function formatDateDeterministic(dateString: string): string {
   return `${months[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
 }
 
+async function fetchHomeData() {
+  const [eventsRes, teamRes, noticesRes, sponsorsRes] = await Promise.all([
+    fetch('/api/events'),
+    fetch('/api/team'),
+    fetch('/api/notices'),
+    fetch('/api/sponsors')
+  ]);
+
+  const [eventsData, teamData, noticesData, sponsorsData] = await Promise.all([
+    eventsRes.ok ? eventsRes.json() : { data: {} },
+    teamRes.ok ? teamRes.json() : { data: {} },
+    noticesRes.ok ? noticesRes.json() : { data: {} },
+    sponsorsRes.ok ? sponsorsRes.json() : { data: {} }
+  ]);
+
+  return {
+    events: (eventsData.data?.events || []) as Event[],
+    team: (teamData.data?.members || []) as TeamMember[],
+    notices: (noticesData.data?.notices || []) as Notice[],
+    sponsors: (sponsorsData.data?.sponsors || []) as Sponsor[]
+  };
+}
+
 export default function HomePage() {
-  const [nextEvent] = useState(INITIAL_EVENTS[0]);
+  const { data } = useQuery({
+    queryKey: ['home-data'],
+    queryFn: fetchHomeData
+  });
+
+  const events = data?.events || [];
+  const team = data?.team || [];
+  const notices = data?.notices || [];
+  const sponsors = data?.sponsors || [];
+
+  const nextEvent = events[0] || {
+    id: 'evt_default',
+    title: 'Azure Cloud Masterclass',
+    shortDescription: 'Deep dive into Azure Serverless architecture and Cloud Computing.',
+    venue: 'Seminar Hall 4, Main Campus',
+    startDate: new Date().toISOString(),
+    remainingSeats: 25,
+    capacity: 150,
+    slug: 'azure-cloud-masterclass'
+  };
+
   const [countdown, setCountdown] = useState({ days: 12, hours: 8, minutes: 42, seconds: 19 });
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterName, setNewsletterName] = useState('');
@@ -106,7 +150,7 @@ export default function HomePage() {
           </div>
 
           <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
-            Innovate, Learn & Build with <br className="hidden sm:inline" />
+            Innovate, Learn &amp; Build with <br className="hidden sm:inline" />
             <span className="bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 dark:from-sky-400 dark:via-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
               Microsoft Campus Club
             </span>
@@ -146,7 +190,7 @@ export default function HomePage() {
             <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <Trophy className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Points & Leaderboard</h3>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Points &amp; Leaderboard</h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
               Automatic points ledger, achievement badges, and live student leaderboards recalculated in real-time.
             </p>
@@ -199,7 +243,7 @@ export default function HomePage() {
               <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{nextEvent.shortDescription}</p>
 
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs text-slate-600 dark:text-slate-300 pt-2">
-                <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-sky-600 dark:text-sky-400" /> Aug 25, 2026 • 09:30 AM</span>
+                <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-sky-600 dark:text-sky-400" /> {new Date(nextEvent.startDate).toLocaleDateString()}</span>
                 <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-sky-600 dark:text-sky-400" /> {nextEvent.venue}</span>
               </div>
             </div>
@@ -228,7 +272,7 @@ export default function HomePage() {
                 Seats Remaining: <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{nextEvent.remainingSeats}</strong> / {nextEvent.capacity}
               </div>
 
-              <Link href={`/events/${nextEvent.slug}`} className="block">
+              <Link href={`/events/${nextEvent.slug || nextEvent.id}`} className="block">
                 <Button variant="fluent" className="w-full">
                   Register Now <ChevronRight className="w-4 h-4" />
                 </Button>
@@ -249,10 +293,10 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {INITIAL_TEAM.map((member) => (
+          {team.slice(0, 3).map((member) => (
             <Card key={member.id} className="p-6 text-center space-y-4 hover:border-sky-500/50 transition-all duration-300">
               <img
-                src={member.photo}
+                src={member.photo || '/avatar-placeholder.png'}
                 alt={member.name}
                 className="w-24 h-24 rounded-2xl object-cover mx-auto border-2 border-sky-500 shadow-lg"
               />
@@ -306,14 +350,14 @@ export default function HomePage() {
           </div>
 
           <div className="space-y-3">
-            {INITIAL_NOTICES.map((notice) => (
+            {notices.slice(0, 3).map((notice) => (
               <Card key={notice.id} className="p-4 space-y-2">
                 <div className="flex items-center justify-between">
                   <Badge variant={notice.priority === 'Urgent' ? 'danger' : 'purple'}>
                     {notice.priority} Notice
                   </Badge>
                   <span className="text-[10px] text-slate-500 dark:text-slate-400">
-                    {formatDateDeterministic(notice.publishDate)}
+                    {formatDateDeterministic(String(notice.publishDate))}
                   </span>
                 </div>
                 <h4 className="font-bold text-slate-900 dark:text-white text-sm">{notice.title}</h4>
@@ -356,27 +400,29 @@ export default function HomePage() {
       {/* 18 SPONSORS & 19 NEWSLETTER */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Sponsors */}
-        <div className="text-center space-y-4">
-          <Badge variant="default">Official Partners</Badge>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Supported By Industry Leaders</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto pt-2">
-            {INITIAL_SPONSORS.map((s) => (
-              <Card key={s.id} className="p-6 flex items-center gap-4 hover:border-sky-500/40 transition-colors">
-                <img src={s.logo} alt={s.name} className="w-12 h-12 rounded-xl object-cover" />
-                <div className="text-left">
-                  <h4 className="font-bold text-slate-900 dark:text-white text-sm">{s.name}</h4>
-                  <Badge variant="primary" className="mt-1">{s.tier} Sponsor</Badge>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">{s.description}</p>
-                </div>
-              </Card>
-            ))}
+        {sponsors.length > 0 && (
+          <div className="text-center space-y-4">
+            <Badge variant="default">Official Partners</Badge>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Supported By Industry Leaders</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto pt-2">
+              {sponsors.map((s) => (
+                <Card key={s.id} className="p-6 flex items-center gap-4 hover:border-sky-500/40 transition-colors">
+                  <img src={s.logo} alt={s.name} className="w-12 h-12 rounded-xl object-cover" />
+                  <div className="text-left">
+                    <h4 className="font-bold text-slate-900 dark:text-white text-sm">{s.name}</h4>
+                    <Badge variant="primary" className="mt-1">{s.tier} Sponsor</Badge>
+                    <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">{s.description}</p>
+                  </div>
+                </Card>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Newsletter Box */}
         <div className="rounded-3xl bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 p-8 md:p-10 text-white text-center max-w-4xl mx-auto shadow-2xl space-y-4">
           <Badge variant="outline" className="text-white border-white/40">Weekly Digest</Badge>
-          <h2 className="text-2xl sm:text-3xl font-extrabold">Stay Updated with MCC Events & Azure Releases</h2>
+          <h2 className="text-2xl sm:text-3xl font-extrabold">Stay Updated with MCC Events &amp; Azure Releases</h2>
           <p className="text-xs sm:text-sm text-sky-100 max-w-xl mx-auto">
             Subscribe to receive official announcement notifications, workshop schedules, and hackathon registration alerts.
           </p>

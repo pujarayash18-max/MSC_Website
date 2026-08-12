@@ -9,39 +9,23 @@ param environment string = 'dev'
 param appName string = 'mcc-platform'
 
 var uniqueSuffix = uniqueString(resourceGroup().id)
-var cosmosAccountName = '${appName}-cosmos-${uniqueSuffix}'
+var postgresServerName = '${appName}-db-${uniqueSuffix}'
 var blobStorageName = '${appName}st${uniqueSuffix}'
-var signalRName = '${appName}-signalr-${uniqueSuffix}'
 var appInsightsName = '${appName}-insights-${uniqueSuffix}'
 var swaName = '${appName}-swa-${uniqueSuffix}'
 
-// 1. Azure Cosmos DB Account (NoSQL)
-resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
-  name: cosmosAccountName
+// 1. Azure Database for PostgreSQL Flexible Server
+resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2022-12-01' = {
+  name: postgresServerName
   location: location
-  kind: 'GlobalDocumentDB'
-  properties: {
-    databaseAccountOfferType: 'Standard'
-    locations: [
-      {
-        locationName: location
-        failoverPriority: 0
-      }
-    ]
-    capabilities: [
-      {
-        name: 'EnableServerless'
-      }
-    ]
+  sku: {
+    name: 'Standard_B1ms'
+    tier: 'Burstable'
   }
-}
-
-resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2023-04-15' = {
-  parent: cosmosAccount
-  name: 'mccdb'
   properties: {
-    resource: {
-      id: 'mccdb'
+    version: '15'
+    storage: {
+      storageSizeGB: 32
     }
   }
 }
@@ -74,25 +58,7 @@ resource mediaContainer 'Microsoft.Storage/storageAccounts/blobServices/containe
   }
 }
 
-// 3. Azure SignalR Service (Serverless mode)
-resource signalr 'Microsoft.SignalRService/signalR@2023-02-01' = {
-  name: signalRName
-  location: location
-  sku: {
-    name: 'Free_F1'
-    capacity: 1
-  }
-  properties: {
-    features: [
-      {
-        flag: 'ServiceMode'
-        value: 'Serverless'
-      }
-    ]
-  }
-}
-
-// 4. Azure Application Insights
+// 3. Azure Application Insights
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: appInsightsName
   location: location
@@ -103,7 +69,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-// 5. Azure Static Web Apps
+// 4. Azure Static Web Apps / App Service
 resource swa 'Microsoft.Web/staticSites@2022-09-01' = {
   name: swaName
   location: location
@@ -114,7 +80,7 @@ resource swa 'Microsoft.Web/staticSites@2022-09-01' = {
   properties: {}
 }
 
-output cosmosEndpoint string = cosmosAccount.properties.documentEndpoint
+output postgresHost string = postgresServer.properties.fullyQualifiedDomainName
 output blobStorageConnectionString string = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=core.windows.net'
 output appInsightsConnectionString string = appInsights.properties.ConnectionString
 output staticWebAppDefaultHostName string = swa.properties.defaultHostname

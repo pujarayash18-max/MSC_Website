@@ -7,131 +7,144 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
-import { INITIAL_EVENTS, dynamicDb } from '@/lib/services/dataService';
-import { toast } from 'sonner';
-import { QrCode, Calendar, MapPin, ChevronRight, Download, FileText } from 'lucide-react';
+import { QrCode, Calendar, ChevronRight, Download, FileText, Loader2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
-const STATIC_REGISTRATIONS = [
-  {
-    registrationId: 'reg_az_8801',
-    eventTitle: INITIAL_EVENTS[0].title,
-    eventVenue: INITIAL_EVENTS[0].venue,
-    banner: INITIAL_EVENTS[0].banner,
-    submittedAt: '2026-08-05T10:15:00.000Z',
-    status: 'Approved',
-    qrToken: 'MCC-AZ-2026-REG8801-VERIFIED',
-    attendanceStatus: 'Checked In'
-  },
-  {
-    registrationId: 'reg_hk_9902',
-    eventTitle: INITIAL_EVENTS[1].title,
-    eventVenue: INITIAL_EVENTS[1].venue,
-    banner: INITIAL_EVENTS[1].banner,
-    submittedAt: '2026-08-11T14:30:00.000Z',
-    status: 'Approved',
-    qrToken: 'MCC-HK-2026-REG9902-VERIFIED',
-    attendanceStatus: 'Pending'
-  }
-];
+interface RegistrationItem {
+  id: string;
+  submittedAt: string;
+  registrationStatus: string;
+  qrToken: string;
+  event: {
+    id: string;
+    title: string;
+    slug: string;
+    startDate: string;
+    banner: string;
+  };
+}
+
+async function fetchRegistrations(): Promise<RegistrationItem[]> {
+  const res = await fetch('/api/registrations', { credentials: 'include' });
+  if (!res.ok) return [];
+  const json = await res.json();
+  return json.data?.registrations || [];
+}
 
 export default function StudentRegistrationsPage() {
   const [selectedQr, setSelectedQr] = useState<string | null>(null);
-  const [allRegs] = useState(() => {
-    if (typeof window === 'undefined') return STATIC_REGISTRATIONS;
-    const saved = dynamicDb.getRegistrations();
-    if (saved && saved.length > 0) {
-      const mappedSaved = saved.map((s: Record<string, unknown>) => ({
-        registrationId: String(s.registrationId || ''),
-        eventTitle: String(s.eventTitle || ''),
-        eventVenue: 'Seminar Hall 4, Main Campus',
-        banner: INITIAL_EVENTS[0].banner,
-        submittedAt: String(s.createdAt || new Date().toISOString()),
-        status: String(s.status || 'Approved'),
-        qrToken: String(s.qrPassCode || `MCC-PASS-${s.registrationId}`),
-        attendanceStatus: 'Registered'
-      }));
-      return [...mappedSaved, ...STATIC_REGISTRATIONS];
-    }
-    return STATIC_REGISTRATIONS;
+
+  const { data: registrations = [], isLoading } = useQuery({
+    queryKey: ['my-registrations'],
+    queryFn: fetchRegistrations,
   });
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-          <FileText className="w-7 h-7 text-[#00A4EF]" /> My Event Registrations
+          <FileText className="w-7 h-7 text-[#00A4EF]" /> My Registered Events &amp; Passes
         </h1>
         <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
-          View your confirmed registrations, download your QR entry pass, and check event schedules.
+          Manage your upcoming workshop bookings, view hackathon team status, and access verified QR entry passes.
         </p>
       </div>
 
-      <div className="space-y-4">
-        {allRegs.map((reg) => (
-          <Card key={reg.registrationId} className="p-6 border-slate-200 dark:border-[#2A323D] hover:border-[#00A4EF]/50 transition-all">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="flex items-start gap-4">
-                <Image
-                  src={reg.banner}
-                  alt={reg.eventTitle}
-                  width={80}
-                  height={80}
-                  className="w-20 h-20 rounded-2xl object-cover border border-[#00A4EF]/30 shrink-0 hidden sm:block shadow-sm"
-                />
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="success">{reg.status}</Badge>
-                    <span className="text-[11px] font-mono text-slate-500 dark:text-[#A8B0BB]">{reg.registrationId}</span>
+      <Card className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D]">
+        <h2 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-[#2A323D] pb-3">
+          Confirmed Event Registrations ({registrations.length})
+        </h2>
+
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-[#00A4EF]" />
+          </div>
+        ) : registrations.length === 0 ? (
+          <div className="text-center py-12 text-slate-500 space-y-3">
+            <p>You have not registered for any events yet.</p>
+            <Link href="/events">
+              <Button variant="fluent" size="sm">Explore Catalog</Button>
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {registrations.map((reg) => (
+              <div
+                key={reg.id}
+                className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-slate-900">
+                    <Image
+                      src={reg.event?.banner || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600'}
+                      alt={reg.event?.title || 'Event'}
+                      fill
+                      className="object-cover"
+                    />
                   </div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">{reg.eventTitle}</h3>
-                  <p className="text-xs text-slate-600 dark:text-[#A8B0BB] flex items-center gap-4">
-                    <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5 text-[#00A4EF]" /> Aug 25, 2026</span>
-                    <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-[#00A4EF]" /> {reg.eventVenue}</span>
-                  </p>
+
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="success">{reg.registrationStatus || 'Approved'}</Badge>
+                      <span className="text-[11px] text-slate-500 font-mono">ID: {reg.id}</span>
+                    </div>
+
+                    <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
+                      {reg.event?.title || 'Registered Event'}
+                    </h3>
+
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-[#A8B0BB]">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5 text-[#00A4EF]" />
+                        {new Date(reg.event?.startDate || reg.submittedAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-end md:self-center shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1 font-bold text-[#00A4EF]"
+                    onClick={() => setSelectedQr(reg.qrToken || reg.id)}
+                  >
+                    <QrCode className="w-4 h-4" /> Entry Pass
+                  </Button>
+
+                  <Link href={`/dashboard/registrations/${reg.id}`}>
+                    <Button variant="fluent" size="sm" className="gap-1">
+                      Details <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </Link>
                 </div>
               </div>
-
-              <div className="flex flex-wrap items-center gap-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSelectedQr(reg.qrToken)}
-                  className="gap-2 border-[#00A4EF]/40 text-[#0078D4] dark:text-[#00A4EF] hover:bg-[#00A4EF]/10"
-                >
-                  <QrCode className="w-4 h-4" /> View QR Pass
-                </Button>
-
-                <Link href={`/dashboard/registrations/${reg.registrationId}`}>
-                  <Button variant="fluent" size="sm">
-                    Pass Details <ChevronRight className="w-4 h-4" />
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </Card>
-        ))}
-      </div>
+            ))}
+          </div>
+        )}
+      </Card>
 
       {/* QR Pass Modal */}
-      <Modal
-        isOpen={!!selectedQr}
-        onClose={() => setSelectedQr(null)}
-        title="Official Event Entry QR Pass"
-        description="Present this QR code at the event entrance for automated check-in."
-        maxWidth="sm"
-      >
-        <div className="text-center p-4 space-y-4">
-          <div className="p-6 bg-white rounded-2xl max-w-[220px] mx-auto shadow-2xl border border-slate-200">
-            <svg className="w-full h-full text-slate-950" viewBox="0 0 100 100" fill="currentColor">
-              <path d="M0,0 h30 v30 h-30 z M40,0 h20 v10 h-20 z M70,0 h30 v30 h-30 z M10,10 h10 v10 h-10 z M80,10 h10 v10 h-10 z M0,40 h10 v20 h-10 z M30,40 h30 v10 h-30 z M70,40 h10 v10 h-10 z M0,70 h30 v30 h-30 z M10,80 h10 v10 h-10 z M40,70 h20 v30 h-20 z M70,70 h30 v10 h-30 z M80,90 h20 v10 h-20 z" />
-            </svg>
+      {selectedQr && (
+        <Modal
+          isOpen={!!selectedQr}
+          onClose={() => setSelectedQr(null)}
+          title="Digital Entry Pass"
+          description="Present this verified QR code at the event check-in desk."
+        >
+          <div className="text-center space-y-4 py-4">
+            <div className="p-4 bg-white rounded-2xl border border-slate-200 w-fit mx-auto shadow-xl">
+              <svg className="w-40 h-40 text-slate-950 mx-auto" viewBox="0 0 100 100" fill="currentColor">
+                <path d="M0,0 h30 v30 h-30 z M40,0 h20 v10 h-20 z M70,0 h30 v30 h-30 z M10,10 h10 v10 h-10 z M80,10 h10 v10 h-10 z M0,40 h10 v20 h-10 z M30,40 h30 v10 h-30 z M70,40 h10 v10 h-10 z M0,70 h30 v30 h-30 z M10,80 h10 v10 h-10 z M40,70 h20 v30 h-20 z M70,70 h30 v10 h-30 z M80,90 h20 v10 h-20 z" />
+              </svg>
+            </div>
+            <p className="text-xs font-mono text-[#00A4EF] font-bold">Token: {selectedQr}</p>
+            <Button variant="fluent" size="sm" className="w-full">
+              <Download className="w-4 h-4" /> Save Pass to Device
+            </Button>
           </div>
-          <p className="text-xs font-mono text-[#00A4EF] font-extrabold">{selectedQr}</p>
-          <Button variant="fluent" size="sm" className="w-full" onClick={() => toast.success('QR Code Pass downloaded!')}>
-            <Download className="w-4 h-4" /> Download QR Pass Image
-          </Button>
-        </div>
-      </Modal>
+        </Modal>
+      )}
     </div>
   );
 }

@@ -60,7 +60,7 @@ const VISIBILITY_OPTIONS: { value: ResourceVisibility; label: string; descriptio
 ];
 
 export default function AdminResourcesPage() {
-  const { emitLocalEvent } = useRealtime();
+  useRealtime();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [eventId, setEventId] = useState('evt_01');
@@ -72,7 +72,7 @@ export default function AdminResourcesPage() {
   const selectedEvent = EVENTS_LIST.find((e) => e.id === eventId) || EVENTS_LIST[0];
   const activeVisibilityConfig = VISIBILITY_OPTIONS.find((v) => v.value === visibility) || VISIBILITY_OPTIONS[1];
 
-  const handleUpload = (e: React.FormEvent) => {
+  const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !blobUrl) {
       toast.error('Resource Title and Storage URL/Link are required.');
@@ -80,29 +80,36 @@ export default function AdminResourcesPage() {
     }
 
     setIsUploading(true);
-    setTimeout(() => {
-      setIsUploading(false);
-      const newRes = {
-        title,
-        description,
-        eventId: selectedEvent.id,
-        eventTitle: selectedEvent.title,
-        category,
-        visibility,
-        blobUrl,
-        uploadedAt: new Date().toISOString()
-      };
-
-      // Emit Realtime broadcast event (§48, §123)
-      emitLocalEvent('LIVE_RESOURCE_UPLOADED', newRes);
-      toast.success(`Live resource "${title}" shared successfully! Restricted to: ${activeVisibilityConfig.label}`, {
-        description: `Target Event: ${selectedEvent.title}`
+    try {
+      const res = await fetch('/api/resources', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          description,
+          category,
+          fileUrl: blobUrl,
+          eventId: selectedEvent.id,
+          visibility,
+        }),
       });
 
-      setTitle('');
-      setDescription('');
-      setBlobUrl('');
-    }, 600);
+      if (res.ok) {
+        toast.success(`Live resource "${title}" shared successfully! Restricted to: ${activeVisibilityConfig.label}`, {
+          description: `Target Event: ${selectedEvent.title}`
+        });
+
+        setTitle('');
+        setDescription('');
+        setBlobUrl('');
+      } else {
+        toast.error('Failed to publish resource.');
+      }
+    } catch {
+      toast.error('Network error uploading resource.');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (

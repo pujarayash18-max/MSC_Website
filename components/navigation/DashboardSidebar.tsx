@@ -12,8 +12,11 @@ import {
   MessageSquare,
   Bell,
   User,
-  Settings
+  Settings,
+  ShieldCheck,
 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { isAdminRole } from '@/lib/constants/roles';
 
 const SIDEBAR_ITEMS = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -32,6 +35,7 @@ const SIDEBAR_ITEMS = [
 
 export function DashboardSidebar() {
   const pathname = usePathname();
+  const { role } = useAuth();
 
   return (
     <aside className="w-64 bg-white dark:bg-[#151B23] border-r border-slate-200 dark:border-[#2A323D] flex flex-col justify-between p-4 h-full shrink-0">
@@ -62,6 +66,21 @@ export function DashboardSidebar() {
             })}
           </nav>
         </div>
+
+        {isAdminRole(role) && (
+          <div className="pt-2">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#00A4EF] px-3 block mb-1">
+              Admin Access
+            </span>
+            <Link
+              href="/admin"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold bg-[#00A4EF]/10 border border-[#00A4EF]/30 text-[#00A4EF] hover:bg-[#00A4EF] hover:text-white transition-all"
+            >
+              <ShieldCheck className="w-4 h-4 text-[#00A4EF]" />
+              <span>Admin Console</span>
+            </Link>
+          </div>
+        )}
       </div>
 
       <div className="pt-4 border-t border-slate-200 dark:border-[#2A323D] px-2 text-[11px] text-slate-500 dark:text-[#A8B0BB]">

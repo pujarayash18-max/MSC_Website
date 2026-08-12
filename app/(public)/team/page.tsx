@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { INITIAL_TEAM } from '@/lib/services/dataService';
-import { Search, Mail } from 'lucide-react';
+import { Search, Mail, Loader2 } from 'lucide-react';
 import { GithubIcon, LinkedinIcon } from '@/components/icons';
+import { useQuery } from '@tanstack/react-query';
+import type { TeamMember } from '@/types';
 
 const CATEGORIES = [
   'All Members',
@@ -19,11 +20,23 @@ const CATEGORIES = [
   'Volunteers'
 ];
 
+async function fetchTeam(): Promise<TeamMember[]> {
+  const res = await fetch('/api/team');
+  if (!res.ok) return [];
+  const json = await res.json();
+  return json.data?.members || [];
+}
+
 export default function TeamPage() {
   const [selectedCategory, setSelectedCategory] = useState('All Members');
   const [search, setSearch] = useState('');
 
-  const filteredTeam = INITIAL_TEAM.filter((m) => {
+  const { data: teamMembers = [], isLoading } = useQuery({
+    queryKey: ['team'],
+    queryFn: fetchTeam,
+  });
+
+  const filteredTeam = teamMembers.filter((m) => {
     const matchesCategory = selectedCategory === 'All Members' || m.category === selectedCategory;
     const matchesSearch =
       m.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -61,55 +74,72 @@ export default function TeamPage() {
 
         {/* Search Input */}
         <div className="relative w-full md:w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
+            placeholder="Search team members..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search member or role..."
-            className="w-full pl-9 pr-4 py-2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-sky-500 focus:outline-none shadow-sm"
+            className="w-full pl-9 pr-4 py-2 text-xs bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
           />
         </div>
       </div>
 
-      {/* Team Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
-        {filteredTeam.map((member) => (
-          <Card key={member.id} className="p-6 space-y-4 text-center hover:border-sky-500/50 transition-all duration-300">
-            <img
-              src={member.photo}
-              alt={member.name}
-              className="w-24 h-24 rounded-2xl object-cover mx-auto border-2 border-sky-500 shadow-xl"
-            />
-            <div>
-              <Badge variant="primary" size="sm" className="mb-2">{member.category}</Badge>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">{member.name}</h3>
-              <p className="text-xs font-semibold text-sky-600 dark:text-sky-400">{member.position}</p>
-              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{member.department}</p>
-            </div>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-[#00A4EF]" />
+        </div>
+      ) : filteredTeam.length === 0 ? (
+        <div className="text-center py-16 text-slate-500">No team members found matching your search.</div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredTeam.map((m) => (
+            <Card key={m.id} className="p-5 flex flex-col items-center text-center space-y-3 hover:border-sky-500/50 transition-all group">
+              <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-sky-500/30 group-hover:border-sky-500 transition-colors">
+                <img src={m.photo || '/avatar-placeholder.png'} alt={m.name} className="w-full h-full object-cover" />
+              </div>
 
-            <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2">{member.bio}</p>
+              <div>
+                <h3 className="font-extrabold text-base text-slate-900 dark:text-white">{m.name}</h3>
+                <p className="text-xs font-semibold text-sky-600 dark:text-sky-400 mt-0.5">{m.position}</p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">{m.department}</p>
+              </div>
 
-            <div className="flex items-center justify-center gap-3 pt-2 text-slate-400 border-t border-slate-200 dark:border-slate-800">
-              {member.github && (
-                <a href={`https://github.com/${member.github}`} target="_blank" rel="noreferrer" className="hover:text-slate-900 dark:hover:text-white transition-colors">
-                  <GithubIcon className="w-4 h-4" />
-                </a>
+              <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">{m.bio}</p>
+
+              {/* Skills */}
+              {m.skills && m.skills.length > 0 && (
+                <div className="flex flex-wrap justify-center gap-1">
+                  {m.skills.slice(0, 3).map((s) => (
+                    <span key={s} className="px-2 py-0.5 text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 rounded-md text-slate-600 dark:text-slate-300">
+                      {s}
+                    </span>
+                  ))}
+                </div>
               )}
-              {member.linkedin && (
-                <a href={`https://linkedin.com/in/${member.linkedin}`} target="_blank" rel="noreferrer" className="hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
-                  <LinkedinIcon className="w-4 h-4" />
-                </a>
-              )}
-              {member.email && (
-                <a href={`mailto:${member.email}`} className="hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
-                  <Mail className="w-4 h-4" />
-                </a>
-              )}
-            </div>
-          </Card>
-        ))}
-      </div>
+
+              {/* Social Links */}
+              <div className="flex items-center gap-3 pt-2 text-slate-400 hover:text-slate-600">
+                {m.github && (
+                  <a href={`https://github.com/${m.github}`} target="_blank" rel="noopener noreferrer" className="hover:text-slate-900 dark:hover:text-white">
+                    <GithubIcon className="w-4 h-4" />
+                  </a>
+                )}
+                {m.linkedin && (
+                  <a href={`https://linkedin.com/in/${m.linkedin}`} target="_blank" rel="noopener noreferrer" className="hover:text-sky-500">
+                    <LinkedinIcon className="w-4 h-4" />
+                  </a>
+                )}
+                {m.email && (
+                  <a href={`mailto:${m.email}`} className="hover:text-emerald-500">
+                    <Mail className="w-4 h-4" />
+                  </a>
+                )}
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

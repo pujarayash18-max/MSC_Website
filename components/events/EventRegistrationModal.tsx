@@ -5,10 +5,9 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { DynamicFormRenderer } from '@/features/registration/components/DynamicFormRenderer';
-import { Event } from '@/types';
-import { dynamicDb } from '@/lib/services/dataService';
 import { toast } from 'sonner';
 import { Sparkles, QrCode } from 'lucide-react';
+import type { Event } from '@/types';
 
 interface EventRegistrationModalProps {
   event: Event;
@@ -19,29 +18,30 @@ export function EventRegistrationModal({ event }: EventRegistrationModalProps) {
   const [hasRegistered, setHasRegistered] = useState(false);
   const [createdRegId, setCreatedRegId] = useState<string>('');
 
-  const handleRegistrationSubmit = (data: Record<string, unknown>) => {
-    const regId = `reg_${Date.now()}`;
-    const qrPassCode = `MCC-PASS-${Date.now().toString().slice(-6)}`;
-    
-    const newReg = {
-      registrationId: regId,
-      eventId: event.eventId || event.id,
-      eventTitle: event.title,
-      studentName: String(data.f_name || 'Rahul Sharma'),
-      studentEmail: String(data.f_email || 'student@marwadiuniversity.ac.in'),
-      enrollmentNumber: String(data.f_enroll || '92100103045'),
-      department: String(data.f_dept || 'Computer Engineering'),
-      academicYear: String(data.f_year || '3rd Year'),
-      status: 'Approved',
-      qrPassCode: qrPassCode,
-      createdAt: new Date().toISOString()
-    };
-
-    dynamicDb.saveRegistration(newReg);
-    setCreatedRegId(regId);
-    setHasRegistered(true);
-    setRegisterModalOpen(false);
-    toast.success('Registration Confirmed! Your unique QR Entry Pass is ready in Student Dashboard.');
+  const handleRegistrationSubmit = async (data: Record<string, unknown>) => {
+    try {
+      const res = await fetch('/api/registrations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventId: event.id || event.eventId,
+          formId: 'form_default',
+          responses: data,
+        }),
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        const regId = json.data?.registration?.id || `reg_${Date.now()}`;
+        setCreatedRegId(regId);
+        setHasRegistered(true);
+        setRegisterModalOpen(false);
+        toast.success('Registration Confirmed! Your unique QR Entry Pass is ready in Student Dashboard.');
+      } else {
+        toast.error(json.error || 'Registration failed.');
+      }
+    } catch {
+      toast.error('Network error. Please try again.');
+    }
   };
 
   return (
@@ -57,7 +57,7 @@ export function EventRegistrationModal({ event }: EventRegistrationModalProps) {
           variant="fluent"
           size="lg"
           onClick={() => setRegisterModalOpen(true)}
-          disabled={event.remainingSeats <= 0 && !event.waitlistEnabled}
+          disabled={(event.remainingSeats ?? 0) <= 0 && !(event.waitlistEnabled ?? false)}
         >
           <Sparkles className="w-5 h-5" /> Register Now
         </Button>

@@ -1,8 +1,16 @@
 import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
 import { cookies } from 'next/headers';
 
-const COOKIE_NAME = 'mcc_session';
-const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
+export const COOKIE_NAME = 'mcc_session';
+export const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
+
+export async function createToken(payload: MccSessionPayload): Promise<string> {
+  return new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('7d')
+    .sign(getSecret());
+}
 
 export interface MccSessionPayload extends JWTPayload {
   userId: string;
@@ -12,10 +20,13 @@ export interface MccSessionPayload extends JWTPayload {
 }
 
 function getSecret(): Uint8Array {
-  const secret =
-    process.env.NEXTAUTH_SECRET ||
-    process.env.SESSION_SECRET ||
-    'mcc-platform-fallback-key-change-in-production';
+  const secret = process.env.NEXTAUTH_SECRET || process.env.SESSION_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('NEXTAUTH_SECRET or SESSION_SECRET must be set in production!');
+    }
+    return new TextEncoder().encode('mcc-platform-fallback-key-change-in-production');
+  }
   return new TextEncoder().encode(secret);
 }
 

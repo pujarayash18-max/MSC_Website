@@ -343,7 +343,6 @@ async function main() {
   ]);
 
   console.log(`  ✓ Seeded ${2 + studentUsers.length} users`);
-  const allStudents = [superAdminUser, adminUser, ...studentUsers];
 
   // ─────────────────────────────────────────
   // SPEAKERS
@@ -712,7 +711,7 @@ async function main() {
     },
   });
 
-  const reg5 = await prisma.registration.create({
+  await prisma.registration.create({
     data: {
       eventId: event3.id,
       userId: studentUsers[1].id,

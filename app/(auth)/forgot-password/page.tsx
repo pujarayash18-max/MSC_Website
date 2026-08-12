@@ -14,16 +14,29 @@ export default function ForgotPasswordPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
 
     setIsSubmitting(true);
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setSubmitted(true);
+        toast.success(json.data.message || 'Password reset link sent to your email!');
+      } else {
+        toast.error(json.error || 'Failed to send recovery email.');
+      }
+    } catch {
+      toast.error('Network error. Please try again.');
+    } finally {
       setIsSubmitting(false);
-      setSubmitted(true);
-      toast.success('Password reset link sent to your college email!');
-    }, 600);
+    }
   };
 
   return (

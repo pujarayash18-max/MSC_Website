@@ -5,10 +5,51 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DEFAULTPERMISSIONMATRIX, SystemRoleName, SystemModule, ActionPermission } from '@/types';
 import { toast } from 'sonner';
-import { ShieldCheck, Save } from 'lucide-react';
+import { ShieldCheck, Save, RefreshCw, Loader2 } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+async function fetchRoles() {
+  const res = await fetch('/api/rbac', { credentials: 'include' });
+  if (!res.ok) return [];
+  const json = await res.json();
+  return json.data?.roles || [];
+}
 
 export default function AdminRbacPage() {
+  const queryClient = useQueryClient();
   const [matrix, setMatrix] = useState(DEFAULTPERMISSIONMATRIX);
+
+  const { data: rolesData = [], isLoading } = useQuery({
+    queryKey: ['admin-rbac-roles'],
+    queryFn: fetchRoles,
+  });
+
+  const saveRbacMutation = useMutation({
+    mutationFn: async () => {
+      // Save each role's permissions to Database
+      for (const roleName of Object.keys(matrix)) {
+        const matchingRole = rolesData.find((r: any) => r.roleName === roleName || r.name === roleName);
+        if (matchingRole) {
+          await fetch('/api/rbac', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              roleId: matchingRole.id,
+              permissions: matrix[roleName as SystemRoleName],
+            }),
+          });
+        }
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-rbac-roles'] });
+      toast.success('RBAC Permission Matrix saved and enforced live across all active user sessions!');
+    },
+    onError: (e: Error) => {
+      toast.error(e.message || 'Failed to save RBAC policy.');
+    },
+  });
 
   const togglePermission = (roleName: SystemRoleName, module: SystemModule) => {
     setMatrix((prev) => {
@@ -17,15 +58,11 @@ export default function AdminRbacPage() {
       const newVal: ActionPermission = currentVal === 'CRUD' ? 'No View' : 'CRUD';
       copy[roleName] = {
         ...copy[roleName],
-        [module]: newVal
+        [module]: newVal,
       };
       return copy;
     });
     toast.info(`Updated permission for ${roleName} on ${module}`);
-  };
-
-  const handleSave = () => {
-    toast.success('RBAC Permission Matrix saved and enforced globally.');
   };
 
   const ALL_MODULES: SystemModule[] = [
@@ -45,35 +82,43 @@ export default function AdminRbacPage() {
     'Contact Tickets',
     'Reports',
     'RBAC',
-    'Audit Logs'
+    'Audit Logs',
   ];
 
   const roles = Object.keys(matrix) as SystemRoleName[];
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-            <ShieldCheck className="w-7 h-7 text-[#7FBA00]" /> RBAC Permission Engine
+            <ShieldCheck className="w-7 h-7 text-emerald-500" /> RBAC Permission Engine &amp; Dynamic Matrix
           </h1>
           <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
-            Toggle module access for Super Admin, Website Admin, Event Manager, Content Manager, Media Manager, and Faculty Coordinator.
+            Configure granular module permissions. Changes apply instantly server-side upon save.
           </p>
         </div>
 
-        <Button variant="fluent" size="sm" onClick={handleSave}>
-          <Save className="w-4 h-4" /> Save RBAC Policy
+        <Button
+          variant="fluent"
+          size="sm"
+          disabled={saveRbacMutation.isPending}
+          onClick={() => saveRbacMutation.mutate()}
+          className="font-bold gap-2"
+        >
+          {saveRbacMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save RBAC Policy
         </Button>
       </div>
 
-      <Card className="p-6 border-slate-200 dark:border-[#2A323D] overflow-x-auto">
+      <Card className="p-6 border-slate-200 dark:border-[#2A323D] bg-white dark:bg-[#151B23] overflow-x-auto">
         <table className="w-full text-left text-xs">
           <thead>
             <tr className="border-b border-slate-200 dark:border-[#2A323D] text-slate-500 dark:text-[#A8B0BB]">
               <th className="p-3">Role Name</th>
               {ALL_MODULES.map((m) => (
-                <th key={m} className="p-2 capitalize text-center">{m}</th>
+                <th key={m} className="p-2 capitalize text-center">
+                  {m}
+                </th>
               ))}
             </tr>
           </thead>

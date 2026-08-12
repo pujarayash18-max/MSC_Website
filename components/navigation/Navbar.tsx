@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { useAuth } from '@/hooks/useAuth';
+import { isAdminRole } from '@/lib/constants/roles';
 import { Button } from '@/components/ui/button';
 import { OrgBadge } from '@/components/branding/OrgBadge';
 import {
@@ -22,7 +23,7 @@ import {
 const NAV_ITEMS = [
   { label: 'Home', href: '/' },
   { label: 'Events', href: '/events' },
-  { label: 'About & Vision', href: '/about' },
+  { label: 'About', href: '/about' },
   { label: 'Community', href: '/team' },
   { label: 'Resources', href: '/resources' },
   { label: 'Leaderboard', href: '/leaderboard' },
@@ -57,27 +58,27 @@ export function Navbar() {
     <header
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         isScrolled
-          ? 'bg-white/85 dark:bg-[#0B0F14]/85 backdrop-blur-xl border-b border-slate-200/80 dark:border-[#2A323D] shadow-md dark:shadow-2xl py-3'
-          : 'bg-transparent py-4'
+          ? 'bg-white/90 dark:bg-[#0B0F14]/90 backdrop-blur-xl border-b border-slate-200/80 dark:border-[#2A323D] shadow-md dark:shadow-2xl py-2'
+          : 'bg-transparent py-3'
       }`}
     >
       {/* Top 4-Color Microsoft Thin Line */}
       <div className="absolute top-0 left-0 right-0 h-0.5 ms-gradient-bar" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           {/* Logo & Identity */}
           <OrgBadge size="sm" variant="navbar" />
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1 bg-slate-100/70 dark:bg-[#151B23]/70 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/80 dark:border-[#2A323D]">
+          <nav className="hidden xl:flex items-center gap-0.5 bg-slate-100/70 dark:bg-[#151B23]/70 backdrop-blur-md p-1 rounded-2xl border border-slate-200/80 dark:border-[#2A323D]">
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all ${
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-xl whitespace-nowrap transition-all ${
                     isActive
                       ? 'bg-[#0078D4] dark:bg-[#00A4EF] text-white shadow-sm shadow-sky-500/30'
                       : 'text-slate-700 dark:text-[#A8B0BB] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-[#1B222C]'
@@ -127,10 +128,10 @@ export function Navbar() {
                     <LayoutDashboard className="w-3.5 h-3.5" /> Dashboard
                   </Button>
                 </Link>
-                {['Super Admin', 'Website Admin', 'Event Manager', 'Content Manager', 'Media Manager'].includes(role) && (
+                {isAdminRole(role) && (
                   <Link href="/admin">
-                    <Button variant="secondary" size="sm">
-                      <ShieldCheck className="w-3.5 h-3.5 text-[#00A4EF]" /> Admin
+                    <Button variant="secondary" size="sm" className="bg-sky-500/10 text-sky-600 dark:text-[#00A4EF] border-sky-500/30">
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#00A4EF]" /> Admin Console
                     </Button>
                   </Link>
                 )}
@@ -154,7 +155,7 @@ export function Navbar() {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="flex md:hidden items-center gap-2">
+          <div className="flex xl:hidden items-center gap-2">
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               className="p-2 text-slate-600 dark:text-[#A8B0BB] rounded-xl bg-slate-100 dark:bg-[#151B23] border border-slate-200 dark:border-[#2A323D]"
@@ -173,7 +174,7 @@ export function Navbar() {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-x-0 top-[65px] bg-white/95 dark:bg-[#0B0F14]/95 backdrop-blur-2xl border-b border-slate-200 dark:border-[#2A323D] p-6 space-y-4 shadow-2xl max-h-[85vh] overflow-y-auto">
+        <div className="xl:hidden fixed inset-x-0 top-[65px] bg-white/95 dark:bg-[#0B0F14]/95 backdrop-blur-2xl border-b border-slate-200 dark:border-[#2A323D] p-6 space-y-4 shadow-2xl max-h-[85vh] overflow-y-auto">
           <div className="grid grid-cols-2 gap-2">
             {NAV_ITEMS.map((item) => (
               <Link
@@ -199,7 +200,7 @@ export function Navbar() {
                     <LayoutDashboard className="w-4 h-4" /> Student Dashboard
                   </Button>
                 </Link>
-                {['Super Admin', 'Website Admin', 'Event Manager', 'Content Manager', 'Media Manager'].includes(role) && (
+                {isAdminRole(role) && (
                   <Link href="/admin" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="secondary" className="w-full">
                       <ShieldCheck className="w-4 h-4 text-[#00A4EF]" /> Admin Console

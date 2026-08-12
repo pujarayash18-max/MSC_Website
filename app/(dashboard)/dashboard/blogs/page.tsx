@@ -1,41 +1,39 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { dynamicDb } from '@/lib/services/dataService';
-import { Blog, BlogStatus } from '@/types/content';
-import { FileText, Plus, AlertCircle, CheckCircle2, Clock, RotateCcw } from 'lucide-react';
+import { FileText, Plus, AlertCircle, CheckCircle2, Clock, RotateCcw, Loader2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import type { BlogPost } from '@prisma/client';
+
+async function fetchMyBlogs(): Promise<BlogPost[]> {
+  const res = await fetch('/api/blogs', { credentials: 'include' });
+  if (!res.ok) return [];
+  const json = await res.json();
+  return json.data?.blogs || [];
+}
 
 export default function MyBlogSubmissionsPage() {
   const { user } = useAuth();
-  const [blogs, setBlogs] = useState<Blog[]>([]);
-  const [mounted, setMounted] = useState(false);
+  const { data: allBlogs = [], isLoading } = useQuery({
+    queryKey: ['my-blogs'],
+    queryFn: fetchMyBlogs,
+  });
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setMounted(true);
-      const allBlogs = dynamicDb.getBlogs() as Blog[];
-      const myBlogs = user
-        ? allBlogs.filter((b) => b.authorId === user.userId || b.authorId === user.id || b.authorName === user.fullName)
-        : allBlogs;
-      setBlogs(myBlogs);
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [user]);
+  const myBlogs = user
+    ? allBlogs.filter((b) => b.authorId === user.id || b.authorName === user.fullName)
+    : allBlogs;
 
-  if (!mounted) return null;
-
-  const getStatusBadge = (status: BlogStatus) => {
-    switch (status) {
-      case 'Published':
+  const getStatusBadge = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'published':
         return <Badge variant="success" className="gap-1"><CheckCircle2 className="w-3 h-3" /> Published</Badge>;
-      case 'Pending':
+      case 'pending':
         return <Badge variant="warning" className="gap-1"><Clock className="w-3 h-3" /> Pending Review</Badge>;
-      case 'Rejected':
+      case 'rejected':
         return <Badge variant="danger" className="gap-1"><AlertCircle className="w-3 h-3" /> Rejected</Badge>;
       default:
         return <Badge variant="outline">Draft</Badge>;
@@ -61,62 +59,53 @@ export default function MyBlogSubmissionsPage() {
         </Link>
       </div>
 
-      {blogs.length === 0 ? (
-        <Card className="p-12 text-center space-y-4 border-slate-200 dark:border-[#2A323D]">
-          <div className="w-16 h-16 rounded-full bg-sky-500/10 text-[#00A4EF] flex items-center justify-center mx-auto">
-            <FileText className="w-8 h-8" />
+      <Card className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D]">
+        <h2 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-[#2A323D] pb-3">
+          Submitted Articles ({myBlogs.length})
+        </h2>
+
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-[#00A4EF]" />
           </div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">No Blog Submissions Yet</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-            Share your knowledge on Azure, Web Development, GenAI, or Open-Source to get published on the official Microsoft Student Community technical blog!
-          </p>
-          <Link href="/dashboard/blogs/new">
-            <Button variant="fluent" size="md" className="font-bold gap-2">
-              <Plus className="w-4 h-4" /> Submit Your First Article
-            </Button>
-          </Link>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {blogs.map((blog) => (
-            <Card key={blog.blogId || blog.slug} className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D]">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        ) : myBlogs.length === 0 ? (
+          <div className="text-center py-12 text-slate-500 space-y-3">
+            <p>You have not submitted any blog articles yet.</p>
+            <Link href="/dashboard/blogs/new">
+              <Button variant="fluent" size="sm">Create First Article</Button>
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {myBlogs.map((blog) => (
+              <div
+                key={blog.id}
+                className="p-4 rounded-xl bg-slate-50 dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+              >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    {getStatusBadge(blog.status || 'Pending')}
-                    <span className="text-xs text-slate-500 dark:text-slate-400">• {blog.category}</span>
+                    {getStatusBadge(blog.status)}
+                    <span className="text-xs text-slate-500 font-medium">{blog.category}</span>
                   </div>
-                  <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">{blog.title}</h3>
+                  <h3 className="font-extrabold text-base text-slate-900 dark:text-white">{blog.title}</h3>
+                  <p className="text-xs text-slate-500 dark:text-[#A8B0BB] line-clamp-1">{blog.excerpt}</p>
                 </div>
 
-                {blog.status === 'Rejected' && (
-                  <Link href={`/dashboard/blogs/new?edit=${encodeURIComponent(blog.slug)}`}>
-                    <Button variant="outline" size="sm" className="font-bold gap-2 border-rose-500/40 text-rose-500 hover:bg-rose-500/10">
-                      <RotateCcw className="w-3.5 h-3.5" /> Edit & Resubmit
+                <div className="flex items-center gap-2 self-end md:self-center shrink-0">
+                  <Link href={`/dashboard/blogs/new?edit=${blog.slug || blog.id}`}>
+                    <Button variant="outline" size="sm">
+                      <RotateCcw className="w-3.5 h-3.5" /> Edit / Resubmit
                     </Button>
                   </Link>
-                )}
-              </div>
-
-              {blog.status === 'Rejected' && blog.rejectionNote && (
-                <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-600 dark:text-rose-400 space-y-1">
-                  <span className="font-extrabold block">Executive Board Rejection Feedback:</span>
-                  <p>{blog.rejectionNote}</p>
-                </div>
-              )}
-
-              <div className="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-[#2A323D] text-xs text-slate-500 dark:text-[#A8B0BB]">
-                <span>Submitted: {new Date(blog.publishedAt || blog.createdAt || '2026-08-01T00:00:00.000Z').toLocaleDateString()}</span>
-                {blog.status === 'Published' && (
-                  <Link href={`/blog/${blog.slug}`} className="text-[#00A4EF] font-bold hover:underline">
-                    View Published Post →
+                  <Link href={`/blog/${blog.slug || blog.id}`}>
+                    <Button variant="ghost" size="sm">Preview</Button>
                   </Link>
-                )}
+                </div>
               </div>
-            </Card>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </Card>
     </div>
   );
 }
