@@ -1,12 +1,15 @@
 'use client';
 import { useAuth } from './useAuth';
-import { SystemModule, DEFAULTPERMISSIONMATRIX, ActionPermission } from '@/types';
+import { SystemModule, getRolePermissions, ActionPermission } from '@/types';
 
 export function usePermission(moduleName?: SystemModule) {
-  const { role } = useAuth();
+  const { role, user } = useAuth();
 
   const getPermission = (mod: SystemModule): ActionPermission => {
-    const roleMap = DEFAULTPERMISSIONMATRIX[role];
+    if (user?.permissions && (user.permissions as Record<SystemModule, ActionPermission>)[mod]) {
+      return (user.permissions as Record<SystemModule, ActionPermission>)[mod];
+    }
+    const roleMap = getRolePermissions(role);
     if (!roleMap) return 'No View';
     return roleMap[mod] || 'No View';
   };
@@ -24,6 +27,7 @@ export function usePermission(moduleName?: SystemModule) {
 
   return {
     role,
+    user,
     getPermission,
     hasPermission,
     currentPermission,

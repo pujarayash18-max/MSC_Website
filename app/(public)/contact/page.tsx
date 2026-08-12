@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, CheckCircle2 } from 'lucide-react';
 
 export default function ContactPage() {
   const [name, setName] = useState('');
@@ -13,17 +13,42 @@ export default function ContactPage() {
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [createdTicketId, setCreatedTicketId] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!name.trim() || !email.trim() || !subject.trim() || !message.trim()) return;
+
     setIsSending(true);
-    setTimeout(() => {
+    setCreatedTicketId(null);
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          subject: subject.trim(),
+          message: message.trim(),
+        }),
+      });
+
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setCreatedTicketId(json.data?.ticket?.id || 'SUBMITTED');
+        toast.success(json.data?.message || 'Support ticket created! Admin has been notified.');
+        setName('');
+        setEmail('');
+        setSubject('');
+        setMessage('');
+      } else {
+        toast.error('Failed to submit ticket', { description: json.error || 'Please try again.' });
+      }
+    } catch {
+      toast.error('Network error creating support ticket. Please try again.');
+    } finally {
       setIsSending(false);
-      toast.success('Support ticket created! MCC Admin team will respond to your email.');
-      setName('');
-      setEmail('');
-      setSubject('');
-      setMessage('');
-    }, 600);
+    }
   };
 
   return (
@@ -63,6 +88,18 @@ export default function ContactPage() {
         {/* Support Ticket Form */}
         <Card className="p-8 space-y-6 lg:col-span-2 border-sky-500/30">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3">Submit Support Ticket</h3>
+
+          {createdTicketId && (
+            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-sm font-bold text-emerald-600 dark:text-emerald-400">Support Ticket Created Successfully!</h4>
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
+                  Ticket Reference ID: <strong className="font-mono text-emerald-500">#{createdTicketId}</strong>. Admin has received an instant email alert and a confirmation email was dispatched to your inbox.
+                </p>
+              </div>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

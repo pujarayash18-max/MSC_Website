@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ArrowLeft, Download, Loader2 } from 'lucide-react';
+import { ArrowLeft, Download, Loader2, XCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 
@@ -27,12 +27,36 @@ export default function RegistrationDetailPage() {
     queryFn: fetchRegistrations,
   });
 
-  const reg = registrations.find((r: { id: string }) => r.id === regId) || registrations[0];
+  const reg = registrations.find((r: { id: string; isDeleted?: boolean }) => r.id === regId);
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 className="w-8 h-8 animate-spin text-[#00A4EF]" />
+      </div>
+    );
+  }
+
+  if (!reg || reg.isDeleted) {
+    return (
+      <div className="max-w-4xl space-y-6">
+        <Link href="/dashboard/registrations">
+          <Button variant="outline" size="sm">
+            <ArrowLeft className="w-4 h-4" /> Back to My Registrations
+          </Button>
+        </Link>
+        <Card className="p-8 text-center space-y-4 border-slate-200 dark:border-[#2A323D]">
+          <div className="w-12 h-12 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center mx-auto">
+            <XCircle className="w-6 h-6" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Registration Cancelled & Pass Expired</h2>
+          <p className="text-sm text-slate-500 max-w-md mx-auto">
+            This event registration has been cancelled. The entry pass and QR code have expired and are no longer valid.
+          </p>
+          <Link href="/events">
+            <Button variant="fluent" size="sm">Explore Open Events</Button>
+          </Link>
+        </Card>
       </div>
     );
   }
@@ -58,24 +82,48 @@ export default function RegistrationDetailPage() {
           <Badge variant="success" className="text-sm px-3 py-1">Registration Approved</Badge>
         </div>
 
-        {/* Entry Pass Section */}
-        <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="space-y-2 text-center md:text-left">
-            <Badge variant="primary">Verified QR Entry Pass</Badge>
-            <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">{user?.fullName || 'MCC Member'}</h3>
-            <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">Student ID: {user?.studentId || 'MCC-2026-00042'} • {user?.department || 'Engineering'}</p>
-            <p className="text-xs font-mono text-[#00A4EF] font-bold">Pass Code: {qrPassCode}</p>
-          </div>
+        {/* Entry Pass or Online Meeting Section */}
+        {reg?.event?.mode === 'Online' || reg?.event?.mode === 'ONLINE' || (reg?.event?.venue && reg?.event?.venue.startsWith('http')) ? (
+          <div className="p-6 rounded-2xl bg-gradient-to-r from-indigo-950/60 to-slate-900 border border-indigo-500/30 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="space-y-2 text-center md:text-left">
+              <Badge variant="purple" className="bg-indigo-600 text-white font-bold">🌐 Online Virtual Session</Badge>
+              <h3 className="text-lg font-extrabold text-white">{user?.fullName || 'MCC Member'}</h3>
+              <p className="text-xs text-indigo-200">Registered Student • {user?.department || 'Engineering'}</p>
+              <p className="text-xs text-slate-300">No QR Code is required for virtual sessions. Join using your meeting link below.</p>
+            </div>
 
-          <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-lg text-center">
-            <svg className="w-32 h-32 text-slate-950 mx-auto" viewBox="0 0 100 100" fill="currentColor">
-              <path d="M0,0 h30 v30 h-30 z M40,0 h20 v10 h-20 z M70,0 h30 v30 h-30 z M10,10 h10 v10 h-10 z M80,10 h10 v10 h-10 z M0,40 h10 v20 h-10 z M30,40 h30 v10 h-30 z M70,40 h10 v10 h-10 z M0,70 h30 v30 h-30 z M10,80 h10 v10 h-10 z M40,70 h20 v30 h-20 z M70,70 h30 v10 h-30 z M80,90 h20 v10 h-20 z" />
-            </svg>
-            <Button variant="fluent" size="sm" className="mt-3 w-full" onClick={() => toast.success('QR Code Entry Pass downloaded successfully!')}>
-              <Download className="w-4 h-4" /> Save Pass
-            </Button>
+            <div className="p-4 bg-indigo-900/50 rounded-2xl border border-indigo-500/40 text-center w-full md:w-auto">
+              <a
+                href={reg?.event?.venue?.startsWith('http') ? reg.event.venue : 'https://teams.microsoft.com'}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <Button variant="fluent" size="lg" className="w-full bg-[#5B5FC7] hover:bg-[#464775] text-white font-bold px-6 py-3 rounded-xl flex items-center justify-center gap-2">
+                  Join MS Teams Session
+                </Button>
+              </a>
+              <p className="text-[11px] text-indigo-300 mt-2">Verified Attendance via Teams</p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="space-y-2 text-center md:text-left">
+              <Badge variant="primary">Verified QR Entry Pass</Badge>
+              <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">{user?.fullName || 'MCC Member'}</h3>
+              <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">Student ID: {user?.studentId || 'MCC-2026-00042'} • {user?.department || 'Engineering'}</p>
+              <p className="text-xs font-mono text-[#00A4EF] font-bold">Pass Code: {qrPassCode}</p>
+            </div>
+
+            <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-lg text-center">
+              <svg className="w-32 h-32 text-slate-950 mx-auto" viewBox="0 0 100 100" fill="currentColor">
+                <path d="M0,0 h30 v30 h-30 z M40,0 h20 v10 h-20 z M70,0 h30 v30 h-30 z M10,10 h10 v10 h-10 z M80,10 h10 v10 h-10 z M0,40 h10 v20 h-10 z M30,40 h30 v10 h-30 z M70,40 h10 v10 h-10 z M0,70 h30 v30 h-30 z M10,80 h10 v10 h-10 z M40,70 h20 v30 h-20 z M70,70 h30 v10 h-30 z M80,90 h20 v10 h-20 z" />
+              </svg>
+              <Button variant="fluent" size="sm" className="mt-3 w-full" onClick={() => toast.success('QR Code Entry Pass downloaded successfully!')}>
+                <Download className="w-4 h-4" /> Save Pass
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   );

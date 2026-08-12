@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth/jwt';
 import { ok, ERR } from '@/lib/api/response';
 import { isAdminRole } from '@/lib/constants/roles';
+import { createAndSendNotification } from '@/lib/notifications';
+import { broadcastEvent } from '@/app/api/realtime/route';
 
 const BlogCreateSchema = z.object({
   title: z.string().min(5),
@@ -14,24 +16,36 @@ const BlogCreateSchema = z.object({
   category: z.string().min(2),
   tags: z.array(z.string()).optional().default([]),
   readTime: z.string().optional().default('5 min read'),
-  status: z.enum(['draft', 'pending', 'published', 'archived']).optional().default('pending'),
+  status: z.enum(['draft', 'pending', 'published', 'archived', 'rejected']).optional().default('pending'),
 });
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
     const category = searchParams.get('category');
-    const status = searchParams.get('status');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const status = searchParams.get('status'); // 'published' | 'pending' | 'rejected' | 'all'
+    const mine = searchParams.get('mine') === 'true';
+    const limit = parseInt(searchParams.get('limit') || '50');
 
     const session = await getSession();
     const isAdmin = session && isAdminRole(session.roleName);
 
-    // Public users see only published posts; admins see all
+    let filterCondition: any = { status: 'published' };
+
+    if (session && mine) {
+      // User requesting their own submitted blogs (all statuses)
+      filterCondition = { authorId: session.userId };
+    } else if (isAdmin && status === 'all') {
+      // Admin console requesting all blogs
+      filterCondition = {};
+    } else if (status) {
+      filterCondition = { status };
+    }
+
     const blogs = await prisma.blogPost.findMany({
       where: {
         isDeleted: false,
-        ...(isAdmin ? (status ? { status } : {}) : { status: 'published' }),
+        ...filterCondition,
         ...(category ? { category } : {}),
       },
       include: {
@@ -63,9 +77,9 @@ export async function POST(req: NextRequest) {
     });
     if (!user) return ERR.UNAUTHORIZED();
 
-    // Admins can publish directly; others submit for review
+    // Admins can publish directly; non-admins submit as 'pending'
     const isAdmin = isAdminRole(session.roleName);
-    const status = isAdmin ? parsed.data.status : 'pending';
+    const status = isAdmin ? (body.status || 'published') : 'pending';
 
     const blog = await prisma.blogPost.create({
       data: {
@@ -77,6 +91,26 @@ export async function POST(req: NextRequest) {
         authorPhoto: user.profilePhoto || undefined,
       },
     });
+
+    if (status === 'published') {
+      const activeStudents = await prisma.user.findMany({
+        where: { isDeleted: false, status: 'active' },
+        select: { id: true, email: true },
+      });
+
+      for (const student of activeStudents) {
+        createAndSendNotification({
+          userId: student.id,
+          userEmail: student.email,
+          title: `New Blog Published: ${blog.title}`,
+          message: `Read the latest blog post by ${user.fullName}: "${blog.excerpt.slice(0, 100)}..."`,
+          type: 'NEW_BLOG',
+          link: `/blog/${blog.slug}`,
+        }).catch(() => {});
+      }
+
+      broadcastEvent('blog_published', { blogId: blog.id, title: blog.title, slug: blog.slug });
+    }
 
     return ok({ blog }, 201);
   } catch (e) {

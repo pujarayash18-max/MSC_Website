@@ -52,6 +52,8 @@ const INITIAL_STUDENT_RESOURCES = [
 export default function StudentResourcesPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading } = useAuth();
+  const [userRegisteredEventIds, setUserRegisteredEventIds] = useState<string[]>([]);
+  const [userCheckedInEventIds, setUserCheckedInEventIds] = useState<string[]>([]);
   const [resources, setResources] = useState(INITIAL_STUDENT_RESOURCES);
 
   useEffect(() => {
@@ -59,6 +61,44 @@ export default function StudentResourcesPage() {
       router.push('/login?redirect=/dashboard/resources');
     }
   }, [isLoading, isAuthenticated, router]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetch('/api/registrations')
+        .then((res) => res.json())
+        .then((json) => {
+          if (json.success && Array.isArray(json.data?.registrations)) {
+            const regs = json.data.registrations;
+            setUserRegisteredEventIds(regs.map((r: any) => r.eventId));
+            setUserCheckedInEventIds(
+              regs.filter((r: any) => r.status === 'Checked In' || r.status === 'CHECKED_IN' || r.checkedInAt).map((r: any) => r.eventId)
+            );
+          }
+        })
+        .catch(() => {});
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    fetch('/api/resources')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data?.resources)) {
+          const fetched = json.data.resources.map((r: any) => ({
+            resourceId: r.id,
+            eventId: r.eventId || 'evt_general',
+            eventTitle: r.event?.title || 'General Community Resource',
+            title: r.title,
+            category: r.category || 'Slides',
+            visibility: r.visibility === 'PUBLIC' ? 'Public' : r.visibility === 'REGISTERED_STUDENTS' ? 'Registered Students' : r.visibility === 'CHECKED_IN_ONLY' ? 'Checked-in Students Only' : 'Public',
+            blobUrl: r.blobUrl || '#',
+            uploadedAt: r.publishTime ? new Date(r.publishTime).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'Recently',
+          }));
+          setResources((prev) => [...fetched, ...prev.filter((p) => !fetched.some((f: any) => f.resourceId === p.resourceId))]);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Real-time listener for live resource uploads during event (§48, §123)
   useRealtime({
@@ -137,8 +177,8 @@ export default function StudentResourcesPage() {
 
       <div className="space-y-4">
         {resources.map((res) => {
-          const isRegistered = res.eventId === 'evt_general' || MOCK_USER_REGISTRATIONS.includes(res.eventId);
-          const isCheckedIn = res.eventId === 'evt_general' || MOCK_USER_CHECKINS.includes(res.eventId);
+          const isRegistered = res.eventId === 'evt_general' || userRegisteredEventIds.includes(res.eventId) || MOCK_USER_REGISTRATIONS.includes(res.eventId);
+          const isCheckedIn = res.eventId === 'evt_general' || userCheckedInEventIds.includes(res.eventId) || MOCK_USER_CHECKINS.includes(res.eventId);
 
           let hasPermission = false;
           if (res.visibility === 'Public') hasPermission = true;
@@ -178,9 +218,9 @@ export default function StudentResourcesPage() {
 
                 <div>
                   {hasPermission ? (
-                    <a href={res.blobUrl} target="_blank" rel="noreferrer">
-                      <Button variant="fluent" size="sm">
-                        <Download className="w-4 h-4" /> Access Resource
+                    <a href={res.blobUrl} target="_blank" rel="noreferrer" download={res.title}>
+                      <Button variant="fluent" size="sm" className="gap-1.5 shadow-md shadow-sky-500/20">
+                        <Download className="w-4 h-4" /> Download File
                       </Button>
                     </a>
                   ) : !isRegistered ? (

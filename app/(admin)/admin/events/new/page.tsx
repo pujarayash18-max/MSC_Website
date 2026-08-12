@@ -13,6 +13,7 @@ export default function NewEventPage() {
   const [category, setCategory] = useState('Workshop');
   const [mode, setMode] = useState('Offline');
   const [venue, setVenue] = useState('Seminar Hall 4, Main Campus');
+  const [meetingUrl, setMeetingUrl] = useState('');
   const [capacity, setCapacity] = useState(150);
   const [agenda, setAgenda] = useState([
     { id: '1', time: '09:30 AM', title: 'Welcome & Registration', speaker: 'Faculty Coordinator', room: 'Hall 4' }
@@ -32,6 +33,13 @@ export default function NewEventPage() {
       return;
     }
 
+    const finalVenue =
+      mode === 'Online'
+        ? (meetingUrl.trim() || 'https://teams.microsoft.com')
+        : mode === 'Hybrid' && meetingUrl.trim()
+        ? `${venue.trim()} (Teams: ${meetingUrl.trim()})`
+        : venue.trim();
+
     setIsSaving(true);
     try {
       const res = await fetch('/api/events', {
@@ -42,7 +50,7 @@ export default function NewEventPage() {
           shortDescription: shortDesc || 'Hands-on intensive workshop by Microsoft Campus Club.',
           category: category.toUpperCase(),
           mode: mode.toUpperCase(),
-          venue: venue || 'Seminar Hall 4, Main Campus',
+          venue: finalVenue,
           capacity: capacity || 150,
         }),
       });
@@ -127,15 +135,37 @@ export default function NewEventPage() {
               </div>
             </div>
 
-            <div>
-              <label className="text-slate-300 font-semibold block mb-1">Venue Location</label>
-              <input
-                type="text"
-                value={venue}
-                onChange={(e) => setVenue(e.target.value)}
-                className="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-white"
-              />
-            </div>
+            {(mode === 'Online' || mode === 'Hybrid') && (
+              <div className="p-4 rounded-xl bg-indigo-950/40 border border-indigo-500/30 space-y-2">
+                <label className="text-indigo-300 font-bold block">
+                  Microsoft Teams / Meeting Link {mode === 'Online' ? '*' : '(Optional)'}
+                </label>
+                <input
+                  type="url"
+                  required={mode === 'Online'}
+                  value={meetingUrl}
+                  onChange={(e) => setMeetingUrl(e.target.value)}
+                  placeholder="https://teams.microsoft.com/l/meetup-join/..."
+                  className="w-full p-2.5 bg-slate-900 border border-indigo-500/40 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                />
+                <p className="text-[11px] text-slate-400">
+                  Students will be automatically redirected to this link when they click &quot;Join MS Teams Session&quot; after registration.
+                </p>
+              </div>
+            )}
+
+            {mode !== 'Online' && (
+              <div>
+                <label className="text-slate-300 font-semibold block mb-1">Physical Venue Location</label>
+                <input
+                  type="text"
+                  value={venue}
+                  onChange={(e) => setVenue(e.target.value)}
+                  placeholder="Seminar Hall 4, Main Campus"
+                  className="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-white"
+                />
+              </div>
+            )}
 
             <div>
               <label className="text-slate-300 font-semibold block mb-1">Short Description</label>

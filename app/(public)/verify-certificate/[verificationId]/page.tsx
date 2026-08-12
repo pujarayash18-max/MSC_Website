@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { ShieldCheck, ShieldAlert, ArrowLeft, Download, Loader2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { formatDateDeterministic } from '@/lib/date';
 
 interface VerifiedCert {
   verificationCode: string;
@@ -123,7 +124,7 @@ export default function CertificateVerificationResultPage() {
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
           <span className="text-xs text-slate-500 dark:text-[#A8B0BB]">
-            Issued on {new Date(cert.generatedAt).toLocaleDateString()} by Microsoft Campus Club
+            Issued on {formatDateDeterministic(cert.generatedAt)} by Microsoft Campus Club
           </span>
 
           {cert.blobUrl && (

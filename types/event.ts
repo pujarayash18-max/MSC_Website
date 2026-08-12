@@ -12,7 +12,7 @@ export type EventCategory =
   | 'Community Meetup'
   | 'Conference';
 
-export type EventMode = 'Online' | 'Offline' | 'Hybrid';
+export type EventMode = 'Online' | 'Offline' | 'Hybrid' | 'ONLINE' | 'OFFLINE' | 'HYBRID';
 
 export type EventStatus = 
   | 'Draft'
@@ -23,7 +23,16 @@ export type EventStatus =
   | 'Ongoing'
   | 'Completed'
   | 'Cancelled'
-  | 'Archived';
+  | 'Archived'
+  | 'DRAFT'
+  | 'PUBLISHED'
+  | 'REGISTRATION_OPEN'
+  | 'REGISTRATION_CLOSED'
+  | 'UPCOMING'
+  | 'ONGOING'
+  | 'COMPLETED'
+  | 'CANCELLED'
+  | 'ARCHIVED';
 
 export interface AgendaItem {
   id: string;

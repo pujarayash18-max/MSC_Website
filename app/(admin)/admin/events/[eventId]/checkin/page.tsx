@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { QrCode, ArrowLeft, CheckCircle2, AlertCircle, Camera, Loader2 } from 'lucide-react';
+import { QrCode, ArrowLeft, CheckCircle2, AlertCircle, Camera, Loader2, Upload, Video } from 'lucide-react';
 import type { Event } from '@/types';
 
 interface CheckinPageProps {
@@ -21,6 +21,7 @@ export default function EventCheckinPage({ params }: CheckinPageProps) {
   const [manualToken, setManualToken] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isUploadingCsv, setIsUploadingCsv] = useState(false);
   const [lastScanResult, setLastScanResult] = useState<{
     studentName: string;
     studentId: string;
@@ -71,7 +72,7 @@ export default function EventCheckinPage({ params }: CheckinPageProps) {
         }
         setManualToken('');
       } else {
-        toast.error(json.error || 'Check-in failed.');
+        toast.error(json.error || json.message || 'Check-in failed.');
       }
     } catch {
       toast.error('Network error while processing scan.');
@@ -85,36 +86,178 @@ export default function EventCheckinPage({ params }: CheckinPageProps) {
     processScan(manualToken.trim());
   };
 
+  const [csvEvaluationResult, setCsvEvaluationResult] = useState<{
+    meetingDurationMinutes: number;
+    requiredThresholdMinutes: number;
+    totalEvaluated: number;
+    passedCount: number;
+    disqualifiedCount: number;
+    newlyApprovedCount: number;
+    passedStudents: { email: string; fullName: string; duration: number }[];
+    disqualifiedStudents: { email: string; fullName: string; duration: number }[];
+    message: string;
+  } | null>(null);
+
+  const handleCsvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    const formData = new FormData();
+    formData.append('eventId', eventId);
+    formData.append('file', file);
+
+    setIsUploadingCsv(true);
+    try {
+      const res = await fetch('/api/attendance/teams-csv-import', {
+        method: 'POST',
+        body: formData,
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setCsvEvaluationResult(json.data);
+        toast.success(json.data?.message || 'MS Teams Attendance CSV processed successfully.');
+      } else {
+        toast.error(json.error || json.message || 'CSV Import failed.');
+      }
+    } catch {
+      toast.error('Network error while uploading MS Teams CSV.');
+    } finally {
+      setIsUploadingCsv(false);
+    }
+  };
+
+  const isOnlineEvent = event
+    ? (String(event.mode || '').toUpperCase() === 'ONLINE' ||
+       String(event.mode || '').toUpperCase() === 'HYBRID' ||
+       String(event.venue || '').toLowerCase().startsWith('http') ||
+       String(event.venue || '').toLowerCase().includes('teams') ||
+       String(event.venue || '').toLowerCase().includes('zoom'))
+    : false;
+
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="space-y-6 max-w-5xl mx-auto pb-12">
+      {/* Top Header & Navigation */}
       <div className="flex items-center justify-between">
         <Link href="/admin/events">
-          <Button variant="outline" size="sm">
+          <Button variant="ghost" size="sm" className="gap-1.5 text-xs text-slate-600 dark:text-[#A8B0BB]">
             <ArrowLeft className="w-4 h-4" /> Back to Events
           </Button>
         </Link>
-
-        {event && (
-          <Badge variant="primary" className="text-xs">
-            {event.title}
-          </Badge>
-        )}
+        <Badge variant={event?.mode === 'ONLINE' || event?.mode === 'Online' ? 'success' : 'primary'} className="uppercase font-bold">
+          {event?.mode || 'Offline'} Event
+        </Badge>
       </div>
 
       <div>
         <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-          <QrCode className="w-7 h-7 text-[#00A4EF]" /> Live Event Scanner &amp; Check-in Desk
+          <QrCode className="w-7 h-7 text-[#00A4EF]" /> Event Attendance Management
         </h1>
         <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
-          Scan student entry pass QR codes using device camera or enter pass token manually.
+          Scan QR codes for physical offline check-ins, or process Microsoft Teams Attendance Reports with 50%+ duration verification for online sessions.
         </p>
       </div>
+
+      {/* MS Teams CSV Import Bar for Online / Hybrid Events */}
+      {isOnlineEvent ? (
+        <Card className="p-5 border-indigo-500/30 bg-indigo-950/20 dark:bg-[#111328] space-y-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-[#5B5FC7]/20 text-[#5B5FC7]">
+                <Video className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">Microsoft Teams Attendance Verification (50%+ Rule)</h3>
+                <p className="text-xs text-slate-500 dark:text-[#A8B0BB]">Upload MS Teams meeting report CSV. Students who attended &gt;= 50% of duration will be marked PRESENT (+50 Points).</p>
+              </div>
+            </div>
+
+            <label className="cursor-pointer shrink-0">
+              <input type="file" accept=".csv" onChange={handleCsvUpload} className="hidden" disabled={isUploadingCsv} />
+              <Button variant="fluent" size="sm" className="bg-[#5B5FC7] hover:bg-[#464775] text-white gap-1.5 font-bold" disabled={isUploadingCsv}>
+                {isUploadingCsv ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                {isUploadingCsv ? 'Evaluating 50% Rule...' : 'Import & Evaluate MS Teams CSV'}
+              </Button>
+            </label>
+          </div>
+        </Card>
+      ) : (
+        <Card className="p-4 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-slate-500 text-xs flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Video className="w-4 h-4 text-slate-400" />
+            <span>MS Teams CSV attendance verification is disabled because this is an <strong>In-Person (Offline)</strong> event. Use QR Check-in below.</span>
+          </div>
+        </Card>
+      )}
+
+      {/* MS Teams CSV Evaluation Result Breakdown */}
+      {csvEvaluationResult && (
+        <Card className="p-6 border-indigo-500/30 bg-slate-900/90 text-white space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <div>
+              <h2 className="text-base font-extrabold text-white flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-[#7FBA00]" /> MS Teams Duration Evaluation Report
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Meeting Duration: <strong className="text-indigo-300">{csvEvaluationResult.meetingDurationMinutes}m</strong> • Required Threshold (50%): <strong className="text-amber-300">{csvEvaluationResult.requiredThresholdMinutes}m minimum</strong>
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Badge variant="success" className="px-3 py-1 font-bold">{csvEvaluationResult.passedCount} Passed (&gt;=50%)</Badge>
+              <Badge variant="danger" className="px-3 py-1 font-bold">{csvEvaluationResult.disqualifiedCount} Disqualified (&lt;50%)</Badge>
+            </div>
+          </div>
+
+          <p className="text-xs text-slate-300 bg-slate-800/60 p-3 rounded-xl border border-slate-700 font-mono">
+            {csvEvaluationResult.message}
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            {/* Passed Students Column */}
+            <div className="space-y-2">
+              <h3 className="text-xs font-bold text-[#7FBA00] uppercase tracking-wider">Passed Students (&gt;= 50% Duration)</h3>
+              <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1">
+                {csvEvaluationResult.passedStudents.map((s, idx) => (
+                  <div key={idx} className="p-2 rounded-lg bg-slate-800/80 border border-emerald-500/20 text-xs flex justify-between items-center">
+                    <div>
+                      <span className="font-bold text-white block">{s.fullName}</span>
+                      <span className="text-[10px] text-slate-400">{s.email}</span>
+                    </div>
+                    <Badge variant="success" className="text-[10px]">{s.duration}m attended</Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Disqualified Students Column */}
+            <div className="space-y-2">
+              <h3 className="text-xs font-bold text-rose-400 uppercase tracking-wider">Disqualified Students (&lt; 50% Duration)</h3>
+              <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1">
+                {csvEvaluationResult.disqualifiedStudents.length === 0 ? (
+                  <p className="text-xs text-slate-500 italic p-2">No students disqualified.</p>
+                ) : (
+                  csvEvaluationResult.disqualifiedStudents.map((s, idx) => (
+                    <div key={idx} className="p-2 rounded-lg bg-slate-800/80 border border-rose-500/20 text-xs flex justify-between items-center">
+                      <div>
+                        <span className="font-bold text-white block">{s.fullName}</span>
+                        <span className="text-[10px] text-slate-400">{s.email}</span>
+                      </div>
+                      <Badge variant="danger" className="text-[10px]">{s.duration}m / req {csvEvaluationResult.requiredThresholdMinutes}m</Badge>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Scanner Card */}
         <Card className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D] bg-white dark:bg-[#151B23]">
           <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Camera className="w-4 h-4 text-[#00A4EF]" /> Camera Scanner
+            <Camera className="w-4 h-4 text-[#00A4EF]" /> Offline Physical Camera Scanner
           </h2>
 
           <div className="h-56 rounded-2xl bg-slate-100 dark:bg-[#0B0F14] border-2 border-dashed border-slate-300 dark:border-[#2A323D] flex flex-col items-center justify-center p-4 text-center">
@@ -177,7 +320,7 @@ export default function EventCheckinPage({ params }: CheckinPageProps) {
             </div>
           ) : (
             <div className="py-16 text-center text-slate-500 text-xs">
-              No scans performed in this session yet. Scan a QR code to verify student entry.
+              No scans performed in this session yet. Scan a QR code or import MS Teams CSV report to mark attendance.
             </div>
           )}
         </Card>

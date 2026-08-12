@@ -21,7 +21,7 @@ export default function AdminNoticesPage() {
   const queryClient = useQueryClient();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState<NoticePriority>('Urgent');
+  const [priority, setPriority] = useState<NoticePriority>('General');
 
   const { data: notices = [], isLoading } = useQuery({
     queryKey: ['admin-notices'],
@@ -103,9 +103,12 @@ export default function AdminNoticesPage() {
                 onChange={(e) => setPriority(e.target.value as NoticePriority)}
                 className="w-full p-2.5 text-xs bg-slate-50 dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white focus:outline-none"
               >
-                <option value="Urgent">Urgent (High Priority)</option>
-                <option value="Standard">Standard Notice</option>
-                <option value="Low">Informational</option>
+                <option value="General">General</option>
+                <option value="Urgent">Urgent</option>
+                <option value="Event">Event</option>
+                <option value="Recruitment">Recruitment</option>
+                <option value="Placement">Placement</option>
+                <option value="Microsoft Learn">Microsoft Learn</option>
               </select>
             </div>
           </div>

@@ -5,7 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { Award, Download, ExternalLink } from 'lucide-react';
+import { Award, Download, ExternalLink, Loader2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
 const MOCK_CERTIFICATES = [
   {
@@ -14,7 +15,7 @@ const MOCK_CERTIFICATES = [
     type: 'Participation',
     verificationId: 'MCC-CERT-2026-AZ8801',
     issueDate: 'Aug 25, 2026',
-    blobUrl: 'https://mccdevstorage.blob.core.windows.net/certificates/MCC-CERT-2026-AZ8801.pdf'
+    blobUrl: '/uploads/certificates/MCC-CERT-2026-AZ8801.pdf'
   },
   {
     certificateId: 'cert_hk_002',
@@ -22,14 +23,69 @@ const MOCK_CERTIFICATES = [
     type: 'Winner (1st Place)',
     verificationId: 'MCC-CERT-2026-HK9902',
     issueDate: 'Aug 16, 2026',
-    blobUrl: 'https://mccdevstorage.blob.core.windows.net/certificates/MCC-CERT-2026-HK9902.pdf'
+    blobUrl: '/uploads/certificates/MCC-CERT-2026-HK9902.pdf'
   }
 ];
 
-export default function StudentCertificatesPage() {
-  const handleDownload = (verificationId: string) => {
-    toast.success(`Downloading official certificate ${verificationId}.pdf`);
+async function fetchStudentCertificates() {
+  const res = await fetch('/api/certificates');
+  if (!res.ok) return [];
+  const json = await res.json();
+  return json.data?.certificates || [];
+}
+
+function mapDbCertificate(c: any) {
+  const typeMap: Record<string, string> = {
+    'PARTICIPATION': 'Participation',
+    'WINNER': 'Winner (1st Place)',
+    'VOLUNTEER': 'Volunteer Appreciation',
+    'SPEAKER': 'Guest Speaker Honor',
+    'ORGANIZER': 'Organizer Recognition',
   };
+
+  return {
+    certificateId: c.id,
+    eventName: c.event?.title || 'Microsoft Campus Club Event',
+    type: typeMap[c.type] || c.type || 'Participation',
+    verificationId: c.verificationCode || `MCC-CERT-${c.id.slice(0, 8).toUpperCase()}`,
+    issueDate: c.generatedAt ? new Date(c.generatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently',
+    blobUrl: c.blobUrl || `/api/certificates/${c.id}/download`,
+  };
+}
+
+export default function StudentCertificatesPage() {
+  const { data: dbCertificates = [], isLoading } = useQuery({
+    queryKey: ['student-certificates-list'],
+    queryFn: fetchStudentCertificates,
+  });
+
+  const liveCertificates = dbCertificates.map(mapDbCertificate);
+  const combinedCertificates = [
+    ...liveCertificates,
+    ...MOCK_CERTIFICATES.filter((m) => !liveCertificates.some((l: any) => l.certificateId === m.certificateId))
+  ];
+
+  const handleDownload = (cert: any) => {
+    if (cert.blobUrl && cert.blobUrl.startsWith('/uploads/')) {
+      const a = document.createElement('a');
+      a.href = cert.blobUrl;
+      a.download = `${cert.verificationId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } else {
+      window.open(`/api/certificates/${cert.certificateId}/download`, '_blank');
+    }
+    toast.success(`Downloading official certificate ${cert.verificationId}.pdf`);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-[#00A4EF]" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -43,7 +99,7 @@ export default function StudentCertificatesPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {MOCK_CERTIFICATES.map((cert) => (
+        {combinedCertificates.map((cert) => (
           <Card key={cert.certificateId} className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D] hover:border-[#7FBA00]/50 transition-all">
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1">
@@ -64,7 +120,7 @@ export default function StudentCertificatesPage() {
                   </Button>
                 </Link>
 
-                <Button variant="fluent" size="sm" onClick={() => handleDownload(cert.verificationId)}>
+                <Button variant="fluent" size="sm" onClick={() => handleDownload(cert)}>
                   <Download className="w-3.5 h-3.5" /> PDF
                 </Button>
               </div>

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { EventRegistrationModal } from '@/components/events/EventRegistrationModal';
 import { Calendar, MapPin, Clock, Users, ArrowLeft, Award, Mic } from 'lucide-react';
 import type { Event, Speaker } from '@/types';
+import { formatDateDeterministic, formatTimeDeterministic } from '@/lib/date';
 
 interface EventPageProps {
   params: Promise<{ slug: string }>;
@@ -79,13 +80,16 @@ export default async function EventDetailPage({ params }: EventPageProps) {
           {/* Quick Info Chips */}
           <div className="flex flex-wrap gap-4 pt-2 text-xs font-semibold text-slate-300">
             <span className="flex items-center gap-1.5 bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-700">
-              <Calendar className="w-4 h-4 text-sky-400" /> {new Date(event.startDate).toLocaleDateString()}
+              <Calendar className="w-4 h-4 text-sky-400" /> {formatDateDeterministic(event.startDate)}
             </span>
             <span className="flex items-center gap-1.5 bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-700">
-              <Clock className="w-4 h-4 text-[#7FBA00]" /> {new Date(event.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              <Clock className="w-4 h-4 text-[#7FBA00]" /> {formatTimeDeterministic(event.startDate)}
             </span>
             <span className="flex items-center gap-1.5 bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-700">
-              <MapPin className="w-4 h-4 text-rose-400" /> {event.venue}
+              <MapPin className="w-4 h-4 text-rose-400" />{' '}
+              {event.mode === 'Online' || event.mode === 'ONLINE' || (event.venue && event.venue.startsWith('http'))
+                ? 'Microsoft Teams / Online Session'
+                : event.venue}
             </span>
             <span className="flex items-center gap-1.5 bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-700">
               <Users className="w-4 h-4 text-purple-400" /> {event.remainingSeats} / {event.capacity} Seats Available

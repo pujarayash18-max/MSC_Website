@@ -113,3 +113,76 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return ERR.INTERNAL();
   }
 }
+
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const session = await getSession();
+    if (!session) return ERR.UNAUTHORIZED();
+
+    const { id } = await params;
+    const existing = await prisma.registration.findUnique({
+      where: { id },
+      include: { event: true, user: true },
+    });
+
+    if (!existing || existing.isDeleted) {
+      return ERR.NOT_FOUND('Registration');
+    }
+
+    const isAdmin = isAdminRole(session.roleName);
+    if (existing.userId !== session.userId && !isAdmin) {
+      return ERR.FORBIDDEN();
+    }
+
+    // 1. Mark registration as cancelled/deleted, status REJECTED, and expire the QR token
+    await prisma.registration.update({
+      where: { id },
+      data: {
+        isDeleted: true,
+        registrationStatus: 'REJECTED',
+        qrToken: `EXPIRED_${existing.qrToken}_${Date.now()}`,
+      },
+    });
+
+    // 2. Increase available seat count for the event
+    await prisma.event.update({
+      where: { id: existing.eventId },
+      data: {
+        remainingSeats: { increment: 1 },
+      },
+    });
+
+    // 3. Auto-promote earliest waitlisted student if any
+    const firstWaitlisted = await prisma.registration.findFirst({
+      where: {
+        eventId: existing.eventId,
+        registrationStatus: 'WAITLISTED',
+        isDeleted: false,
+      },
+      orderBy: { submittedAt: 'asc' },
+      include: { user: true, event: true },
+    });
+
+    if (firstWaitlisted) {
+      await prisma.registration.update({
+        where: { id: firstWaitlisted.id },
+        data: { registrationStatus: 'APPROVED' },
+      });
+
+      // Notify the promoted student
+      createAndSendNotification({
+        userId: firstWaitlisted.userId,
+        userEmail: firstWaitlisted.user.email,
+        title: 'Seat Available! Registration Approved',
+        message: `A seat opened up for "${firstWaitlisted.event.title}"! You have been promoted from the waitlist to Approved.`,
+        type: 'REGISTRATION_APPROVED',
+        link: '/dashboard/registrations',
+      }).catch(() => {});
+    }
+
+    return ok({ message: 'Registration cancelled successfully.' });
+  } catch (e) {
+    console.error('[DELETE /api/registrations/[id]]', e);
+    return ERR.INTERNAL();
+  }
+}

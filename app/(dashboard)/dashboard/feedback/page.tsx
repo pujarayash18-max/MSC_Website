@@ -5,7 +5,8 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { MessageSquare, Star, Send, CheckCircle2, Loader2 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/hooks/useAuth';
 import type { Event } from '@/types';
 
 async function fetchEvents(): Promise<Event[]> {
@@ -16,6 +17,9 @@ async function fetchEvents(): Promise<Event[]> {
 }
 
 export default function StudentFeedbackPage() {
+  const queryClient = useQueryClient();
+  const { refreshUser } = useAuth();
+
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['events-for-feedback'],
     queryFn: fetchEvents,
@@ -49,7 +53,12 @@ export default function StudentFeedbackPage() {
       const json = await res.json();
       if (res.ok && json.success) {
         setSubmitted(true);
-        toast.success('Thank you! Your feedback has been submitted to the MCC event organizers.');
+        toast.success(json.data?.message || 'Thank you! +5 Community Points credited to your account.');
+        // Refresh auth context user profile & invalidate leaderboard/points queries
+        await refreshUser();
+        queryClient.invalidateQueries({ queryKey: ['public-community-leaderboard'] });
+        queryClient.invalidateQueries({ queryKey: ['admin-leaderboard-students'] });
+        queryClient.invalidateQueries({ queryKey: ['student-points-ledger'] });
       } else {
         toast.error(json.error || 'Failed to submit feedback.');
       }

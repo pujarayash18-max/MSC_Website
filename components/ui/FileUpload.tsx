@@ -17,7 +17,7 @@ interface FileUploadProps {
 export function FileUpload({
   container,
   onUploadComplete,
-  accept = 'image/*,.pdf',
+  accept = '.pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.zip,.rar,.7z,.txt,.csv,.json,image/*',
   label = 'Upload File',
   currentUrl,
 }: FileUploadProps) {

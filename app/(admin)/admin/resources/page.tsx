@@ -6,7 +6,10 @@ import { Button } from '@/components/ui/button';
 import { ResourceCategory, ResourceVisibility } from '@/types';
 import { useRealtime } from '@/hooks/useRealtime';
 import { toast } from 'sonner';
-import { FolderUp, Upload, Lock, Globe, Radio, Shield, CheckCircle2, Ticket, Sparkles } from 'lucide-react';
+import { FolderUp, Upload, Lock, Globe, Radio, Shield, CheckCircle2, Ticket, Sparkles, FileText } from 'lucide-react';
+import { FileUpload } from '@/components/ui/FileUpload';
+import { useQuery } from '@tanstack/react-query';
+import type { Event } from '@/types';
 
 const CATEGORIES: ResourceCategory[] = [
   'Slides',
@@ -21,12 +24,12 @@ const CATEGORIES: ResourceCategory[] = [
   'Documentation'
 ];
 
-const EVENTS_LIST = [
-  { id: 'evt_01', title: 'Azure Cloud Architecture & Serverless Masterclass' },
-  { id: 'evt_02', title: 'AI Engineer Challenge: GitHub Copilot & OpenAI Workshop' },
-  { id: 'evt_03', title: 'Full-Stack Web Development Starter Bootcamp' },
-  { id: 'evt_general', title: 'General MCC Community Resources (All Events)' }
-];
+async function fetchEventsList(): Promise<Event[]> {
+  const res = await fetch('/api/events');
+  if (!res.ok) return [];
+  const json = await res.json();
+  return json.data?.events || [];
+}
 
 const VISIBILITY_OPTIONS: { value: ResourceVisibility; label: string; description: string; badge: string; icon: React.ComponentType<{ className?: string }> }[] = [
   {
@@ -63,13 +66,23 @@ export default function AdminResourcesPage() {
   useRealtime();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [eventId, setEventId] = useState('evt_01');
+  const { data: dbEvents = [] } = useQuery({
+    queryKey: ['admin-resources-events'],
+    queryFn: fetchEventsList
+  });
+
+  const eventsList = [
+    { id: 'evt_general', title: 'General MCC Community Resources (All Events)' },
+    ...dbEvents.map((e) => ({ id: e.id, title: e.title }))
+  ];
+
+  const [eventId, setEventId] = useState('');
   const [category, setCategory] = useState<ResourceCategory>('Slides');
   const [visibility, setVisibility] = useState<ResourceVisibility>('Registered Students');
   const [blobUrl, setBlobUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
 
-  const selectedEvent = EVENTS_LIST.find((e) => e.id === eventId) || EVENTS_LIST[0];
+  const selectedEvent = eventsList.find((e) => e.id === (eventId || eventsList[0]?.id)) || eventsList[0];
   const activeVisibilityConfig = VISIBILITY_OPTIONS.find((v) => v.value === visibility) || VISIBILITY_OPTIONS[1];
 
   const handleUpload = async (e: React.FormEvent) => {
@@ -94,7 +107,8 @@ export default function AdminResourcesPage() {
         }),
       });
 
-      if (res.ok) {
+      const json = await res.json();
+      if (res.ok && json.success) {
         toast.success(`Live resource "${title}" shared successfully! Restricted to: ${activeVisibilityConfig.label}`, {
           description: `Target Event: ${selectedEvent.title}`
         });
@@ -103,7 +117,7 @@ export default function AdminResourcesPage() {
         setDescription('');
         setBlobUrl('');
       } else {
-        toast.error('Failed to publish resource.');
+        toast.error(json.error || 'Failed to publish resource.');
       }
     } catch {
       toast.error('Network error uploading resource.');
@@ -162,11 +176,11 @@ export default function AdminResourcesPage() {
           <div>
             <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">Associated Event *</label>
             <select
-              value={eventId}
+              value={eventId || eventsList[0]?.id || ''}
               onChange={(e) => setEventId(e.target.value)}
               className="w-full p-2.5 text-xs bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0078D4] dark:focus:ring-[#00A4EF] focus:outline-none"
             >
-              {EVENTS_LIST.map((e) => (
+              {eventsList.map((e) => (
                 <option key={e.id} value={e.id} className="bg-white dark:bg-[#151B23] text-slate-900 dark:text-white">
                   {e.title}
                 </option>
@@ -175,15 +189,39 @@ export default function AdminResourcesPage() {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">Resource Link / Blob Storage SAS URL *</label>
-            <input
-              type="url"
-              required
-              value={blobUrl}
-              onChange={(e) => setBlobUrl(e.target.value)}
-              placeholder="https://mccdevstorage.blob.core.windows.net/resources/starter.zip?sas_token"
-              className="w-full p-2.5 text-xs bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-[#0078D4] dark:focus:ring-[#00A4EF] focus:outline-none font-mono"
-            />
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block">Resource File / Storage Link *</label>
+              <span className="text-[11px] text-slate-500">Supports PPT, PPTX, PDF, DOCX, ZIP, RAR, images & more</span>
+            </div>
+            <div className="space-y-3">
+              <div className="p-4 rounded-xl border border-dashed border-slate-300 dark:border-[#2A323D] bg-slate-50/50 dark:bg-[#0D1117]/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <p className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <Upload className="w-4 h-4 text-[#0078D4] dark:text-[#00A4EF]" /> Upload Local File Directly
+                  </p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Upload slides (.ppt/.pptx), docs (.pdf/.docx), or code/starter kits (.zip/.rar)</p>
+                </div>
+                <FileUpload
+                  container="resources"
+                  label="Upload File (PPT, PDF, DOCX, ZIP)"
+                  accept=".pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.zip,.rar,.7z,.txt,.csv,.json,image/*"
+                  onUploadComplete={(url) => {
+                    setBlobUrl(url);
+                    toast.success('File uploaded to storage successfully!');
+                  }}
+                  currentUrl={blobUrl}
+                />
+              </div>
+
+              <input
+                type="text"
+                required
+                value={blobUrl}
+                onChange={(e) => setBlobUrl(e.target.value)}
+                placeholder="Or paste external SAS URL (e.g. https://mccdevstorage.blob.core.windows.net/resources/starter.zip?sas_token)"
+                className="w-full p-2.5 text-xs bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-[#0078D4] dark:focus:ring-[#00A4EF] focus:outline-none font-mono"
+              />
+            </div>
           </div>
 
           {/* Explicit Access Control Options */}

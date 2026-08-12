@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Clock, User } from 'lucide-react';
 import type { BlogPost } from '@prisma/client';
+import { formatDateDeterministic } from '@/lib/date';
 
 interface BlogPageProps {
   params: Promise<{ slug: string }>;
@@ -55,7 +56,7 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
             </span>
             <span>•</span>
             <span className="flex items-center gap-1">
-              <Clock className="w-4 h-4 text-slate-500" /> {new Date(blog.publishedAt).toLocaleDateString()}
+              <Clock className="w-4 h-4 text-slate-500" /> {formatDateDeterministic(blog.publishedAt)}
             </span>
             <span>•</span>
             <span>{blog.readTime}</span>

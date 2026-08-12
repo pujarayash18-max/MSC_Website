@@ -1,22 +1,76 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
+
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Crown } from 'lucide-react';
+import { Crown, Loader2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
 const MOCK_LEADERBOARD = [
-  { rank: 1, name: 'Rahul Sharma', points: 340, college: 'Marwadi University', dept: 'CE (3rd Year)', badges: 5, events: 4, won: 2, photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80' },
-  { rank: 2, name: 'Ananya Verma', points: 280, college: 'Marwadi University', dept: 'IT (3rd Year)', badges: 4, events: 4, won: 1, photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80' },
-  { rank: 3, name: 'Vikram Singh', points: 230, college: 'Marwadi University', dept: 'CE (2nd Year)', badges: 3, events: 3, won: 1, photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80' },
-  { rank: 4, name: 'Neha Patel', points: 190, college: 'Marwadi University', dept: 'AI & ML (2nd Year)', badges: 3, events: 3, won: 0, photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80' },
-  { rank: 5, name: 'Karan Shah', points: 150, college: 'Marwadi University', dept: 'Data Science (3rd Year)', badges: 2, events: 2, won: 0, photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80' }
+  { id: '1', rank: 1, name: 'Yash Pujara', points: 100, college: 'Marwadi University', dept: 'CE (3rd Year)', badges: 5, events: 4, won: 2, photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80' },
+  { id: '2', rank: 2, name: 'Ananya Verma', points: 80, college: 'Marwadi University', dept: 'IT (4th Year)', badges: 4, events: 4, won: 1, photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80' },
+  { id: '3', rank: 3, name: 'Dev Mehta', points: 50, college: 'Marwadi University', dept: 'ECE (3rd Year)', badges: 3, events: 3, won: 1, photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80' },
+  { id: '4', rank: 4, name: 'Rahul Sharma', points: 10, college: 'Marwadi University', dept: 'CE (3rd Year)', badges: 2, events: 2, won: 0, photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80' },
+  { id: '5', rank: 5, name: 'Neha Patel', points: 10, college: 'Marwadi University', dept: 'AI & ML (2nd Year)', badges: 1, events: 1, won: 0, photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80' }
 ];
+
+async function fetchLiveLeaderboard() {
+  const res = await fetch('/api/points?mode=leaderboard', {
+    cache: 'no-store',
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      Pragma: 'no-cache',
+    },
+  });
+  if (!res.ok) return [];
+  const json = await res.json();
+  return json.data?.leaderboard || [];
+}
+
+function mapLeaderboardUser(u: any, index: number) {
+  const fallbackPhotos = [
+    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+  ];
+
+  return {
+    id: u.id,
+    rank: u.position || index + 1,
+    name: u.fullName || 'Student Member',
+    points: u.communityPoints ?? 0,
+    college: u.college || 'Marwadi University',
+    dept: u.department ? `${u.department} (${u.year || 'Student'})` : 'Computer Engineering',
+    photo: u.profilePhoto || fallbackPhotos[index % fallbackPhotos.length],
+    badges: u._count?.achievements || Math.max(1, 5 - index),
+    events: u._count?.certificates || Math.max(1, 4 - index),
+    won: Math.max(0, 2 - index),
+  };
+}
 
 export default function PublicLeaderboardPage() {
   const [period, setPeriod] = useState<'Overall' | 'Monthly' | 'Semester' | 'Academic Year'>('Overall');
 
-  const top3 = MOCK_LEADERBOARD.slice(0, 3);
+  const { data: dbLeaderboard = [], isLoading } = useQuery({
+    queryKey: ['public-community-leaderboard'],
+    queryFn: fetchLiveLeaderboard,
+    refetchInterval: 5000,
+  });
+
+  const liveMembers = dbLeaderboard.map((u: any, i: number) => mapLeaderboardUser(u, i));
+  const leaderboardList = liveMembers.length > 0 ? liveMembers : MOCK_LEADERBOARD;
+  const top3 = leaderboardList.slice(0, 3);
+
+  if (isLoading && dbLeaderboard.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-[#00A4EF]" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 py-8">
@@ -44,52 +98,54 @@ export default function PublicLeaderboardPage() {
       </div>
 
       {/* Top 3 Podium Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto items-end">
-        {/* 2nd Place */}
-        <Card className="p-6 text-center space-y-3 border-slate-300 dark:border-slate-700 bg-gradient-to-b from-white to-slate-100 dark:from-slate-900 dark:to-slate-950 shadow-xl order-2 md:order-1">
-          <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-400/20 border border-slate-400 text-slate-700 dark:text-slate-200 font-bold flex items-center justify-center mx-auto">
-            #2
-          </div>
-          <img src={top3[1].photo} alt={top3[1].name} className="w-20 h-20 rounded-2xl object-cover mx-auto border-2 border-slate-400 shadow-lg" />
-          <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">{top3[1].name}</h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400">{top3[1].dept}</p>
-          </div>
-          <Badge variant="primary" className="text-sm font-extrabold">{top3[1].points} pts</Badge>
-        </Card>
+      {top3.length >= 3 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto items-end">
+          {/* 2nd Place */}
+          <Card className="p-6 text-center space-y-3 border-slate-300 dark:border-slate-700 bg-gradient-to-b from-white to-slate-100 dark:from-slate-900 dark:to-slate-950 shadow-xl order-2 md:order-1">
+            <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-400/20 border border-slate-400 text-slate-700 dark:text-slate-200 font-bold flex items-center justify-center mx-auto">
+              #2
+            </div>
+            <img src={top3[1].photo} alt={top3[1].name} className="w-20 h-20 rounded-2xl object-cover mx-auto border-2 border-slate-400 shadow-lg" />
+            <div>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">{top3[1].name}</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400">{top3[1].dept}</p>
+            </div>
+            <Badge variant="primary" className="text-sm font-extrabold">{top3[1].points} pts</Badge>
+          </Card>
 
-        {/* 1st Place Champion */}
-        <Card className="p-8 text-center space-y-4 border-amber-500/50 bg-gradient-to-b from-amber-50 via-white to-amber-50 dark:from-slate-900 dark:via-amber-950/20 dark:to-slate-950 shadow-2xl scale-105 order-1 md:order-2">
-          <Crown className="w-10 h-10 text-amber-500 dark:text-amber-400 mx-auto animate-bounce" />
-          <img src={top3[0].photo} alt={top3[0].name} className="w-24 h-24 rounded-2xl object-cover mx-auto border-4 border-amber-400 shadow-xl" />
-          <div>
-            <Badge variant="warning" className="mb-1 font-bold">🥇 1st Champion</Badge>
-            <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">{top3[0].name}</h3>
-            <p className="text-xs text-amber-600 dark:text-amber-300 font-semibold">{top3[0].dept}</p>
-          </div>
-          <div className="text-2xl font-black text-amber-500 dark:text-amber-400">{top3[0].points} pts</div>
-        </Card>
+          {/* 1st Place Champion */}
+          <Card className="p-8 text-center space-y-4 border-amber-500/50 bg-gradient-to-b from-amber-50 via-white to-amber-50 dark:from-slate-900 dark:via-amber-950/20 dark:to-slate-950 shadow-2xl scale-105 order-1 md:order-2">
+            <Crown className="w-10 h-10 text-amber-500 dark:text-amber-400 mx-auto animate-bounce" />
+            <img src={top3[0].photo} alt={top3[0].name} className="w-24 h-24 rounded-2xl object-cover mx-auto border-4 border-amber-400 shadow-xl" />
+            <div>
+              <Badge variant="warning" className="mb-1 font-bold">🥇 1st Champion</Badge>
+              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">{top3[0].name}</h3>
+              <p className="text-xs text-amber-600 dark:text-amber-300 font-semibold">{top3[0].dept}</p>
+            </div>
+            <div className="text-2xl font-black text-amber-500 dark:text-amber-400">{top3[0].points} pts</div>
+          </Card>
 
-        {/* 3rd Place */}
-        <Card className="p-6 text-center space-y-3 border-orange-300 dark:border-orange-500/30 bg-gradient-to-b from-white to-orange-50 dark:from-slate-900 dark:to-slate-950 shadow-xl order-3">
-          <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-500/20 border border-orange-400 text-orange-600 dark:text-orange-300 font-bold flex items-center justify-center mx-auto">
-            #3
-          </div>
-          <img src={top3[2].photo} alt={top3[2].name} className="w-20 h-20 rounded-2xl object-cover mx-auto border-2 border-orange-400 shadow-lg" />
-          <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">{top3[2].name}</h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400">{top3[2].dept}</p>
-          </div>
-          <Badge variant="danger" className="text-sm font-extrabold">{top3[2].points} pts</Badge>
-        </Card>
-      </div>
+          {/* 3rd Place */}
+          <Card className="p-6 text-center space-y-3 border-orange-300 dark:border-orange-500/30 bg-gradient-to-b from-white to-orange-50 dark:from-slate-900 dark:to-slate-950 shadow-xl order-3">
+            <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-500/20 border border-orange-400 text-orange-600 dark:text-orange-300 font-bold flex items-center justify-center mx-auto">
+              #3
+            </div>
+            <img src={top3[2].photo} alt={top3[2].name} className="w-20 h-20 rounded-2xl object-cover mx-auto border-2 border-orange-400 shadow-lg" />
+            <div>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">{top3[2].name}</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400">{top3[2].dept}</p>
+            </div>
+            <Badge variant="danger" className="text-sm font-extrabold">{top3[2].points} pts</Badge>
+          </Card>
+        </div>
+      )}
 
       {/* Leaderboard Table for Remaining Ranks */}
       <Card className="max-w-5xl mx-auto p-6 space-y-4 border-slate-200 dark:border-slate-800">
         <h3 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3">Ranked Student Members</h3>
         <div className="space-y-3">
-          {MOCK_LEADERBOARD.map((item) => (
-            <div key={item.rank} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+          {leaderboardList.map((item: any) => (
+            <div key={item.id} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
               <div className="flex items-center gap-4">
                 <span className="w-8 text-center font-extrabold text-slate-500 dark:text-slate-400 text-sm">#{item.rank}</span>
                 <img src={item.photo} alt={item.name} className="w-10 h-10 rounded-xl object-cover border border-slate-200 dark:border-slate-700" />

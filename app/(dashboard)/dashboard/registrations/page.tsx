@@ -7,8 +7,9 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
-import { QrCode, Calendar, ChevronRight, Download, FileText, Loader2 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { QrCode, Calendar, ChevronRight, Download, FileText, Loader2, XCircle } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 interface RegistrationItem {
   id: string;
@@ -33,11 +34,27 @@ async function fetchRegistrations(): Promise<RegistrationItem[]> {
 
 export default function StudentRegistrationsPage() {
   const [selectedQr, setSelectedQr] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const { data: registrations = [], isLoading } = useQuery({
     queryKey: ['my-registrations'],
     queryFn: fetchRegistrations,
   });
+
+  const handleCancel = async (id: string) => {
+    if (!confirm('Are you sure you want to cancel this event registration? Your seat will be released.')) return;
+    try {
+      const res = await fetch(`/api/registrations/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        toast.success('Registration cancelled successfully.');
+        queryClient.invalidateQueries({ queryKey: ['my-registrations'] });
+      } else {
+        toast.error('Failed to cancel registration.');
+      }
+    } catch {
+      toast.error('Network error.');
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -85,7 +102,9 @@ export default function StudentRegistrationsPage() {
 
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <Badge variant="success">{reg.registrationStatus || 'Approved'}</Badge>
+                      <Badge variant={reg.registrationStatus === 'WAITLISTED' ? 'warning' : 'success'}>
+                        {reg.registrationStatus || 'Approved'}
+                      </Badge>
                       <span className="text-[11px] text-slate-500 font-mono">ID: {reg.id}</span>
                     </div>
 
@@ -110,6 +129,15 @@ export default function StudentRegistrationsPage() {
                     onClick={() => setSelectedQr(reg.qrToken || reg.id)}
                   >
                     <QrCode className="w-4 h-4" /> Entry Pass
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1 font-semibold text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 border-rose-500/30"
+                    onClick={() => handleCancel(reg.id)}
+                  >
+                    <XCircle className="w-4 h-4" /> Cancel
                   </Button>
 
                   <Link href={`/dashboard/registrations/${reg.id}`}>

@@ -24,6 +24,8 @@ import {
   Ticket
 } from 'lucide-react';
 import { GithubIcon, MicrosoftFourSquareIcon } from '@/components/icons';
+import { useQuery } from '@tanstack/react-query';
+import { isAdminRole } from '@/lib/constants/roles';
 
 // Mock registered events for the current user session
 const MOCK_USER_REGISTRATIONS = ['evt_01', 'evt_02']; // Registered for Azure Masterclass & AI Challenge
@@ -118,17 +120,110 @@ const PUBLIC_RESOURCES = [
 
 const CATEGORIES = ['All', 'Source Code', 'Presentation Slides', 'Workshops & Curricula'];
 
+async function fetchResourcesApi() {
+  const res = await fetch('/api/resources');
+  if (!res.ok) return [];
+  const json = await res.json();
+  return json.data?.resources || [];
+}
+
+async function fetchUserRegistrations() {
+  const res = await fetch('/api/registrations');
+  if (!res.ok) return [];
+  const json = await res.json();
+  return json.data?.registrations || [];
+}
+
+function mapDbResource(r: any) {
+  const categoryMap: Record<string, string> = {
+    'SLIDES': 'Presentation Slides',
+    'PDF': 'Presentation Slides',
+    'SOURCE_CODE': 'Source Code',
+    'ZIP': 'Source Code',
+    'WORKSHOP': 'Workshops & Curricula',
+    'DOCUMENTATION': 'Workshops & Curricula',
+    'ASSIGNMENT': 'Workshops & Curricula',
+    'RECORDING': 'Workshops & Curricula',
+    'GITHUB': 'Source Code',
+    'MICROSOFT_LEARN': 'Workshops & Curricula',
+    'PRACTICE_DATASET': 'Source Code',
+    'EXTERNAL_LINK': 'Workshops & Curricula',
+  };
+
+  const visibilityMap: Record<string, string> = {
+    'PUBLIC': 'Public',
+    'REGISTERED_STUDENTS': 'Registered Students',
+    'CHECKED_IN_ONLY': 'Checked-in Students Only',
+    'ADMIN_ONLY': 'Admin Only',
+  };
+
+  const linkUrl = r.blobUrl || r.link || '#';
+  const cleanUrl = linkUrl.split('?')[0].toLowerCase();
+  const ext = (cleanUrl.split('.').pop() || '').toLowerCase();
+  const fileExts = ['pdf', 'ppt', 'pptx', 'doc', 'docx', 'xls', 'xlsx', 'zip', 'rar', '7z', 'txt', 'csv', 'json'];
+
+  const isGithub = linkUrl.includes('github.com');
+  const isDocOrFile = !isGithub && (fileExts.includes(ext) || linkUrl.includes('/uploads/') || ['SLIDES', 'PDF', 'ZIP', 'SOURCE_CODE', 'DOCUMENTATION', 'ASSIGNMENT', 'PRACTICE_DATASET'].includes(r.category));
+
+  let extLabel = ext ? ext.toUpperCase() : 'FILE';
+  if (extLabel.length > 5) extLabel = 'FILE';
+  if (extLabel === 'PPTX' || extLabel === 'PPT') extLabel = 'PPTX';
+  if (extLabel === 'DOCX' || extLabel === 'DOC') extLabel = 'DOCX';
+
+  return {
+    id: r.id,
+    eventId: r.eventId || 'evt_general',
+    eventTitle: r.event?.title || 'General Community Resource',
+    title: r.title,
+    description: r.description || 'Shared learning resource.',
+    category: categoryMap[r.category] || r.category || 'Source Code',
+    tags: Array.from(new Set([r.category || 'Resource', extLabel].filter(Boolean))),
+    type: isGithub ? 'github' : isDocOrFile ? 'download' : 'external',
+    extLabel,
+    visibility: visibilityMap[r.visibility] || r.visibility || 'Public',
+    link: linkUrl,
+    updatedAt: r.publishTime ? new Date(r.publishTime).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Recently',
+    featured: true,
+  };
+}
+
 export default function PublicResourcesPage() {
   const { user, isAuthenticated } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  const filteredResources = PUBLIC_RESOURCES.filter((res) => {
+  const { data: dbResources = [] } = useQuery({
+    queryKey: ['public-resources-list'],
+    queryFn: fetchResourcesApi,
+  });
+
+  const { data: userRegistrations = [] } = useQuery({
+    queryKey: ['user-registrations-list'],
+    queryFn: fetchUserRegistrations,
+    enabled: isAuthenticated,
+  });
+
+  const userRegisteredEventIds = new Set(
+    userRegistrations.map((r: any) => r.eventId)
+  );
+
+  const userCheckedInEventIds = new Set(
+    userRegistrations
+      .filter((r: any) => r.status === 'Checked In' || r.status === 'CHECKED_IN' || r.checkedInAt)
+      .map((r: any) => r.eventId)
+  );
+
+  const isAdminUser = Boolean(user && isAdminRole(user.roleName));
+
+  const liveResources = dbResources.map(mapDbResource);
+  const combinedResources = [...liveResources, ...PUBLIC_RESOURCES];
+
+  const filteredResources = combinedResources.filter((res) => {
     const matchesCategory = selectedCategory === 'All' || res.category === selectedCategory;
     const matchesSearch =
       res.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       res.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      res.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+      res.tags.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
 
@@ -253,14 +348,20 @@ export default function PublicResourcesPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredResources.map((res) => {
           // Check access permissions
-          const isRegistered = res.eventId === 'evt_general' || MOCK_USER_REGISTRATIONS.includes(res.eventId);
-          const isCheckedIn = res.eventId === 'evt_general' || MOCK_USER_CHECKINS.includes(res.eventId);
+          const isRegistered = res.eventId === 'evt_general' || userRegisteredEventIds.has(res.eventId) || MOCK_USER_REGISTRATIONS.includes(res.eventId) || isAdminUser;
+          const isCheckedIn = res.eventId === 'evt_general' || userCheckedInEventIds.has(res.eventId) || MOCK_USER_CHECKINS.includes(res.eventId) || isAdminUser;
 
           let hasPermission = false;
           if (isAuthenticated) {
-            if (res.visibility === 'Public') hasPermission = true;
-            else if (res.visibility === 'Registered Students' && isRegistered) hasPermission = true;
-            else if (res.visibility === 'Checked-in Students Only' && isCheckedIn) hasPermission = true;
+            if (isAdminUser) {
+              hasPermission = true;
+            } else if (res.visibility === 'Public') {
+              hasPermission = true;
+            } else if (res.visibility === 'Registered Students' && isRegistered) {
+              hasPermission = true;
+            } else if (res.visibility === 'Checked-in Students Only' && isCheckedIn) {
+              hasPermission = true;
+            }
           }
 
           return (
@@ -312,9 +413,9 @@ export default function PublicResourcesPage() {
                 </p>
 
                 <div className="flex flex-wrap gap-1.5 pt-2">
-                  {res.tags.map((tag) => (
+                  {res.tags.map((tag: string, tagIdx: number) => (
                     <span
-                      key={tag}
+                      key={`${res.id}-tag-${tag}-${tagIdx}`}
                       className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-slate-100 dark:bg-[#1B222C] text-slate-600 dark:text-[#A8B0BB] border border-slate-200/60 dark:border-[#2A323D]"
                     >
                       #{tag}
@@ -333,20 +434,20 @@ export default function PublicResourcesPage() {
                     </Button>
                   </Link>
                 ) : hasPermission ? (
-                  <a href={res.link} target="_blank" rel="noreferrer">
+                  <a href={res.link} target="_blank" rel="noreferrer" download={res.type === 'download' ? res.title : undefined}>
                     {res.type === 'github' && (
                       <Button variant="outline" size="sm" className="gap-1.5 text-xs">
                         <GithubIcon className="w-3.5 h-3.5" /> Repository
                       </Button>
                     )}
                     {res.type === 'download' && (
-                      <Button variant="fluent" size="sm" className="gap-1.5 text-xs">
-                        <Download className="w-3.5 h-3.5" /> Download PDF
+                      <Button variant="fluent" size="sm" className="gap-1.5 text-xs shadow-md shadow-sky-500/20">
+                        <Download className="w-3.5 h-3.5" /> Download {res.extLabel && res.extLabel !== 'FILE' ? res.extLabel : 'Resource'}
                       </Button>
                     )}
                     {res.type === 'external' && (
                       <Button variant="secondary" size="sm" className="gap-1.5 text-xs">
-                        <Globe className="w-3.5 h-3.5" /> Learn More <ExternalLink className="w-3 h-3" />
+                        <Globe className="w-3.5 h-3.5" /> Access Resource <ExternalLink className="w-3 h-3" />
                       </Button>
                     )}
                   </a>

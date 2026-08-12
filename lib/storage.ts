@@ -27,15 +27,19 @@ export async function uploadFile(
   const blobClient = getBlobServiceClient();
 
   if (blobClient) {
-    const containerClient = blobClient.getContainerClient(containerName);
-    await containerClient.createIfNotExists({ access: 'blob' });
-    const blockBlobClient = containerClient.getBlockBlobClient(sanitizedFilename);
+    try {
+      const containerClient = blobClient.getContainerClient(containerName);
+      await containerClient.createIfNotExists({ access: 'blob' });
+      const blockBlobClient = containerClient.getBlockBlobClient(sanitizedFilename);
 
-    await blockBlobClient.uploadData(buffer, {
-      blobHTTPHeaders: { blobContentType: contentType },
-    });
+      await blockBlobClient.uploadData(buffer, {
+        blobHTTPHeaders: { blobContentType: contentType },
+      });
 
-    return blockBlobClient.url;
+      return blockBlobClient.url;
+    } catch (azureErr) {
+      console.warn('[Azure Storage Warning] Azure upload failed, falling back to local storage:', azureErr);
+    }
   }
 
   // Local dev fallback
@@ -47,7 +51,8 @@ export async function uploadFile(
   const filePath = path.join(targetDir, sanitizedFilename);
   await fs.promises.writeFile(filePath, buffer);
 
-  return `/uploads/${containerName}/${sanitizedFilename}`;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || '';
+  return `${baseUrl}/uploads/${containerName}/${sanitizedFilename}`;
 }
 
 /**

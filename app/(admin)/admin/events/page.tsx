@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Calendar, Plus, Edit3, Loader2 } from 'lucide-react';
+import { Calendar, Plus, Edit3, Loader2, QrCode } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Event } from '@/types';
 
@@ -105,6 +105,12 @@ export default function AdminEventsPage() {
                     <option value="COMPLETED">Completed</option>
                     <option value="CANCELLED">Cancelled</option>
                   </select>
+
+                  <Link href={`/admin/events/${evt.id}/checkin`}>
+                    <Button variant="fluent" size="sm" className="gap-1 font-bold bg-[#5B5FC7] hover:bg-[#464775] text-white">
+                      <QrCode className="w-3.5 h-3.5" /> Check-in &amp; MS Teams CSV
+                    </Button>
+                  </Link>
 
                   <Link href={`/admin/events/${evt.id}/edit`}>
                     <Button variant="outline" size="sm" className="gap-1">

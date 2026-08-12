@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
+import { formatDateDeterministic } from '@/lib/date';
 import {
   Sparkles,
   Calendar,
@@ -20,11 +21,9 @@ import {
   MapPin,
   ChevronRight,
   Pin,
-  Send,
-  Star,
   Code
 } from 'lucide-react';
-import type { Event, TeamMember, Notice, Sponsor } from '@/types';
+import type { Event, TeamMember, Notice } from '@/types';
 
 const STATS = [
   { label: 'Community Members', value: 1200, icon: Users, suffix: '+' },
@@ -40,28 +39,7 @@ const TIMELINE = [
   { year: '2026', title: '1,000+ Active Members', description: 'Evolved into an enterprise digital community management ecosystem.' }
 ];
 
-const TESTIMONIALS = [
-  {
-    name: 'Harsh Vardhan',
-    college: 'Marwadi University (CE)',
-    event: 'Azure Cloud Workshop',
-    rating: 5,
-    comment: 'The hands-on Cosmos DB session was phenomenal. I got certified and earned 100 community points!'
-  },
-  {
-    name: 'Kavya Sharma',
-    college: 'MU School of IT',
-    event: 'National Hackathon',
-    rating: 5,
-    comment: 'Instant real-time resource distribution during the hackathon made team collaboration effortless.'
-  }
-];
 
-function formatDateDeterministic(dateString: string): string {
-  const date = new Date(dateString);
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${months[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
-}
 
 async function fetchHomeData() {
   const [eventsRes, teamRes, noticesRes, sponsorsRes] = await Promise.all([
@@ -82,7 +60,7 @@ async function fetchHomeData() {
     events: (eventsData.data?.events || []) as Event[],
     team: (teamData.data?.members || []) as TeamMember[],
     notices: (noticesData.data?.notices || []) as Notice[],
-    sponsors: (sponsorsData.data?.sponsors || []) as Sponsor[]
+    sponsors: (sponsorsData.data?.sponsors || []) as any[]
   };
 }
 
@@ -102,16 +80,14 @@ export default function HomePage() {
     title: 'Azure Cloud Masterclass',
     shortDescription: 'Deep dive into Azure Serverless architecture and Cloud Computing.',
     venue: 'Seminar Hall 4, Main Campus',
-    startDate: new Date().toISOString(),
+    startDate: '2026-08-25T10:00:00.000Z',
     remainingSeats: 25,
     capacity: 150,
     slug: 'azure-cloud-masterclass'
   };
 
   const [countdown, setCountdown] = useState({ days: 12, hours: 8, minutes: 42, seconds: 19 });
-  const [newsletterEmail, setNewsletterEmail] = useState('');
-  const [newsletterName, setNewsletterName] = useState('');
-  const [isSubscribing, setIsSubscribing] = useState(false);
+
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -123,17 +99,7 @@ export default function HomePage() {
     return () => clearInterval(timer);
   }, []);
 
-  const handleNewsletter = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newsletterEmail) return;
-    setIsSubscribing(true);
-    setTimeout(() => {
-      setIsSubscribing(false);
-      toast.success(`Thank you ${newsletterName || 'friend'}! You have subscribed to MCC newsletter.`);
-      setNewsletterEmail('');
-      setNewsletterName('');
-    }, 600);
-  };
+
 
   return (
     <div className="space-y-24">
@@ -243,7 +209,7 @@ export default function HomePage() {
               <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{nextEvent.shortDescription}</p>
 
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs text-slate-600 dark:text-slate-300 pt-2">
-                <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-sky-600 dark:text-sky-400" /> {new Date(nextEvent.startDate).toLocaleDateString()}</span>
+                <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-sky-600 dark:text-sky-400" /> {formatDateDeterministic(nextEvent.startDate)}</span>
                 <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-sky-600 dark:text-sky-400" /> {nextEvent.venue}</span>
               </div>
             </div>
@@ -338,9 +304,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 16 NOTICE BOARD & 17 TESTIMONIALS */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Notice Board */}
+      {/* 16 NOTICE BOARD */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -366,87 +331,109 @@ export default function HomePage() {
             ))}
           </div>
         </div>
+      </section>
 
-        {/* Testimonials */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Star className="w-5 h-5 text-amber-500 dark:text-amber-400" /> Student Testimonials
-            </h3>
-            <Badge variant="warning">5-Star Community Feedback</Badge>
-          </div>
+      {/* MICROSOFT TECHNOLOGY PATHWAYS */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        <div className="text-center max-w-2xl mx-auto">
+          <Badge variant="primary" className="mb-2">Skill Tracks</Badge>
+          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">Microsoft Technology Pathways</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
+            Structured learning paths curated by our club to help you master industry-demanded Microsoft technologies and earn official certifications.
+          </p>
+        </div>
 
-          <div className="space-y-3">
-            {TESTIMONIALS.map((t) => (
-              <Card key={t.name} className="p-5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-bold text-slate-900 dark:text-white text-sm">{t.name}</h4>
-                    <p className="text-xs text-sky-600 dark:text-sky-400">{t.college} • {t.event}</p>
-                  </div>
-                  <div className="flex text-amber-400">
-                    {[...Array(t.rating)].map((_, i) => (
-                      <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                    ))}
-                  </div>
-                </div>
-                <p className="text-xs text-slate-700 dark:text-slate-300 italic">&quot;{t.comment}&quot;</p>
-              </Card>
-            ))}
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <Card className="p-6 space-y-3 hover:border-sky-500/50 transition-all duration-300 group relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-sky-500/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
+            <div className="w-11 h-11 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+              ☁️
+            </div>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">Azure Cloud</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              Virtual machines, serverless functions, Cosmos DB, and AZ-900 certification prep workshops.
+            </p>
+            <div className="flex items-center gap-2 pt-1">
+              <Badge variant="primary" className="text-[10px]">12 Workshops</Badge>
+              <Badge variant="default" className="text-[10px]">AZ-900</Badge>
+            </div>
+          </Card>
+
+          <Card className="p-6 space-y-3 hover:border-purple-500/50 transition-all duration-300 group relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
+            <div className="w-11 h-11 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-600 dark:text-purple-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+              🤖
+            </div>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">AI & Machine Learning</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              Azure Cognitive Services, OpenAI integration, ML Studio, and responsible AI practices.
+            </p>
+            <div className="flex items-center gap-2 pt-1">
+              <Badge variant="purple" className="text-[10px]">8 Sessions</Badge>
+              <Badge variant="default" className="text-[10px]">AI-900</Badge>
+            </div>
+          </Card>
+
+          <Card className="p-6 space-y-3 hover:border-emerald-500/50 transition-all duration-300 group relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-500/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
+            <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+              🐙
+            </div>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">GitHub & DevOps</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              GitHub Actions, Copilot, CI/CD pipelines, Azure DevOps, and open-source contribution sprints.
+            </p>
+            <div className="flex items-center gap-2 pt-1">
+              <Badge variant="success" className="text-[10px]">6 Bootcamps</Badge>
+              <Badge variant="default" className="text-[10px]">GitHub Pro</Badge>
+            </div>
+          </Card>
+
+          <Card className="p-6 space-y-3 hover:border-amber-500/50 transition-all duration-300 group relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-amber-500/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
+            <div className="w-11 h-11 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+              ⚡
+            </div>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">Power Platform</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              Power Apps, Power Automate, Power BI dashboards, and low-code/no-code solution building.
+            </p>
+            <div className="flex items-center gap-2 pt-1">
+              <Badge variant="warning" className="text-[10px]">5 Labs</Badge>
+              <Badge variant="default" className="text-[10px]">PL-900</Badge>
+            </div>
+          </Card>
         </div>
       </section>
 
-      {/* 18 SPONSORS & 19 NEWSLETTER */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        {/* Sponsors */}
-        {sponsors.length > 0 && (
-          <div className="text-center space-y-4">
-            <Badge variant="default">Official Partners</Badge>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Supported By Industry Leaders</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto pt-2">
-              {sponsors.map((s) => (
-                <Card key={s.id} className="p-6 flex items-center gap-4 hover:border-sky-500/40 transition-colors">
-                  <img src={s.logo} alt={s.name} className="w-12 h-12 rounded-xl object-cover" />
-                  <div className="text-left">
-                    <h4 className="font-bold text-slate-900 dark:text-white text-sm">{s.name}</h4>
-                    <Badge variant="primary" className="mt-1">{s.tier} Sponsor</Badge>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">{s.description}</p>
-                  </div>
-                </Card>
-              ))}
+      {/* JOIN THE COMMUNITY CTA */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="rounded-3xl bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 p-8 md:p-12 text-white text-center shadow-2xl space-y-5 relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.1)_0%,_transparent_60%)]" />
+          <div className="relative z-10 space-y-5">
+            <Badge variant="outline" className="text-white border-white/40">Open for All Students</Badge>
+            <h2 className="text-2xl sm:text-3xl font-extrabold">Ready to Level Up Your Tech Career?</h2>
+            <p className="text-xs sm:text-sm text-sky-100 max-w-xl mx-auto leading-relaxed">
+              Join 1,200+ student members at Marwadi University. Get access to Microsoft certifications, exclusive hackathons, industry mentorship, and community-powered learning — completely free.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto pt-2">
+              <Link href="/join-us" className="flex-1">
+                <Button variant="secondary" size="lg" className="w-full font-bold text-xs shadow-lg">
+                  <Users className="w-4 h-4 mr-1.5" /> Join MCC Community
+                </Button>
+              </Link>
+              <Link href="/events" className="flex-1">
+                <Button variant="outline" size="lg" className="w-full font-bold text-xs border-white/30 text-white hover:bg-white/10">
+                  <Calendar className="w-4 h-4 mr-1.5" /> Browse Events
+                </Button>
+              </Link>
             </div>
+
+            <p className="text-[11px] text-sky-200/70 pt-1">
+              🎓 Microsoft Learn Student Ambassador Program • Azure for Students Free Credits • GitHub Student Developer Pack
+            </p>
           </div>
-        )}
-
-        {/* Newsletter Box */}
-        <div className="rounded-3xl bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 p-8 md:p-10 text-white text-center max-w-4xl mx-auto shadow-2xl space-y-4">
-          <Badge variant="outline" className="text-white border-white/40">Weekly Digest</Badge>
-          <h2 className="text-2xl sm:text-3xl font-extrabold">Stay Updated with MCC Events &amp; Azure Releases</h2>
-          <p className="text-xs sm:text-sm text-sky-100 max-w-xl mx-auto">
-            Subscribe to receive official announcement notifications, workshop schedules, and hackathon registration alerts.
-          </p>
-
-          <form onSubmit={handleNewsletter} className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto pt-2">
-            <input
-              type="text"
-              placeholder="Your Name"
-              value={newsletterName}
-              onChange={(e) => setNewsletterName(e.target.value)}
-              className="px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-sky-200 text-xs focus:outline-none focus:ring-2 focus:ring-white flex-1"
-            />
-            <input
-              type="email"
-              required
-              placeholder="student@marwadiuniversity.ac.in"
-              value={newsletterEmail}
-              onChange={(e) => setNewsletterEmail(e.target.value)}
-              className="px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-sky-200 text-xs focus:outline-none focus:ring-2 focus:ring-white flex-1"
-            />
-            <Button variant="secondary" type="submit" disabled={isSubscribing} className="whitespace-nowrap font-bold text-xs">
-              <Send className="w-3.5 h-3.5" /> {isSubscribing ? 'Subscribing...' : 'Subscribe'}
-            </Button>
-          </form>
         </div>
       </section>
     </div>

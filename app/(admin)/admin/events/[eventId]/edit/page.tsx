@@ -35,10 +35,21 @@ export default function EditEventPage({ params }: EditEventPageProps) {
           setEvent(e);
           setTitle(e.title);
           setShortDesc(e.shortDescription);
-          setCategory(e.category);
-          setMode(e.mode);
-          setVenue(e.venue);
-          setCapacity(e.capacity);
+          
+          // Normalize Category to TitleCase
+          const catTitle = e.category
+            ? e.category.charAt(0).toUpperCase() + e.category.slice(1).toLowerCase()
+            : 'Workshop';
+          setCategory(catTitle);
+
+          // Normalize Mode to TitleCase
+          const modeTitle = e.mode
+            ? e.mode.charAt(0).toUpperCase() + e.mode.slice(1).toLowerCase()
+            : 'Offline';
+          setMode(modeTitle);
+
+          setVenue(e.venue || '');
+          setCapacity(e.capacity || 100);
         }
       })
       .catch(() => {})
@@ -85,6 +96,9 @@ export default function EditEventPage({ params }: EditEventPageProps) {
       </div>
     );
   }
+
+  const isOnlineMode = mode.toUpperCase() === 'ONLINE';
+  const isHybridMode = mode.toUpperCase() === 'HYBRID';
 
   return (
     <div className="max-w-4xl space-y-6">
@@ -162,16 +176,37 @@ export default function EditEventPage({ params }: EditEventPageProps) {
             </div>
           </div>
 
-          <div>
-            <label className="text-xs font-bold block mb-1">Venue Location *</label>
-            <input
-              type="text"
-              required
-              value={venue}
-              onChange={(e) => setVenue(e.target.value)}
-              className="w-full p-2.5 text-xs bg-slate-50 dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white focus:outline-none"
-            />
-          </div>
+          {(isOnlineMode || isHybridMode) && (
+            <div className="p-4 rounded-xl bg-indigo-950/30 border border-indigo-500/30 space-y-1.5">
+              <label className="text-xs font-bold block text-indigo-300">
+                Microsoft Teams / Meeting Link {isOnlineMode ? '*' : '(Optional)'}
+              </label>
+              <input
+                type="url"
+                required={isOnlineMode}
+                value={venue}
+                onChange={(e) => setVenue(e.target.value)}
+                placeholder="https://teams.microsoft.com/l/meetup-join/..."
+                className="w-full p-2.5 text-xs bg-slate-900 border border-indigo-500/40 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              />
+              <p className="text-[11px] text-slate-400">
+                Students will be redirected to this Teams link when clicking &quot;Join MS Teams Session&quot;.
+              </p>
+            </div>
+          )}
+
+          {!isOnlineMode && (
+            <div>
+              <label className="text-xs font-bold block mb-1">Venue Location *</label>
+              <input
+                type="text"
+                required
+                value={venue}
+                onChange={(e) => setVenue(e.target.value)}
+                className="w-full p-2.5 text-xs bg-slate-50 dark:bg-[#0B0F14] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white focus:outline-none"
+              />
+            </div>
+          )}
 
           <Button type="submit" variant="fluent" disabled={isSaving} className="w-full font-bold justify-center">
             <Save className="w-4 h-4" /> {isSaving ? 'Saving Changes...' : 'Save Event Changes'}

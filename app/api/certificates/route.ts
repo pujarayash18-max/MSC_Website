@@ -7,6 +7,8 @@ import { isAdminRole } from '@/lib/constants/roles';
 import { generateCertificatePdf } from '@/lib/certificates';
 import { uploadFile } from '@/lib/storage';
 import { sendCertificateIssued } from '@/lib/email';
+import { createAndSendNotification } from '@/lib/notifications';
+import { broadcastEvent } from '@/app/api/realtime/route';
 
 const IssueCertSchema = z.object({
   userId: z.string().min(1),
@@ -101,6 +103,18 @@ export async function POST(req: NextRequest) {
         user: { select: { fullName: true, email: true } },
       },
     });
+
+    // In-app notification to recipient student
+    createAndSendNotification({
+      userId: student.id,
+      userEmail: student.email,
+      title: `Certificate Issued: ${event.title}`,
+      message: `Your official ${type.toLowerCase()} certificate for "${event.title}" is ready and verified!`,
+      type: 'CERTIFICATE_READY',
+      link: '/dashboard/certificates',
+    }).catch(() => {});
+
+    broadcastEvent('certificate_generated', { userId: student.id, certificateId: certificate.id });
 
     // Send certificate email asynchronously and update status
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';

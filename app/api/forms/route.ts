@@ -14,29 +14,40 @@ export async function GET(req: NextRequest) {
       const form = await prisma.registrationForm.findFirst({
         where: { id: formId, isDeleted: false },
         include: {
+          event: { select: { id: true, title: true, slug: true } },
           sections: {
             include: { fields: { orderBy: { displayOrder: 'asc' } } },
             orderBy: { displayOrder: 'asc' },
           },
+          _count: { select: { registrations: true } },
         },
       });
       if (!form) return ERR.NOT_FOUND('Registration form');
       return ok({ form });
     }
 
-    if (!eventId) {
-      return err('eventId or formId parameter is required.', 400);
-    }
+    const whereClause = eventId
+      ? {
+          isDeleted: false,
+          OR: [
+            { eventId },
+            { event: { id: eventId } },
+            { event: { slug: eventId } },
+          ],
+        }
+      : { isDeleted: false };
 
     const forms = await prisma.registrationForm.findMany({
-      where: { eventId, isDeleted: false },
+      where: whereClause,
       include: {
+        event: { select: { id: true, title: true, slug: true } },
         sections: {
           include: { fields: { orderBy: { displayOrder: 'asc' } } },
           orderBy: { displayOrder: 'asc' },
         },
+        _count: { select: { registrations: true } },
       },
-      orderBy: { displayOrder: 'asc' },
+      orderBy: { createdAt: 'desc' },
     });
 
     return ok({ forms });
@@ -44,6 +55,43 @@ export async function GET(req: NextRequest) {
     console.error('[GET /api/forms]', e);
     return ERR.INTERNAL();
   }
+}
+
+const FIELD_TYPE_MAP: Record<string, string> = {
+  SHORT_TEXT: 'SHORT_TEXT',
+  LONG_TEXT: 'LONG_TEXT',
+  EMAIL: 'EMAIL',
+  PHONE: 'PHONE',
+  ENROLLMENT_NUM: 'ENROLLMENT_NUM',
+  ENROLLMENT_NUMBER: 'ENROLLMENT_NUM',
+  COLLEGE_NAME: 'COLLEGE_NAME',
+  DEPARTMENT: 'DEPARTMENT',
+  YEAR: 'YEAR',
+  DIVISION: 'DIVISION',
+  TEAM_NAME: 'TEAM_NAME',
+  TEAM_MEMBERS: 'TEAM_MEMBERS',
+  TEAM_SIZE: 'TEAM_SIZE',
+  DROPDOWN: 'DROPDOWN',
+  RADIO: 'RADIO',
+  CHECKBOX: 'CHECKBOX',
+  MULTI_SELECT: 'MULTI_SELECT',
+  DATE: 'DATE',
+  TIME: 'TIME',
+  NUMBER: 'NUMBER',
+  URL: 'URL',
+  GITHUB_PROFILE: 'GITHUB_PROFILE',
+  LINKEDIN_PROFILE: 'LINKEDIN_PROFILE',
+  PORTFOLIO: 'PORTFOLIO',
+  RESUME_UPLOAD: 'RESUME_UPLOAD',
+  IMAGE_UPLOAD: 'IMAGE_UPLOAD',
+  FILE_UPLOAD: 'FILE_UPLOAD',
+};
+
+function normalizeFieldType(rawType: string): any {
+  if (!rawType) return 'SHORT_TEXT';
+  const clean = rawType.trim().toUpperCase().replace(/\s+/g, '_').replace(/-/g, '_');
+  if (clean === 'ENROLLMENT_NUMBER' || clean === 'ENROLLMENT_NUM') return 'ENROLLMENT_NUM';
+  return FIELD_TYPE_MAP[clean] || 'SHORT_TEXT';
 }
 
 export async function POST(req: NextRequest) {
@@ -75,7 +123,7 @@ export async function POST(req: NextRequest) {
               create: (sec.fields || []).map((fld: any, fldIdx: number) => ({
                 label: fld.label,
                 placeholder: fld.placeholder || '',
-                type: fld.type || 'SHORT_TEXT',
+                type: normalizeFieldType(fld.type),
                 required: Boolean(fld.required),
                 options: fld.options || [],
                 helpText: fld.helpText || null,
@@ -93,6 +141,30 @@ export async function POST(req: NextRequest) {
     return ok({ form }, 201);
   } catch (e) {
     console.error('[POST /api/forms]', e);
+    return ERR.INTERNAL();
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const session = await getSession();
+    if (!session || !isAdminRole(session.roleName)) {
+      return ERR.FORBIDDEN();
+    }
+
+    const { searchParams } = req.nextUrl;
+    const id = searchParams.get('id');
+
+    if (!id) return err('Form ID is required.', 400);
+
+    await prisma.registrationForm.update({
+      where: { id },
+      data: { isDeleted: true },
+    });
+
+    return ok({ message: 'Form deleted successfully.' });
+  } catch (e) {
+    console.error('[DELETE /api/forms]', e);
     return ERR.INTERNAL();
   }
 }

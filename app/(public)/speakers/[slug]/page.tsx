@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, Mic } from 'lucide-react';
 import type { Speaker } from '@/types';
+import { formatDateDeterministic } from '@/lib/date';
 
 interface SpeakerPageProps {
   params: Promise<{ slug: string }>;
@@ -86,7 +87,7 @@ export default async function SpeakerDetailPage({ params }: SpeakerPageProps) {
                   <Card className="p-4 flex items-center justify-between hover:border-[#00A4EF] transition-all">
                     <div>
                       <h3 className="font-bold text-sm text-slate-900 dark:text-white">{evt.title}</h3>
-                      <p className="text-xs text-slate-500">{new Date(evt.startDate).toLocaleDateString()}</p>
+                      <p className="text-xs text-slate-500">{formatDateDeterministic(evt.startDate)}</p>
                     </div>
                     <Button variant="ghost" size="sm">View Event</Button>
                   </Card>

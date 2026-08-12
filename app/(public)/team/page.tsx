@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, Mail, Loader2 } from 'lucide-react';
-import { GithubIcon, LinkedinIcon } from '@/components/icons';
+import { Search, Loader2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import type { TeamMember } from '@/types';
 
 const CATEGORIES = [
   'All Members',
+  'Founding Member',
   'Faculty Coordinators',
   'President',
   'Vice President',
@@ -34,10 +34,28 @@ export default function TeamPage() {
   const { data: teamMembers = [], isLoading } = useQuery({
     queryKey: ['team'],
     queryFn: fetchTeam,
+    refetchOnMount: 'always',
   });
 
   const filteredTeam = teamMembers.filter((m) => {
-    const matchesCategory = selectedCategory === 'All Members' || m.category === selectedCategory;
+    const itemCat = (m.category || '').toUpperCase();
+
+    let matchesCategory = false;
+    if (selectedCategory === 'All Members') {
+      matchesCategory = true;
+    } else if (selectedCategory === 'Founding Member') {
+      matchesCategory = itemCat === 'FOUNDING_MEMBER' || itemCat.includes('FOUNDING');
+    } else if (selectedCategory === 'Faculty Coordinators') {
+      matchesCategory = itemCat === 'FACULTY_COORDINATORS' || itemCat.includes('FACULTY');
+    } else if (selectedCategory === 'President') {
+      matchesCategory = itemCat === 'PRESIDENT';
+    } else if (selectedCategory === 'Vice President') {
+      matchesCategory = itemCat === 'VICE_PRESIDENT';
+    } else {
+      const selCat = selectedCategory.toUpperCase().replace(/ /g, '_');
+      matchesCategory = itemCat.includes(selCat) || (m.category || '').toLowerCase().includes(selectedCategory.toLowerCase());
+    }
+
     const matchesSearch =
       m.name.toLowerCase().includes(search.toLowerCase()) ||
       m.position.toLowerCase().includes(search.toLowerCase()) ||
@@ -49,8 +67,10 @@ export default function TeamPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 py-8">
       <div className="text-center max-w-3xl mx-auto space-y-3">
         <Badge variant="primary">Community Leaders</Badge>
-        <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white">MCC Core Team</h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400">Meet the faculty leads, student presidents, and team heads driving the Microsoft Campus Club.</p>
+        <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white">MCC Core Team &amp; Founders</h1>
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          Meet the founding members, faculty leads, student presidents, and department leads driving the Microsoft Campus Club.
+        </p>
       </div>
 
       {/* Filter & Search Bar */}
@@ -96,45 +116,16 @@ export default function TeamPage() {
           {filteredTeam.map((m) => (
             <Card key={m.id} className="p-5 flex flex-col items-center text-center space-y-3 hover:border-sky-500/50 transition-all group">
               <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-sky-500/30 group-hover:border-sky-500 transition-colors">
-                <img src={m.photo || '/avatar-placeholder.png'} alt={m.name} className="w-full h-full object-cover" />
+                <img src={m.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300'} alt={m.name} className="w-full h-full object-cover" />
               </div>
 
               <div>
-                <h3 className="font-extrabold text-base text-slate-900 dark:text-white">{m.name}</h3>
-                <p className="text-xs font-semibold text-sky-600 dark:text-sky-400 mt-0.5">{m.position}</p>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">{m.department}</p>
-              </div>
-
-              <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">{m.bio}</p>
-
-              {/* Skills */}
-              {m.skills && m.skills.length > 0 && (
-                <div className="flex flex-wrap justify-center gap-1">
-                  {m.skills.slice(0, 3).map((s) => (
-                    <span key={s} className="px-2 py-0.5 text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 rounded-md text-slate-600 dark:text-slate-300">
-                      {s}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* Social Links */}
-              <div className="flex items-center gap-3 pt-2 text-slate-400 hover:text-slate-600">
-                {m.github && (
-                  <a href={`https://github.com/${m.github}`} target="_blank" rel="noopener noreferrer" className="hover:text-slate-900 dark:hover:text-white">
-                    <GithubIcon className="w-4 h-4" />
-                  </a>
-                )}
-                {m.linkedin && (
-                  <a href={`https://linkedin.com/in/${m.linkedin}`} target="_blank" rel="noopener noreferrer" className="hover:text-sky-500">
-                    <LinkedinIcon className="w-4 h-4" />
-                  </a>
-                )}
-                {m.email && (
-                  <a href={`mailto:${m.email}`} className="hover:text-emerald-500">
-                    <Mail className="w-4 h-4" />
-                  </a>
-                )}
+                <Badge variant={m.category === 'FOUNDING_MEMBER' ? 'success' : 'primary'} size="sm" className="mb-1">
+                  {m.category === 'FOUNDING_MEMBER' ? 'Founding Member' : m.category}
+                </Badge>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">{m.name}</h3>
+                <p className="text-xs text-[#0078D4] dark:text-[#00A4EF] font-semibold">{m.position}</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{m.department}</p>
               </div>
             </Card>
           ))}

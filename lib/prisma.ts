@@ -13,13 +13,23 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 /**
  * Execute DB operation with connection retry handling for serverless PostgreSQL scaling (Neon / Azure DB).
  */
-export async function withDbRetry<T>(operation: () => Promise<T>, retries = 2): Promise<T> {
+export async function withDbRetry<T>(operation: () => Promise<T>, retries = 3): Promise<T> {
   try {
     return await operation();
   } catch (error: any) {
-    if (retries > 0 && (error?.code === 'P1001' || error?.message?.includes('terminating connection'))) {
-      console.warn('[Prisma Retry] Connection reset detected. Retrying query...');
-      await new Promise((r) => setTimeout(r, 500));
+    const isConnErr =
+      error?.code === 'P1001' ||
+      error?.code === 'P1002' ||
+      error?.code === 'P1008' ||
+      error?.message?.includes("Can't reach database server") ||
+      error?.message?.includes('terminating connection') ||
+      error?.message?.includes('closed the connection') ||
+      error?.message?.includes('ETIMEDOUT') ||
+      error?.message?.includes('ECONNRESET');
+
+    if (retries > 0 && isConnErr) {
+      console.warn(`[Prisma Retry] Database connecting. Retrying query (${retries} left)...`);
+      await new Promise((r) => setTimeout(r, 300));
       return withDbRetry(operation, retries - 1);
     }
     throw error;

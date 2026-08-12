@@ -26,6 +26,21 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "api.dicebear.com",
       },
+      // Allow locally-uploaded files served from the app's own host
+      {
+        protocol: "http",
+        hostname: "localhost",
+      },
+      {
+        protocol: "https",
+        hostname: "localhost",
+      },
+      // Allow production domain (any hostname) for self-hosted uploads
+      {
+        protocol: "https",
+        hostname: "**",
+        pathname: "/uploads/**",
+      },
     ],
   },
   experimental: {

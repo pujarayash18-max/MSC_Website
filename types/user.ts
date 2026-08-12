@@ -77,6 +77,7 @@ export interface User extends BaseEntity {
   roleId: string;
   roleName: SystemRoleName;
   passwordHash?: string;
+  permissions?: Record<SystemModule, ActionPermission>;
 }
 
 export interface StudentProfile {
@@ -338,20 +339,30 @@ export const DEFAULTPERMISSIONMATRIX: Record<SystemRoleName, Record<SystemModule
   }
 };
 
-// Aliases for uppercase Prisma enum values to ensure zero permission lookup mismatches
-(DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)['SUPER_ADMIN'] = DEFAULTPERMISSIONMATRIX['Super Admin'];
-(DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)['WEBSITE_ADMIN'] = DEFAULTPERMISSIONMATRIX['Website Admin'];
-(DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)['EVENT_MANAGER'] = DEFAULTPERMISSIONMATRIX['Event Manager'];
-(DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)['CONTENT_MANAGER'] = DEFAULTPERMISSIONMATRIX['Content Manager'];
-(DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)['MEDIA_MANAGER'] = DEFAULTPERMISSIONMATRIX['Media Manager'];
-(DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)['FACULTY_COORDINATOR'] = DEFAULTPERMISSIONMATRIX['Faculty Coordinator'];
-(DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)['PRESIDENT'] = DEFAULTPERMISSIONMATRIX['President'];
-(DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)['VICE_PRESIDENT'] = DEFAULTPERMISSIONMATRIX['Vice President'];
-(DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)['TECHNICAL_LEAD'] = DEFAULTPERMISSIONMATRIX['Technical Lead'];
-(DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)['STUDENT'] = DEFAULTPERMISSIONMATRIX['Student'];
-(DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)['VOLUNTEER'] = DEFAULTPERMISSIONMATRIX['Volunteer'];
+export function normalizeRoleKey(roleName?: string | null): SystemRoleName {
+  if (!roleName) return 'Student';
+  const clean = roleName.trim().replace(/_/g, ' ').toLowerCase();
+  const titleCased = clean.replace(/\b\w/g, (c) => c.toUpperCase());
+
+  const validRoles: SystemRoleName[] = [
+    'Super Admin',
+    'Website Admin',
+    'Event Manager',
+    'Content Manager',
+    'Media Manager',
+    'Faculty Coordinator',
+    'President',
+    'Vice President',
+    'Technical Lead',
+    'Student',
+    'Volunteer',
+  ];
+
+  const matched = validRoles.find((r) => r.toLowerCase() === clean);
+  return matched || 'Super Admin';
+}
 
 export function getRolePermissions(roleName?: string | null): Record<SystemModule, ActionPermission> {
-  if (!roleName) return DEFAULTPERMISSIONMATRIX['Student'];
-  return (DEFAULTPERMISSIONMATRIX as Record<string, Record<SystemModule, ActionPermission>>)[roleName] || DEFAULTPERMISSIONMATRIX['Super Admin'];
+  const key = normalizeRoleKey(roleName);
+  return DEFAULTPERMISSIONMATRIX[key] || DEFAULTPERMISSIONMATRIX['Super Admin'];
 }

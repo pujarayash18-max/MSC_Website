@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth/jwt';
 import { ok, ERR } from '@/lib/api/response';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // Leaderboard (public) + user's own points history (auth)
 export async function GET(req: NextRequest) {
   try {

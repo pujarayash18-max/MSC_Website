@@ -63,6 +63,8 @@ export interface Speaker extends BaseEntity {
 }
 
 export type TeamCategory = 
+  | 'Founding Member'
+  | 'FOUNDING_MEMBER'
   | 'Faculty Coordinators'
   | 'President'
   | 'Vice President'
@@ -71,7 +73,8 @@ export type TeamCategory =
   | 'Media Team'
   | 'Content Team'
   | 'Design Team'
-  | 'Volunteers';
+  | 'Volunteers'
+  | (string & {});
 
 export interface TeamMember extends BaseEntity {
   memberId: string;

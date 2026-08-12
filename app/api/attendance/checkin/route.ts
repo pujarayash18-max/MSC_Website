@@ -25,9 +25,14 @@ export async function POST(req: NextRequest) {
 
     const { eventId, qrToken } = parsed.data;
 
-    // Find registration by qrToken
+    // Find registration by qrToken (including expired/cancelled tokens)
     const registration = await prisma.registration.findFirst({
-      where: { qrToken, isDeleted: false },
+      where: {
+        OR: [
+          { qrToken },
+          { qrToken: { contains: qrToken } }
+        ]
+      },
       include: {
         user: { select: { id: true, fullName: true, studentId: true, email: true } },
         event: { select: { id: true, title: true } },
@@ -35,7 +40,11 @@ export async function POST(req: NextRequest) {
     });
 
     if (!registration) {
-      return err('Invalid QR Code. Registration not found.', 404);
+      return err('Invalid QR Code. Ticket pass not found.', 404);
+    }
+
+    if (registration.isDeleted || registration.registrationStatus === 'REJECTED' || registration.qrToken.startsWith('EXPIRED_')) {
+      return err('❌ PASS EXPIRED: This registration was cancelled by the user and is no longer valid for entry.', 400);
     }
 
     if (registration.eventId !== eventId) {

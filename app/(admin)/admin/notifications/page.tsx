@@ -13,17 +13,36 @@ export default function AdminNotificationsPage() {
   const [sendEmail, setSendEmail] = useState(true);
   const [isSending, setIsSending] = useState(false);
 
-  const handleSend = (e: React.FormEvent) => {
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !message) return;
 
     setIsSending(true);
-    setTimeout(() => {
-      setIsSending(false);
-      toast.success(`Broadcasted notification "${title}" to 1,240 active student dashboards!`);
+    try {
+      const res = await fetch('/api/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          message,
+          type: type.toUpperCase().replace(/\s+/g, '_'),
+          sendEmail,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to send broadcast');
+      }
+
+      toast.success(data.message || `Broadcasted notification "${title}" to all students!`);
       setTitle('');
       setMessage('');
-    }, 600);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send broadcast notification');
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (

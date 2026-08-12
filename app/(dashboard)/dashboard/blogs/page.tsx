@@ -10,7 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import type { BlogPost } from '@prisma/client';
 
 async function fetchMyBlogs(): Promise<BlogPost[]> {
-  const res = await fetch('/api/blogs', { credentials: 'include' });
+  const res = await fetch('/api/blogs?mine=true', { credentials: 'include' });
   if (!res.ok) return [];
   const json = await res.json();
   return json.data?.blogs || [];

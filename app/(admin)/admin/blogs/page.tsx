@@ -8,12 +8,12 @@ import { Modal } from '@/components/ui/modal';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { getRolePermissions } from '@/types/user';
-import { FileText, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { FileText, CheckCircle2, XCircle, Trash2, Loader2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { BlogPost } from '@prisma/client';
 
 async function fetchAdminBlogs(): Promise<BlogPost[]> {
-  const res = await fetch('/api/blogs', { credentials: 'include' });
+  const res = await fetch('/api/blogs?status=all', { credentials: 'include' });
   if (!res.ok) return [];
   const json = await res.json();
   return json.data?.blogs || [];
@@ -49,12 +49,33 @@ export default function AdminBlogsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-blogs'] });
+      queryClient.invalidateQueries({ queryKey: ['blogs'] });
       toast.success('Blog article status updated successfully!');
       setRejectingBlog(null);
       setRejectionNote('');
     },
     onError: (err: Error) => {
       toast.error(err.message || 'Action failed.');
+    },
+  });
+
+  const deleteBlogMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/blogs/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || 'Delete failed');
+      return json;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-blogs'] });
+      queryClient.invalidateQueries({ queryKey: ['blogs'] });
+      toast.success('Blog article deleted successfully!');
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || 'Failed to delete blog.');
     },
   });
 
@@ -81,6 +102,16 @@ export default function AdminBlogsPage() {
     });
   };
 
+  const handleDelete = (blog: BlogPost) => {
+    if (!canManageBlogs) {
+      toast.error('You do not have permission to delete blogs.');
+      return;
+    }
+    if (confirm(`Are you sure you want to delete "${blog.title}"?`)) {
+      deleteBlogMutation.mutate(blog.id);
+    }
+  };
+
   const filteredBlogs = blogs.filter((b) => {
     if (activeTab === 'Pending') return b.status === 'pending';
     if (activeTab === 'Published') return b.status === 'published';
@@ -96,7 +127,7 @@ export default function AdminBlogsPage() {
             <FileText className="w-7 h-7 text-[#00A4EF]" /> Blog &amp; Article Publishing Review
           </h1>
           <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
-            Review student technical submissions, approve publication, or return draft with feedback.
+            Review student technical submissions, approve publication, return draft with feedback, or delete articles.
           </p>
         </div>
       </div>
@@ -137,16 +168,34 @@ export default function AdminBlogsPage() {
                   <p className="text-xs text-slate-500">By {blog.authorName} ({blog.authorRole})</p>
                 </div>
 
-                {blog.status === 'pending' && canManageBlogs && (
-                  <div className="flex items-center gap-2">
-                    <Button variant="fluent" size="sm" onClick={() => handleApprove(blog)} className="gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Approve &amp; Publish
+                <div className="flex items-center gap-2 shrink-0">
+                  {blog.status === 'pending' && canManageBlogs && (
+                    <>
+                      <Button variant="fluent" size="sm" onClick={() => handleApprove(blog)} className="gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Approve &amp; Publish
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setRejectingBlog(blog)}
+                        className="gap-1 text-amber-500 border-amber-500/50 hover:bg-amber-500/10"
+                      >
+                        <XCircle className="w-3.5 h-3.5" /> Reject
+                      </Button>
+                    </>
+                  )}
+
+                  {canManageBlogs && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDelete(blog)}
+                      className="gap-1 font-semibold"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" /> Delete Article
                     </Button>
-                    <Button variant="destructive" size="sm" onClick={() => setRejectingBlog(blog)} className="gap-1">
-                      <XCircle className="w-3.5 h-3.5" /> Reject
-                    </Button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
 
               <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-3">{blog.excerpt || blog.content}</p>

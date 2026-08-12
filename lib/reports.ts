@@ -1,3 +1,5 @@
+import ExcelJS from 'exceljs';
+
 /**
  * Report Export Helpers (CSV, PDF text, XLSX data formatters)
  */
@@ -41,13 +43,64 @@ export function downloadPDF(title: string, headers: string[], rows: (string | nu
 }
 
 export function downloadXLSX(filename: string, headers: string[], rows: (string | number)[][]) {
-  // Format as XML Spreadsheet 2003 / TSV for universal Excel opening
   const tsvContent = headers.join('\t') + '\n' + rows.map((r) => r.join('\t')).join('\n');
   const blob = new Blob([tsvContent], { type: 'application/vnd.ms-excel;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.setAttribute('href', url);
   link.setAttribute('download', `${filename}.xlsx`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+export interface ExcelSheetData {
+  sheetName: string;
+  headers: string[];
+  rows: (string | number)[][];
+}
+
+export async function downloadMultiSheetExcel(filename: string, sheets: ExcelSheetData[]) {
+  const workbook = new ExcelJS.Workbook();
+
+  sheets.forEach((sheet) => {
+    const cleanSheetName = (sheet.sheetName || 'Sheet')
+      .replace(/[\\/?*:[\]]/g, '')
+      .trim()
+      .substring(0, 31);
+
+    const worksheet = workbook.addWorksheet(cleanSheetName || 'Event Registrations');
+
+    worksheet.addRow(sheet.headers);
+
+    const headerRow = worksheet.getRow(1);
+    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF0078D4' },
+    };
+
+    sheet.rows.forEach((r) => worksheet.addRow(r));
+
+    worksheet.columns.forEach((column) => {
+      let maxLen = 12;
+      column.eachCell?.({ includeEmpty: true }, (cell) => {
+        const cellLen = cell.value ? String(cell.value).length : 0;
+        if (cellLen > maxLen) maxLen = Math.min(cellLen, 50);
+      });
+      column.width = maxLen + 2;
+    });
+  });
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${filename}.xlsx`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

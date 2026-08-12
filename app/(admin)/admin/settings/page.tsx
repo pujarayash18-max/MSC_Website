@@ -1,11 +1,27 @@
 'use client';
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Settings, Save, Database } from 'lucide-react';
+import { Settings, Save, Database, Loader2, RefreshCw, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+async function fetchSettings() {
+  const res = await fetch('/api/settings', {
+    cache: 'no-store',
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      Pragma: 'no-cache',
+    },
+  });
+  if (!res.ok) return null;
+  const json = await res.json();
+  return json.data?.settings || null;
+}
 
 export default function AdminSettingsPage() {
+  const queryClient = useQueryClient();
   const [clubName, setClubName] = useState('Microsoft Campus Club - Marwadi University');
   const [contactEmail, setContactEmail] = useState('mcc@marwadiuniversity.ac.in');
   const [firstPoints, setFirstPoints] = useState(100);
@@ -13,30 +29,101 @@ export default function AdminSettingsPage() {
   const [thirdPoints, setThirdPoints] = useState(50);
   const [participantPoints, setParticipantPoints] = useState(20);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = (e: React.FormEvent) => {
+  const { data: dbSettings, isLoading, isRefetching, refetch } = useQuery({
+    queryKey: ['admin-global-settings'],
+    queryFn: fetchSettings,
+  });
+
+  useEffect(() => {
+    if (dbSettings) {
+      if (dbSettings.clubName) setClubName(dbSettings.clubName);
+      if (dbSettings.contactEmail) setContactEmail(dbSettings.contactEmail);
+      if (dbSettings.maintenanceMode !== undefined) setMaintenanceMode(Boolean(dbSettings.maintenanceMode));
+
+      const dp = dbSettings.defaultPoints || {};
+      if (dp.firstPlace !== undefined) setFirstPoints(Number(dp.firstPlace));
+      if (dp.secondPlace !== undefined) setSecondPoints(Number(dp.secondPlace));
+      if (dp.thirdPlace !== undefined) setThirdPoints(Number(dp.thirdPlace));
+      if (dp.participant !== undefined) setParticipantPoints(Number(dp.participant));
+    }
+  }, [dbSettings]);
+
+  const saveSettingsMutation = useMutation({
+    mutationFn: async () => {
+      const payload = {
+        clubName,
+        contactEmail,
+        defaultPoints: {
+          firstPlace: firstPoints,
+          secondPlace: secondPoints,
+          thirdPlace: thirdPoints,
+          participant: participantPoints,
+        },
+        maintenanceMode,
+      };
+
+      const res = await fetch('/api/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || 'Failed to save settings');
+      }
+      return json.data?.settings;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-global-settings'] });
+      toast.success('Global System Settings saved live in database!', {
+        description: 'Gamification point allocations and Maintenance Mode updated live across platform.',
+      });
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || 'Failed to save system settings.');
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
-      toast.success('Global system settings updated successfully!');
-    }, 600);
+    saveSettingsMutation.mutate();
   };
+
+  if (isLoading && !dbSettings) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-[#0078D4] dark:text-[#00A4EF]" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-          <Settings className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Global System Settings
-        </h1>
-        <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
-          Configure default points allocation, club branding, email templates, and maintenance mode.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+            <Settings className="w-7 h-7 text-[#0078D4] dark:text-[#00A4EF]" /> Global System Settings
+          </h1>
+          <p className="text-sm text-slate-600 dark:text-[#A8B0BB] mt-1">
+            Configure default points allocation, club branding, email templates, and maintenance mode.
+          </p>
+        </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => refetch()}
+          disabled={isRefetching}
+          className="text-xs gap-1.5 self-start sm:self-auto"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${isRefetching ? 'animate-spin' : ''}`} /> Refresh Settings
+        </Button>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-6">
-        {/* Points Configuration (§86, §77) */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Points Configuration Engine */}
         <Card className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D] bg-white dark:bg-[#151B23]">
           <h3 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-[#2A323D] pb-3 flex items-center gap-2">
             <Database className="w-4 h-4 text-amber-500" /> Default Gamification Points Engine
@@ -49,7 +136,7 @@ export default function AdminSettingsPage() {
                 type="number"
                 value={firstPoints}
                 onChange={(e) => setFirstPoints(Number(e.target.value))}
-                className="w-full p-2.5 bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white font-bold"
+                className="w-full p-2.5 bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-[#00A4EF] focus:outline-none"
               />
             </div>
 
@@ -59,7 +146,7 @@ export default function AdminSettingsPage() {
                 type="number"
                 value={secondPoints}
                 onChange={(e) => setSecondPoints(Number(e.target.value))}
-                className="w-full p-2.5 bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white font-bold"
+                className="w-full p-2.5 bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-[#00A4EF] focus:outline-none"
               />
             </div>
 
@@ -69,7 +156,7 @@ export default function AdminSettingsPage() {
                 type="number"
                 value={thirdPoints}
                 onChange={(e) => setThirdPoints(Number(e.target.value))}
-                className="w-full p-2.5 bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white font-bold"
+                className="w-full p-2.5 bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-[#00A4EF] focus:outline-none"
               />
             </div>
 
@@ -79,15 +166,22 @@ export default function AdminSettingsPage() {
                 type="number"
                 value={participantPoints}
                 onChange={(e) => setParticipantPoints(Number(e.target.value))}
-                className="w-full p-2.5 bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white font-bold"
+                className="w-full p-2.5 bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-[#00A4EF] focus:outline-none"
               />
             </div>
           </div>
         </Card>
 
-        {/* Branding & Maintenance */}
+        {/* Branding & Maintenance Mode */}
         <Card className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D] bg-white dark:bg-[#151B23]">
-          <h3 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-[#2A323D] pb-3">Branding & Operational Status</h3>
+          <h3 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-[#2A323D] pb-3 flex items-center justify-between">
+            <span>Branding &amp; Operational Status</span>
+            {maintenanceMode && (
+              <span className="text-xs font-bold text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-full flex items-center gap-1">
+                <AlertTriangle className="w-3.5 h-3.5" /> Maintenance Mode Active
+              </span>
+            )}
+          </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
             <div>
@@ -96,7 +190,7 @@ export default function AdminSettingsPage() {
                 type="text"
                 value={clubName}
                 onChange={(e) => setClubName(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white"
+                className="w-full p-2.5 bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-[#00A4EF] focus:outline-none"
               />
             </div>
 
@@ -106,15 +200,24 @@ export default function AdminSettingsPage() {
                 type="email"
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white"
+                className="w-full p-2.5 bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-[#00A4EF] focus:outline-none"
               />
             </div>
           </div>
 
-          <div className="pt-2 border-t border-slate-200 dark:border-[#2A323D] flex items-center justify-between">
+          <div className="pt-4 border-t border-slate-200 dark:border-[#2A323D] flex items-center justify-between">
             <div>
-              <h4 className="text-xs font-bold text-slate-900 dark:text-white">Maintenance Mode</h4>
-              <p className="text-[11px] text-slate-600 dark:text-[#A8B0BB]">Temporarily restrict public access to maintenance landing page.</p>
+              <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                {maintenanceMode ? (
+                  <AlertTriangle className="w-4 h-4 text-amber-500" />
+                ) : (
+                  <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                )}
+                Maintenance Mode Lockdown
+              </h4>
+              <p className="text-[11px] text-slate-600 dark:text-[#A8B0BB]">
+                Temporarily restrict public access to maintenance page while allowing admins to manage the site.
+              </p>
             </div>
 
             <Button
@@ -122,8 +225,9 @@ export default function AdminSettingsPage() {
               variant={maintenanceMode ? 'destructive' : 'outline'}
               size="sm"
               onClick={() => {
-                setMaintenanceMode(!maintenanceMode);
-                toast.info(`Maintenance Mode ${!maintenanceMode ? 'Enabled' : 'Disabled'}`);
+                const nextState = !maintenanceMode;
+                setMaintenanceMode(nextState);
+                toast.info(`Maintenance Mode toggled ${nextState ? 'ON' : 'OFF'}. Click Save below to apply.`);
               }}
             >
               {maintenanceMode ? 'Disable Maintenance' : 'Enable Maintenance'}
@@ -132,8 +236,19 @@ export default function AdminSettingsPage() {
         </Card>
 
         <div className="flex justify-end">
-          <Button type="submit" variant="fluent" size="lg" isLoading={isSaving}>
-            <Save className="w-4 h-4" /> Save System Settings
+          <Button
+            type="submit"
+            variant="fluent"
+            size="lg"
+            disabled={saveSettingsMutation.isPending}
+            className="gap-2 font-bold shadow-lg shadow-sky-500/20"
+          >
+            {saveSettingsMutation.isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            Save System Settings
           </Button>
         </div>
       </form>

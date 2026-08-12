@@ -2,9 +2,20 @@
 
 import { ReactNode, useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider as NextThemesProvider } from 'next-themes';
+import { ThemeProvider } from '@/lib/theme-provider';
 import { AuthProvider } from '@/hooks/useAuth';
 import { Toaster } from 'sonner';
+
+function ClientToaster() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+  return <Toaster position="top-right" theme="dark" richColors closeButton />;
+}
 
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -19,26 +30,14 @@ export function Providers({ children }: { children: ReactNode }) {
       })
   );
 
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   return (
-    <NextThemesProvider
-      attribute="class"
-      defaultTheme="dark"
-      enableSystem={false}
-      disableTransitionOnChange
-      enableColorScheme={false}
-    >
+    <ThemeProvider defaultTheme="dark">
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           {children}
-          {mounted && <Toaster position="top-right" theme="dark" richColors closeButton />}
+          <ClientToaster />
         </AuthProvider>
       </QueryClientProvider>
-    </NextThemesProvider>
+    </ThemeProvider>
   );
 }

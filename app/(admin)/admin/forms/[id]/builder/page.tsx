@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -44,7 +44,10 @@ interface FormFieldItem {
 }
 
 export default function FormBuilderEditorPage() {
-  const [formName, setFormName] = useState('Standard College Event Registration Form');
+  const [formName, setFormName] = useState('Custom Event Registration Form');
+  const [events, setEvents] = useState<{ id: string; title: string }[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   const [fields, setFields] = useState<FormFieldItem[]>([
     { id: '1', label: 'Full Name', type: 'Short Text', required: true, placeholder: 'Rahul Sharma' },
     { id: '2', label: 'College Email', type: 'Email', required: true, placeholder: 'student@marwadiuniversity.ac.in' },
@@ -53,6 +56,20 @@ export default function FormBuilderEditorPage() {
   ]);
 
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/events')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.data?.events) {
+          setEvents(json.data.events);
+          if (json.data.events.length > 0) {
+            setSelectedEventId(json.data.events[0].id);
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const addField = (type: FieldType) => {
     const newField: FormFieldItem = {
@@ -72,8 +89,48 @@ export default function FormBuilderEditorPage() {
     setFields(fields.filter((f) => f.id !== id));
   };
 
-  const handleSave = () => {
-    toast.success('Dynamic registration form schema saved successfully!');
+  const handleSave = async () => {
+    if (!selectedEventId) {
+      toast.error('Please select an event to link this form to.');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const res = await fetch('/api/forms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventId: selectedEventId,
+          formName,
+          formType: 'CUSTOM_REGISTRATION',
+          sections: [
+            {
+              title: 'Registration Information',
+              description: 'Fill in your details below',
+              fields: fields.map((f) => ({
+                label: f.label,
+                placeholder: f.placeholder || '',
+                type: f.type.toUpperCase().replace(/\s+/g, '_'),
+                required: f.required,
+                options: f.options || [],
+              })),
+            },
+          ],
+        }),
+      });
+
+      const json = await res.json();
+      if (res.ok && json.success) {
+        toast.success('Registration form successfully linked to event!');
+      } else {
+        toast.error(json.error || json.message || 'Failed to save form.');
+      }
+    } catch {
+      toast.error('Network error saving form schema.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -89,8 +146,8 @@ export default function FormBuilderEditorPage() {
           <Button variant="outline" size="sm" onClick={() => toast.info('Previewing registration form UI...')}>
             <Eye className="w-4 h-4" /> Preview Live Form
           </Button>
-          <Button variant="fluent" size="sm" onClick={handleSave}>
-            <Save className="w-4 h-4" /> Save Form Schema
+          <Button variant="fluent" size="sm" disabled={isSaving} onClick={handleSave}>
+            <Save className="w-4 h-4" /> {isSaving ? 'Linking to Event...' : 'Save & Link to Event'}
           </Button>
         </div>
       </div>
@@ -117,14 +174,35 @@ export default function FormBuilderEditorPage() {
 
         {/* Right: Form Canvas */}
         <Card className="p-6 space-y-6 lg:col-span-2 border-slate-200 dark:border-slate-800">
-          <div className="border-b border-slate-200 dark:border-slate-800 pb-4">
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 block mb-1">Form Name / Description</label>
-            <input
-              type="text"
-              value={formName}
-              onChange={(e) => setFormName(e.target.value)}
-              className="text-lg font-extrabold bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2 text-slate-900 dark:text-white w-full focus:ring-2 focus:ring-sky-500 focus:outline-none"
-            />
+          <div className="border-b border-slate-200 dark:border-slate-800 pb-4 space-y-4">
+            <div>
+              <label className="text-xs font-bold text-indigo-400 block mb-1">🔗 Link This Registration Form To Specific Event *</label>
+              <select
+                value={selectedEventId}
+                onChange={(e) => setSelectedEventId(e.target.value)}
+                className="w-full p-2.5 text-xs font-bold bg-indigo-950/40 border border-indigo-500/40 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              >
+                {events.length === 0 ? (
+                  <option value="">Loading events...</option>
+                ) : (
+                  events.map((evt) => (
+                    <option key={evt.id} value={evt.id}>
+                      {evt.title} ({evt.id})
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 block mb-1">Form Name / Description</label>
+              <input
+                type="text"
+                value={formName}
+                onChange={(e) => setFormName(e.target.value)}
+                className="text-lg font-extrabold bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2 text-slate-900 dark:text-white w-full focus:ring-2 focus:ring-sky-500 focus:outline-none"
+              />
+            </div>
           </div>
 
           <div className="space-y-3">

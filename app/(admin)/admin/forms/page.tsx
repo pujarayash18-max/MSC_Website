@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { FileSpreadsheet, Plus, Edit3, Copy } from 'lucide-react';
+import { FileSpreadsheet, Plus, Edit3, Copy, Trash2 } from 'lucide-react';
 
 const MOCK_FORMS = [
   { id: 'frm_01', name: 'Standard College Event Registration Form', fieldsCount: 6, responsesCount: 142, status: 'Active', date: 'Aug 05, 2026' },
@@ -15,7 +15,35 @@ const MOCK_FORMS = [
 ];
 
 export default function AdminFormsCatalogPage() {
-  const [forms, setForms] = useState(MOCK_FORMS);
+  const [forms, setForms] = useState<any[]>(MOCK_FORMS);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/forms')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.data?.forms) {
+          const dbForms = json.data.forms.map((f: any) => {
+            const totalFields = (f.sections || []).reduce(
+              (acc: number, s: any) => acc + (s.fields?.length || 0),
+              0
+            );
+            return {
+              id: f.id,
+              name: f.formName,
+              eventTitle: f.event?.title || 'Unlinked Event',
+              fieldsCount: totalFields || 4,
+              responsesCount: f._count?.registrations || 0,
+              status: f.isEnabled ? 'Active' : 'Disabled',
+              date: new Date(f.createdAt).toLocaleDateString(),
+            };
+          });
+          setForms(dbForms.length > 0 ? dbForms : MOCK_FORMS);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
+  }, []);
 
   const handleDuplicate = (id: string) => {
     const target = forms.find((f) => f.id === id);
@@ -29,6 +57,22 @@ export default function AdminFormsCatalogPage() {
     };
     setForms([...forms, duplicated]);
     toast.success('Form schema duplicated successfully.');
+  };
+
+  const handleDeleteForm = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this registration form?')) return;
+    try {
+      const res = await fetch(`/api/forms/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setForms((prev) => prev.filter((f) => f.id !== id));
+        toast.success('Registration form deleted successfully.');
+      } else {
+        const json = await res.json();
+        toast.error(json.error || json.message || 'Failed to delete form.');
+      }
+    } catch {
+      toast.error('Network error deleting form.');
+    }
   };
 
   return (
@@ -59,15 +103,31 @@ export default function AdminFormsCatalogPage() {
                 <span className="text-[11px] font-mono text-slate-500 dark:text-[#A8B0BB]">{f.id}</span>
               </div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white">{f.name}</h3>
+              {f.eventTitle && (
+                <p className="text-xs font-semibold text-indigo-400">
+                  Event: {f.eventTitle}
+                </p>
+              )}
               <p className="text-xs text-slate-500 dark:text-[#A8B0BB]">
                 Fields: <strong className="text-slate-900 dark:text-white">{f.fieldsCount}</strong> • Submissions: <strong className="text-[#00A4EF]">{f.responsesCount}</strong>
               </p>
             </div>
 
-            <div className="pt-4 border-t border-slate-200 dark:border-[#2A323D] flex items-center justify-between">
-              <Button variant="outline" size="sm" onClick={() => handleDuplicate(f.id)} title="Duplicate Schema">
-                <Copy className="w-3.5 h-3.5" />
-              </Button>
+            <div className="pt-4 border-t border-slate-200 dark:border-[#2A323D] flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5">
+                <Button variant="outline" size="sm" onClick={() => handleDuplicate(f.id)} title="Duplicate Schema">
+                  <Copy className="w-3.5 h-3.5" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDeleteForm(f.id)}
+                  title="Delete Form"
+                  className="text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 border-rose-500/30"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </Button>
+              </div>
 
               <Link href={`/admin/forms/${f.id}/builder`}>
                 <Button variant="fluent" size="sm">

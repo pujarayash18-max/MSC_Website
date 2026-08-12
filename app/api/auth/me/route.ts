@@ -1,6 +1,10 @@
 import { getSession } from '@/lib/auth/jwt';
 import { prisma } from '@/lib/prisma';
 import { ok, ERR } from '@/lib/api/response';
+import { getRolePermissions } from '@/types';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET() {
   try {
@@ -33,11 +37,24 @@ export async function GET() {
         status: true,
         createdAt: true,
         updatedAt: true,
+        role: {
+          select: {
+            permissions: true,
+          },
+        },
       },
     });
 
     if (!user) return ERR.UNAUTHORIZED();
-    return ok({ user });
+
+    const activePermissions = user.role?.permissions || getRolePermissions(user.roleName);
+
+    return ok({
+      user: {
+        ...user,
+        permissions: activePermissions,
+      },
+    });
   } catch (e) {
     console.error('[GET /api/auth/me]', e);
     return ERR.INTERNAL();
