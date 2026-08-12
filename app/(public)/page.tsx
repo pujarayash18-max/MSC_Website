@@ -21,22 +21,26 @@ import {
   MapPin,
   ChevronRight,
   Pin,
-  Code
+  Code,
+  Cloud,
+  Cpu,
+  GitBranch,
+  Zap
 } from 'lucide-react';
 import type { Event, TeamMember, Notice } from '@/types';
 
 const STATS = [
-  { label: 'Community Members', value: 1200, icon: Users, suffix: '+' },
-  { label: 'Events Conducted', value: 35, icon: Calendar, suffix: '+' },
-  { label: 'Speakers Hosted', value: 25, icon: Mic, suffix: '+' },
+  { label: 'Active Student Members', value: 1200, icon: Users, suffix: '+' },
+  { label: 'Technical Events Hosted', value: 35, icon: Calendar, suffix: '+' },
+  { label: 'Industry Speakers Hosted', value: 25, icon: Mic, suffix: '+' },
   { label: 'Certificates Issued', value: 2500, icon: Award, suffix: '+' }
 ];
 
 const TIMELINE = [
-  { year: '2023', title: 'Club Founded', description: 'Established at Marwadi University to bridge academia with Microsoft technologies.' },
-  { year: '2024', title: 'First Azure Cloud Workshop', description: 'Trained 250+ students on serverless functions and Cosmos DB.' },
-  { year: '2025', title: 'First National Hackathon', description: 'Hosted 500+ hacker teams across India with $5,000+ prize pool.' },
-  { year: '2026', title: '1,000+ Active Members', description: 'Evolved into an enterprise digital community management ecosystem.' }
+  { year: '2023', title: 'Chapter Founded', description: 'Established at Marwadi University to bridge academic learning with Microsoft enterprise technologies.' },
+  { year: '2024', title: 'Azure Cloud Expansion', description: 'Delivered hands-on technical workshops for over 250 students on Azure cloud services.' },
+  { year: '2025', title: 'National Hackathon Series', description: 'Hosted national-level student hackathons engaging more than 500 developer teams across India.' },
+  { year: '2026', title: 'Campus Tech Hub', description: 'Expanded into a active technical community of over 1,200 student developers and Ambassadors.' }
 ];
 
 
@@ -112,7 +116,7 @@ export default function HomePage() {
           className="space-y-6 max-w-4xl mx-auto"
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-400 text-xs font-semibold shadow-lg shadow-sky-500/10 backdrop-blur-md">
-            <Sparkles className="w-4 h-4 text-sky-500 dark:text-sky-400" /> Official Club Ecosystem • Marwadi University
+            <Sparkles className="w-4 h-4 text-sky-500 dark:text-sky-400" /> Microsoft Learn Student Chapter • Marwadi University
           </div>
 
           <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
@@ -123,7 +127,7 @@ export default function HomePage() {
           </h1>
 
           <p className="text-base sm:text-lg text-slate-700 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
-            Empowering Marwadi University students through hands-on workshops, national hackathons, Azure cloud certification paths, achievements, and real-time community engagement.
+            The official student community at Marwadi University driving technical excellence through Azure workshops, national hackathons, Microsoft certification pathways, and hands-on project collaboration.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
@@ -146,9 +150,9 @@ export default function HomePage() {
             <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <Code className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Dynamic Registrations</h3>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Event Management</h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
-              Zero-hardcoded dynamic form builder, waitlist auto-promotion, and instant QR pass generation.
+              Seamless event registration, instant digital attendance passes, and automated capacity tracking for technical sessions.
             </p>
           </Card>
 
@@ -156,9 +160,9 @@ export default function HomePage() {
             <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <Trophy className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Points &amp; Leaderboard</h3>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Community Recognition</h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
-              Automatic points ledger, achievement badges, and live student leaderboards recalculated in real-time.
+              Earn community points through workshop attendance, hackathon wins, and technical contributions to rank on campus leaderboards.
             </p>
           </Card>
 
@@ -166,9 +170,9 @@ export default function HomePage() {
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <Award className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Verified Certificates</h3>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Verified Credentials</h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
-              Batch generated PDF certificates with QR code verification lookup URLs.
+              Receive official digital certificates of completion and achievement equipped with instant QR code verification lookup.
             </p>
           </Card>
         </div>
@@ -315,20 +319,26 @@ export default function HomePage() {
           </div>
 
           <div className="space-y-3">
-            {notices.slice(0, 3).map((notice) => (
-              <Card key={notice.id} className="p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <Badge variant={notice.priority === 'Urgent' ? 'danger' : 'purple'}>
-                    {notice.priority} Notice
-                  </Badge>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400">
-                    {formatDateDeterministic(String(notice.publishDate))}
-                  </span>
-                </div>
-                <h4 className="font-bold text-slate-900 dark:text-white text-sm">{notice.title}</h4>
-                <p className="text-xs text-slate-600 dark:text-slate-400">{notice.description}</p>
+            {notices.length > 0 ? (
+              notices.slice(0, 3).map((notice) => (
+                <Card key={notice.id} className="p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Badge variant={notice.priority === 'Urgent' ? 'danger' : 'purple'}>
+                      {notice.priority} Notice
+                    </Badge>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                      {formatDateDeterministic(String(notice.publishDate))}
+                    </span>
+                  </div>
+                  <h4 className="font-bold text-slate-900 dark:text-white text-sm">{notice.title}</h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">{notice.description}</p>
+                </Card>
+              ))
+            ) : (
+              <Card className="p-6 text-center text-slate-600 dark:text-slate-400 text-xs">
+                No active announcements at this time. Check back soon for official club updates.
               </Card>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -339,7 +349,7 @@ export default function HomePage() {
           <Badge variant="primary" className="mb-2">Skill Tracks</Badge>
           <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">Microsoft Technology Pathways</h2>
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
-            Structured learning paths curated by our club to help you master industry-demanded Microsoft technologies and earn official certifications.
+            Structured learning pathways to help students master enterprise Microsoft technologies and prepare for official certification tracks.
           </p>
         </div>
 
@@ -347,11 +357,11 @@ export default function HomePage() {
           <Card className="p-6 space-y-3 hover:border-sky-500/50 transition-all duration-300 group relative overflow-hidden">
             <div className="absolute top-0 right-0 w-20 h-20 bg-sky-500/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
             <div className="w-11 h-11 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              ☁️
+              <Cloud className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">Azure Cloud</h3>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">Azure Cloud Computing</h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              Virtual machines, serverless functions, Cosmos DB, and AZ-900 certification prep workshops.
+              Cloud architecture, serverless computing, and preparation for Microsoft Certified: Azure Fundamentals (AZ-900).
             </p>
             <div className="flex items-center gap-2 pt-1">
               <Badge variant="primary" className="text-[10px]">12 Workshops</Badge>
@@ -362,11 +372,11 @@ export default function HomePage() {
           <Card className="p-6 space-y-3 hover:border-purple-500/50 transition-all duration-300 group relative overflow-hidden">
             <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
             <div className="w-11 h-11 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-600 dark:text-purple-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              🤖
+              <Cpu className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">AI & Machine Learning</h3>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">AI &amp; Machine Learning</h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              Azure Cognitive Services, OpenAI integration, ML Studio, and responsible AI practices.
+              Azure OpenAI, Cognitive Services, and foundational AI principles for Microsoft Certified: Azure AI Fundamentals (AI-900).
             </p>
             <div className="flex items-center gap-2 pt-1">
               <Badge variant="purple" className="text-[10px]">8 Sessions</Badge>
@@ -377,11 +387,11 @@ export default function HomePage() {
           <Card className="p-6 space-y-3 hover:border-emerald-500/50 transition-all duration-300 group relative overflow-hidden">
             <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-500/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
             <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              🐙
+              <GitBranch className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">GitHub & DevOps</h3>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">GitHub &amp; DevOps</h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              GitHub Actions, Copilot, CI/CD pipelines, Azure DevOps, and open-source contribution sprints.
+              GitHub Actions, CI/CD automation pipelines, version control practices, and open-source contribution sprints.
             </p>
             <div className="flex items-center gap-2 pt-1">
               <Badge variant="success" className="text-[10px]">6 Bootcamps</Badge>
@@ -392,11 +402,11 @@ export default function HomePage() {
           <Card className="p-6 space-y-3 hover:border-amber-500/50 transition-all duration-300 group relative overflow-hidden">
             <div className="absolute top-0 right-0 w-20 h-20 bg-amber-500/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
             <div className="w-11 h-11 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              ⚡
+              <Zap className="w-5 h-5" />
             </div>
             <h3 className="text-base font-bold text-slate-900 dark:text-white">Power Platform</h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              Power Apps, Power Automate, Power BI dashboards, and low-code/no-code solution building.
+              Low-code application development and automated workflows for Microsoft Certified: Power Platform Fundamentals (PL-900).
             </p>
             <div className="flex items-center gap-2 pt-1">
               <Badge variant="warning" className="text-[10px]">5 Labs</Badge>
@@ -411,16 +421,16 @@ export default function HomePage() {
         <div className="rounded-3xl bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 p-8 md:p-12 text-white text-center shadow-2xl space-y-5 relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.1)_0%,_transparent_60%)]" />
           <div className="relative z-10 space-y-5">
-            <Badge variant="outline" className="text-white border-white/40">Open for All Students</Badge>
-            <h2 className="text-2xl sm:text-3xl font-extrabold">Ready to Level Up Your Tech Career?</h2>
+            <Badge variant="outline" className="text-white border-white/40">Open to All Marwadi University Students</Badge>
+            <h2 className="text-2xl sm:text-3xl font-extrabold">Advance Your Technical Journey</h2>
             <p className="text-xs sm:text-sm text-sky-100 max-w-xl mx-auto leading-relaxed">
-              Join 1,200+ student members at Marwadi University. Get access to Microsoft certifications, exclusive hackathons, industry mentorship, and community-powered learning — completely free.
+              Join the student developer community at Marwadi University. Access Microsoft certification guidance, technical workshops, hackathons, and student ambassador mentorship opportunities.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto pt-2">
               <Link href="/join-us" className="flex-1">
                 <Button variant="secondary" size="lg" className="w-full font-bold text-xs shadow-lg">
-                  <Users className="w-4 h-4 mr-1.5" /> Join MCC Community
+                  <Users className="w-4 h-4 mr-1.5" /> Join Chapter
                 </Button>
               </Link>
               <Link href="/events" className="flex-1">
@@ -431,7 +441,7 @@ export default function HomePage() {
             </div>
 
             <p className="text-[11px] text-sky-200/70 pt-1">
-              🎓 Microsoft Learn Student Ambassador Program • Azure for Students Free Credits • GitHub Student Developer Pack
+              Microsoft Learn Student Ambassadors • Azure for Students Benefits • GitHub Student Developer Pack
             </p>
           </div>
         </div>
