@@ -6,8 +6,10 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Plus } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function NewEventPage() {
+  const queryClient = useQueryClient();
   const [title, setTitle] = useState('');
   const [shortDesc, setShortDesc] = useState('');
   const [category, setCategory] = useState('Workshop');
@@ -57,6 +59,9 @@ export default function NewEventPage() {
 
       const json = await res.json();
       if (res.ok && json.success) {
+        queryClient.invalidateQueries({ queryKey: ['admin-events'] });
+        queryClient.invalidateQueries({ queryKey: ['master-home-data'] });
+        queryClient.invalidateQueries({ queryKey: ['public-stats'] });
         toast.success(`Event "${title}" created and published!`);
         router.push('/admin/events');
       } else {

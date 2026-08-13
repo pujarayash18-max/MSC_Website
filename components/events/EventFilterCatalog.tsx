@@ -20,16 +20,20 @@ export function EventFilterCatalog({ events }: EventFilterCatalogProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredEvents = events.filter((evt) => {
+    const selUpper = selectedFilter.toUpperCase();
+    const catUpper = String(evt.category || '').toUpperCase();
+    const statusUpper = String(evt.eventStatus || '').toUpperCase();
+
     const matchesFilter =
       selectedFilter === 'All Events' ||
-      evt.category === selectedFilter ||
-      evt.eventStatus === selectedFilter ||
-      evt.tags.includes(selectedFilter);
+      catUpper === selUpper ||
+      statusUpper === selUpper ||
+      (evt.tags || []).some((t) => String(t).toUpperCase() === selUpper);
 
     const matchesSearch =
       evt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       evt.shortDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      evt.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
+      (evt.tags || []).some((t) => String(t).toLowerCase().includes(searchQuery.toLowerCase()));
 
     return matchesFilter && matchesSearch;
   });

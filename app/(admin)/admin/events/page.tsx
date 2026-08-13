@@ -10,7 +10,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Event } from '@/types';
 
 async function fetchAdminEvents(): Promise<Event[]> {
-  const res = await fetch('/api/events');
+  const res = await fetch('/api/events', { cache: 'no-store' });
   if (!res.ok) return [];
   const json = await res.json();
   return json.data?.events || [];
@@ -22,6 +22,8 @@ export default function AdminEventsPage() {
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['admin-events'],
     queryFn: fetchAdminEvents,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
   const updateEventStatusMutation = useMutation({

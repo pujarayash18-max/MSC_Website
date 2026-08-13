@@ -5,6 +5,9 @@ import { getSession } from '@/lib/auth/jwt';
 import { ok, ERR } from '@/lib/api/response';
 import { isAdminRole } from '@/lib/constants/roles';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const CreateEventSchema = z.object({
   title: z.string().min(3),
   slug: z.string().optional(),

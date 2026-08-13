@@ -236,11 +236,11 @@ const FAQS = [
 
 async function fetchHomeData() {
   const [eventsRes, noticesRes, speakersRes, blogsRes, leaderboardRes] = await Promise.all([
-    fetch('/api/events'),
-    fetch('/api/notices'),
-    fetch('/api/speakers'),
-    fetch('/api/blogs'),
-    fetch('/api/points?mode=leaderboard'),
+    fetch('/api/events', { cache: 'no-store' }),
+    fetch('/api/notices', { cache: 'no-store' }),
+    fetch('/api/speakers', { cache: 'no-store' }),
+    fetch('/api/blogs', { cache: 'no-store' }),
+    fetch('/api/points?mode=leaderboard', { cache: 'no-store' }),
   ]);
 
   const [eventsData, noticesData, speakersData, blogsData, leaderboardData] = await Promise.all([
