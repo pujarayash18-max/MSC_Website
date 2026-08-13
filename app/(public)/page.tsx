@@ -311,10 +311,10 @@ export default function MasterHomePage() {
   });
 
   const displayStats = [
-    { label: 'Active Student Members', value: statsData ? statsData.members : 35, icon: Users, suffix: '+' },
-    { label: 'Technical Events Hosted', value: statsData ? statsData.events : 25, icon: Calendar, suffix: '+' },
-    { label: 'Industry Speakers Hosted', value: statsData ? statsData.speakers : 2500, icon: Mic, suffix: '+' },
-    { label: 'Certificates Issued', value: statsData ? statsData.certificates : 0, icon: Award, suffix: '+' },
+    { label: 'Active Student Members', value: statsData ? statsData.members : 35, icon: Users },
+    { label: 'Technical Events Hosted', value: statsData ? statsData.events : 25, icon: Calendar },
+    { label: 'Industry Speakers Hosted', value: statsData ? statsData.speakers : 2500, icon: Mic },
+    { label: 'Certificates Issued', value: statsData ? statsData.certificates : 0, icon: Award },
   ];
 
   useEffect(() => {
