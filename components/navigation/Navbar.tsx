@@ -31,11 +31,11 @@ const PRIMARY_NAV = [
 
 // Secondary links – tucked into the "More" dropdown
 const MORE_NAV = [
-  { label: 'Support Ticket', href: '/contact' },
   { label: 'Resources', href: '/resources' },
   { label: 'Leaderboard', href: '/leaderboard' },
   { label: 'Blog', href: '/blog' },
   { label: 'Gallery', href: '/gallery' },
+  { label: 'Support Ticket', href: '/contact' },
 ];
 
 
