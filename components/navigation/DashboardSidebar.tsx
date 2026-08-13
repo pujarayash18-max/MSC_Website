@@ -13,6 +13,7 @@ import {
   MessageSquare,
   Bell,
   User,
+  UserCheck,
   Settings,
   ShieldCheck,
 } from 'lucide-react';
@@ -21,6 +22,7 @@ import { isAdminRole } from '@/lib/constants/roles';
 
 const SIDEBAR_ITEMS = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'My Applications', href: '/dashboard/applications', icon: UserCheck },
   { label: 'My Registrations', href: '/dashboard/registrations', icon: FileCheck },
   { label: 'My Articles & Blogs', href: '/dashboard/blogs', icon: FileText },
   { label: 'Resources', href: '/dashboard/resources', icon: FolderDown },

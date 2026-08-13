@@ -1,12 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { formatDateDeterministic } from '@/lib/date';
 import {
@@ -14,7 +14,6 @@ import {
   Calendar,
   Users,
   Award,
-  Trophy,
   Mic,
   ArrowRight,
   Clock,
@@ -22,62 +21,175 @@ import {
   ChevronRight,
   Pin,
   Code,
-  Cloud,
-  Cpu,
-  GitBranch,
-  Zap
+  Trophy,
+  Compass,
+  BookOpen,
+  Hammer,
+  Quote,
+  Globe,
+  HeartHandshake,
+  TrendingUp,
+  Rocket,
+  ShieldCheck,
+  HelpCircle,
+  ChevronDown,
+  UserCheck,
+  GraduationCap,
 } from 'lucide-react';
-import type { Event, TeamMember, Notice } from '@/types';
+import type { Event, Notice } from '@/types';
+import { CommunitySocialModal } from '@/components/community/CommunitySocialModal';
 
-const STATS = [
-  { label: 'Active Student Members', value: 1200, icon: Users, suffix: '+' },
-  { label: 'Technical Events Hosted', value: 35, icon: Calendar, suffix: '+' },
-  { label: 'Industry Speakers Hosted', value: 25, icon: Mic, suffix: '+' },
-  { label: 'Certificates Issued', value: 2500, icon: Award, suffix: '+' }
+const VISION_ITEMS = [
+  {
+    title: 'A Starting Point for Every Student',
+    description: 'Every student should have an accessible starting point, regardless of prior knowledge or technical experience.',
+    icon: Compass,
+    color: 'text-sky-500 bg-sky-500/10 border-sky-500/30',
+  },
+  {
+    title: 'A Bridge to Industry Expectations',
+    description: 'Connecting classroom theory with practical applications, cloud deployments, and modern developer tools.',
+    icon: Globe,
+    color: 'text-purple-500 bg-purple-500/10 border-purple-500/30',
+  },
+  {
+    title: 'Collaborative Peer Learning',
+    description: 'A student-led environment where peers experiment, learn, ask questions, and solve technical challenges together.',
+    icon: Users,
+    color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/30',
+  },
+  {
+    title: 'Developing Student Leaders',
+    description: 'Empowering students to take ownership, direct initiatives, organize workshops, and contribute back to campus life.',
+    icon: Award,
+    color: 'text-amber-500 bg-amber-500/10 border-amber-500/30',
+  },
+  {
+    title: 'Continuous Growth & Support',
+    description: 'Providing mentorship, learning resources, and career guidance to support students throughout their academic journey.',
+    icon: HeartHandshake,
+    color: 'text-rose-500 bg-rose-500/10 border-rose-500/30',
+  },
+  {
+    title: 'Sustainable Mentorship Cycle',
+    description: 'Graduating student leaders guide and mentor incoming batches, creating a perpetual cycle of campus growth.',
+    icon: TrendingUp,
+    color: 'text-blue-500 bg-blue-500/10 border-blue-500/30',
+  },
 ];
 
-const TIMELINE = [
-  { year: '2023', title: 'Chapter Founded', description: 'Established at Marwadi University to bridge academic learning with Microsoft enterprise technologies.' },
-  { year: '2024', title: 'Azure Cloud Expansion', description: 'Delivered hands-on technical workshops for over 250 students on Azure cloud services.' },
-  { year: '2025', title: 'National Hackathon Series', description: 'Hosted national-level student hackathons engaging more than 500 developer teams across India.' },
-  { year: '2026', title: 'Campus Tech Hub', description: 'Expanded into a active technical community of over 1,200 student developers and Ambassadors.' }
+const MISSION_ITEMS = [
+  {
+    condition: 'When a student is looking for direction',
+    action: 'Provide clear resources, structured learning paths, and guidance to help them take their first step.',
+    icon: Sparkles,
+    badgeColor: 'bg-sky-500/10 text-sky-400 border-sky-500/30',
+  },
+  {
+    condition: 'When a student wants to learn',
+    action: 'Organize practical workshops, expert technical sessions, and hands-on bootcamps around Microsoft and cloud tech.',
+    icon: BookOpen,
+    badgeColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30',
+  },
+  {
+    condition: 'When a student wants to explore',
+    action: 'Encourage exploration of emerging technologies, AI models, developer tools, and industry career possibilities.',
+    icon: Rocket,
+    badgeColor: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
+  },
+  {
+    condition: 'When a student wants to build',
+    action: 'Support students in converting ideas into tangible software projects, hackathon solutions, and campus tools.',
+    icon: Hammer,
+    badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+  },
+  {
+    condition: 'When a student takes leadership',
+    action: 'Offer leadership positions, event management responsibilities, and team coordination roles.',
+    icon: ShieldCheck,
+    badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+  },
 ];
 
+const JOURNEY_STEPS = [
+  {
+    step: '01',
+    title: 'Join',
+    subtitle: 'Enter the Community',
+    description: 'Connect with motivated students across departments who want to learn, build, and explore modern technology together.',
+    icon: Users,
+    color: 'from-sky-500/20 to-blue-500/20 text-sky-400 border-sky-500/30',
+  },
+  {
+    step: '02',
+    title: 'Learn',
+    subtitle: 'Practical Workshops',
+    description: 'Attend hands-on workshops across Microsoft Azure, AI, Web Development, Cloud Computing, and modern developer tools.',
+    icon: BookOpen,
+    color: 'from-purple-500/20 to-indigo-500/20 text-purple-400 border-purple-500/30',
+  },
+  {
+    step: '03',
+    title: 'Build',
+    subtitle: 'Real-World Projects',
+    description: 'Develop production-ready projects, hackathon solutions, and open-source campus tools with peer mentors.',
+    icon: Hammer,
+    color: 'from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30',
+  },
+];
 
+const FAQS = [
+  {
+    q: 'What is the Microsoft Campus Club?',
+    a: 'The Microsoft Campus Club (MCC) is a student-led technology community at Marwadi University, supported by Microsoft Student Ambassadors. We help students learn, build projects, and connect with industry mentors.',
+  },
+  {
+    q: 'Who is eligible to join the community?',
+    a: 'Students from any department, academic year, or skill level are eligible to join. All you need is curiosity and a desire to learn alongside fellow student developers.',
+  },
+  {
+    q: 'Are there any registration or membership fees?',
+    a: 'No. Joining the club and attending regular workshops, webinars, and community learning sessions is completely free unless a specialized external event specifies otherwise.',
+  },
+  {
+    q: 'How do I register for upcoming technical events?',
+    a: 'Browse the Events section, select an upcoming workshop or competition, review the agenda, and click the Register Now button while registrations are open.',
+  },
+  {
+    q: 'What is a Microsoft Student Ambassador?',
+    a: 'Microsoft Student Ambassadors are globally recognized student leaders who guide peers in exploring Microsoft technologies, Azure cloud learning paths, student developer benefits, and career opportunities.',
+  },
+  {
+    q: 'Do I need prior programming experience to participate?',
+    a: 'No! Beginners are completely welcome. Most of our sessions begin with core fundamentals and guide you step by step toward building practical applications.',
+  },
+];
 
 async function fetchHomeData() {
-  const [eventsRes, teamRes, noticesRes, sponsorsRes] = await Promise.all([
+  const [eventsRes, noticesRes] = await Promise.all([
     fetch('/api/events'),
-    fetch('/api/team'),
     fetch('/api/notices'),
-    fetch('/api/sponsors')
   ]);
 
-  const [eventsData, teamData, noticesData, sponsorsData] = await Promise.all([
+  const [eventsData, noticesData] = await Promise.all([
     eventsRes.ok ? eventsRes.json() : { data: {} },
-    teamRes.ok ? teamRes.json() : { data: {} },
     noticesRes.ok ? noticesRes.json() : { data: {} },
-    sponsorsRes.ok ? sponsorsRes.json() : { data: {} }
   ]);
 
   return {
     events: (eventsData.data?.events || []) as Event[],
-    team: (teamData.data?.members || []) as TeamMember[],
     notices: (noticesData.data?.notices || []) as Notice[],
-    sponsors: (sponsorsData.data?.sponsors || []) as any[]
   };
 }
 
 export default function HomePage() {
   const { data } = useQuery({
     queryKey: ['home-data'],
-    queryFn: fetchHomeData
+    queryFn: fetchHomeData,
   });
 
   const events = data?.events || [];
-  const team = data?.team || [];
   const notices = data?.notices || [];
-  const sponsors = data?.sponsors || [];
 
   const nextEvent = events[0] || {
     id: 'evt_default',
@@ -87,11 +199,29 @@ export default function HomePage() {
     startDate: '2026-08-25T10:00:00.000Z',
     remainingSeats: 25,
     capacity: 150,
-    slug: 'azure-cloud-masterclass'
+    slug: 'azure-cloud-masterclass',
   };
 
   const [countdown, setCountdown] = useState({ days: 12, hours: 8, minutes: 42, seconds: 19 });
+  const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
+  const { data: statsData } = useQuery({
+    queryKey: ['public-stats'],
+    queryFn: async () => {
+      const res = await fetch('/api/stats');
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json.data?.stats || json.stats || null;
+    },
+  });
+
+  const displayStats = [
+    { label: 'Active Student Members', value: statsData ? statsData.members : 8, icon: Users, suffix: '+' },
+    { label: 'Technical Events Hosted', value: statsData ? statsData.events : 3, icon: Calendar, suffix: '+' },
+    { label: 'Industry Speakers Hosted', value: statsData ? statsData.speakers : 2, icon: Mic, suffix: '+' },
+    { label: 'Certificates Issued', value: statsData ? statsData.certificates : 0, icon: Award, suffix: '+' },
+  ];
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -103,12 +233,10 @@ export default function HomePage() {
     return () => clearInterval(timer);
   }, []);
 
-
-
   return (
-    <div className="space-y-24">
-      {/* 13.1 HERO SECTION */}
-      <section className="relative pt-12 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center overflow-hidden">
+    <div className="space-y-24 scroll-smooth">
+      {/* 1. HERO SECTION */}
+      <section id="home" className="relative pt-12 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center overflow-hidden">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -116,19 +244,30 @@ export default function HomePage() {
           className="space-y-6 max-w-4xl mx-auto"
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-400 text-xs font-semibold shadow-lg shadow-sky-500/10 backdrop-blur-md">
-            <Sparkles className="w-4 h-4 text-sky-500 dark:text-sky-400" /> Microsoft Learn Student Chapter • Marwadi University
+            <Sparkles className="w-4 h-4 text-sky-500 dark:text-sky-400" /> Microsoft Campus Club • Marwadi University
           </div>
 
           <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
-            Innovate, Learn &amp; Build with <br className="hidden sm:inline" />
+            Learn Faster. Build Together. <br className="hidden sm:inline" />
             <span className="bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 dark:from-sky-400 dark:via-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
-              Microsoft Campus Club
+              Lead with Tech.
             </span>
           </h1>
 
           <p className="text-base sm:text-lg text-slate-700 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
-            The official student community at Marwadi University driving technical excellence through Azure workshops, national hackathons, Microsoft certification pathways, and hands-on project collaboration.
+            A student-led community for workshops, practical projects, peer learning, and Microsoft technology exposure at Marwadi University.
           </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-2 max-w-lg mx-auto pt-1">
+            {['Cloud Labs', 'AI & ML Workshops', 'Live Demos', 'Peer Mentorship'].map((tag) => (
+              <span
+                key={tag}
+                className="px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[11px] font-medium text-slate-600 dark:text-slate-400"
+              >
+                ✓ {tag}
+              </span>
+            ))}
+          </div>
 
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
             <Link href="/events">
@@ -136,15 +275,13 @@ export default function HomePage() {
                 Explore Events <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>
-            <Link href="/join-us">
-              <Button variant="secondary" size="lg">
-                Join Community
-              </Button>
-            </Link>
+            <Button variant="secondary" size="lg" onClick={() => setIsSocialModalOpen(true)}>
+              <Users className="w-4 h-4 mr-1.5 text-sky-400" /> Join Community
+            </Button>
           </div>
         </motion.div>
 
-        {/* Floating Acrylic Glass Preview Cards */}
+        {/* Floating Glass Capability Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-16 text-left max-w-5xl mx-auto">
           <Card className="p-6 fluent-glass-card hover:border-sky-500/50 transition-all duration-300 group">
             <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -156,7 +293,7 @@ export default function HomePage() {
             </p>
           </Card>
 
-          <Card className="p-6 fluent-glass-card hover:border-sky-500/50 transition-all duration-300 group">
+          <Card className="p-6 fluent-glass-card hover:border-purple-500/50 transition-all duration-300 group">
             <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <Trophy className="w-5 h-5" />
             </div>
@@ -166,7 +303,7 @@ export default function HomePage() {
             </p>
           </Card>
 
-          <Card className="p-6 fluent-glass-card hover:border-sky-500/50 transition-all duration-300 group">
+          <Card className="p-6 fluent-glass-card hover:border-emerald-500/50 transition-all duration-300 group">
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <Award className="w-5 h-5" />
             </div>
@@ -178,11 +315,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 13.2 COMMUNITY STATISTICS */}
+      {/* 2. COMMUNITY STATISTICS */}
       <section className="bg-slate-100/80 dark:bg-slate-900/60 border-y border-slate-200 dark:border-slate-800/80 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {STATS.map((s) => {
+            {displayStats.map((s) => {
               const Icon = s.icon;
               return (
                 <div key={s.label} className="space-y-2">
@@ -199,8 +336,121 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 13.3 & 13.4 UPCOMING EVENT BANNER & COUNTDOWN */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* 3. ABOUT US — VISION & MISSION */}
+      <section id="about" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+        <div className="text-center max-w-3xl mx-auto space-y-3">
+          <Badge variant="primary">About Microsoft Campus Club</Badge>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Empowering Student Developers at Marwadi University
+          </h2>
+          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+            The Microsoft Campus Club (MCC) is an official student-led community at Marwadi University, Rajkot. We bridge academic learning with enterprise Microsoft technologies through hands-on cloud labs, collaborative projects, and peer mentorship.
+          </p>
+        </div>
+
+        {/* Vision */}
+        <div className="space-y-8">
+          <div className="text-center space-y-2">
+            <Badge variant="outline" className="text-sky-400 border-sky-500/30">Our Core Vision</Badge>
+            <h3 className="text-2xl font-bold text-white">Our Long-Term Purpose</h3>
+            <p className="text-xs text-slate-400 max-w-xl mx-auto">
+              A guiding blueprint for how our community creates continuous impact for every student on campus.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {VISION_ITEMS.map((item, idx) => {
+              const IconComponent = item.icon;
+              return (
+                <Card
+                  key={idx}
+                  className="p-6 space-y-4 border-slate-200 dark:border-slate-800 hover:border-sky-500/40 transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                  <div className={`w-12 h-12 rounded-xl border flex items-center justify-center ${item.color}`}>
+                    <IconComponent className="w-6 h-6" />
+                  </div>
+                  <h4 className="text-base font-bold text-slate-900 dark:text-white leading-snug">
+                    {item.title}
+                  </h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    {item.description}
+                  </p>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Mission */}
+        <div className="space-y-8 pt-6 border-t border-slate-800/80">
+          <div className="text-center space-y-2">
+            <Badge variant="purple">Actionable Mission</Badge>
+            <h3 className="text-2xl font-bold text-white">Supporting Students at Every Step</h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-5xl mx-auto">
+            {MISSION_ITEMS.map((item, idx) => {
+              const IconComponent = item.icon;
+              return (
+                <Card key={idx} className="p-5 bg-slate-900/60 border-slate-800 flex items-start gap-4 hover:border-sky-500/30 transition-colors">
+                  <div className={`p-2.5 rounded-xl border shrink-0 ${item.badgeColor}`}>
+                    <IconComponent className="w-5 h-5" />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-xs font-bold text-sky-400 block">{item.condition}</span>
+                    <p className="text-xs text-slate-300 leading-relaxed">{item.action}</p>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* 4. YOUR COMMUNITY JOURNEY */}
+      <section id="journey" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <Badge variant="primary">How It Works</Badge>
+          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Your Community Journey
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            From curiosity to building real-world software and leading technical initiatives.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {JOURNEY_STEPS.map((step) => {
+            const Icon = step.icon;
+            return (
+              <Card
+                key={step.step}
+                className="p-8 bg-slate-900/60 border-slate-800 rounded-3xl relative overflow-hidden space-y-5 hover:border-sky-500/40 transition-all duration-300 group shadow-xl"
+              >
+                <div className="flex items-center justify-between">
+                  <div className={`p-3 rounded-2xl bg-gradient-to-br ${step.color} border flex items-center justify-center`}>
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <span className="text-4xl font-black text-slate-800 dark:text-slate-800/80 group-hover:text-sky-500/30 transition-colors">
+                    {step.step}
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-sky-400 block">
+                    {step.subtitle}
+                  </span>
+                  <h3 className="text-2xl font-bold text-white">{step.title}</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed">{step.description}</p>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* 5. UPCOMING EVENT & COUNTDOWN */}
+      <section id="events" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="rounded-3xl bg-gradient-to-r from-slate-100 via-sky-50 to-slate-100 dark:from-slate-900 dark:via-sky-950/60 dark:to-slate-900 border border-sky-500/30 p-8 md:p-10 relative overflow-hidden shadow-2xl">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-8 relative z-10">
             <div className="space-y-4 text-center lg:text-left max-w-2xl">
@@ -252,64 +502,85 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 14 CORE TEAM CAROUSEL */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        <div className="text-center max-w-2xl mx-auto">
-          <Badge variant="primary" className="mb-2">Leadership</Badge>
-          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">Meet Core Team Leaders</h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-            Faculty coordinators and student ambassadors driving Microsoft Campus Club activities.
+      {/* 6. FACULTY MENTORSHIP & PRESIDENT LEADERSHIP SECTION */}
+      <section id="leadership" className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <Badge variant="primary">Community Leadership</Badge>
+          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Faculty Mentorship &amp; Chapter Leadership
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Guided by distinguished faculty members and student leaders at Marwadi University.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {team.slice(0, 3).map((member) => (
-            <Card key={member.id} className="p-6 text-center space-y-4 hover:border-sky-500/50 transition-all duration-300">
-              <img
-                src={member.photo || '/avatar-placeholder.png'}
-                alt={member.name}
-                className="w-24 h-24 rounded-2xl object-cover mx-auto border-2 border-sky-500 shadow-lg"
-              />
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{member.name}</h3>
-                <p className="text-xs font-semibold text-sky-600 dark:text-sky-400 mt-0.5">{member.position}</p>
-                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{member.department}</p>
-              </div>
-              {member.quote && (
-                <p className="text-xs text-slate-700 dark:text-slate-300 italic bg-slate-100 dark:bg-slate-950/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
-                  &quot;{member.quote}&quot;
-                </p>
-              )}
-            </Card>
-          ))}
-        </div>
-      </section>
+        {/* CARD 1: Faculty Coordinator — Prof. Pranav Tank Sir */}
+        <Card className="p-8 md:p-10 bg-slate-900/90 border-slate-800 rounded-3xl relative overflow-hidden shadow-2xl space-y-6">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-sky-500/5 rounded-full blur-3xl pointer-events-none" />
 
-      {/* 15 COMMUNITY TIMELINE */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        <div className="text-center">
-          <Badge variant="purple" className="mb-2">Our Journey</Badge>
-          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">Community Milestones</h2>
-        </div>
-
-        <div className="space-y-6 relative before:absolute before:inset-0 before:left-4 md:before:left-1/2 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
-          {TIMELINE.map((item, idx) => (
-            <div key={item.year} className={`relative flex items-center gap-6 ${idx % 2 === 0 ? 'md:flex-row-reverse' : ''}`}>
-              <div className="w-8 h-8 rounded-full bg-sky-600 dark:bg-sky-500 text-white font-bold text-xs flex items-center justify-center z-10 shrink-0 shadow-lg shadow-sky-500/30">
-                {item.year.slice(2)}
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            <div className="relative shrink-0">
+              <div className="w-32 h-32 md:w-36 md:h-36 rounded-3xl bg-slate-800 border-2 border-sky-500 shadow-xl shadow-sky-500/20 flex flex-col items-center justify-center text-sky-400 p-4 text-center">
+                <GraduationCap className="w-12 h-12 mb-1" />
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-300">Prof. Pranav Tank</span>
               </div>
-              <Card className="flex-1 p-6 space-y-1 hover:border-sky-500/40 transition-colors">
-                <span className="text-xs font-extrabold text-sky-600 dark:text-sky-400">{item.year}</span>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">{item.title}</h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400">{item.description}</p>
-              </Card>
+              <div className="absolute -bottom-2 -right-2 p-2 rounded-xl bg-sky-500 text-white shadow-lg">
+                <Award className="w-4 h-4" />
+              </div>
             </div>
-          ))}
-        </div>
+
+            <div className="space-y-4 text-center md:text-left flex-1">
+              <div className="space-y-1">
+                <Badge variant="primary" className="mb-1">Faculty Coordinator &amp; Patron</Badge>
+                <h3 className="text-2xl font-extrabold text-white">Prof. Pranav Tank Sir</h3>
+                <p className="text-xs font-semibold text-sky-400">
+                  Assistant Professor, Department of Computer Engineering • Marwadi University
+                </p>
+              </div>
+
+              <blockquote className="text-xs sm:text-sm text-slate-300 italic leading-relaxed bg-slate-950/60 p-4 rounded-2xl border border-slate-800">
+                &quot;The Microsoft Campus Club serves as a beacon for practical technological learning at Marwadi University. We extend our sincere gratitude to Prof. Pranav Tank Sir for his constant mentorship, vision, and unwavering support in nurturing our student developers.&quot;
+              </blockquote>
+            </div>
+          </div>
+        </Card>
+
+        {/* CARD 2: President & Founder — Tisha Simejiya */}
+        <Card className="p-8 md:p-10 bg-slate-900/90 border-slate-800 rounded-3xl relative overflow-hidden shadow-2xl space-y-6">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            <div className="relative shrink-0">
+              <img
+                src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400"
+                alt="Tisha Simejiya"
+                className="w-32 h-32 md:w-36 md:h-36 rounded-3xl object-cover border-2 border-purple-500 shadow-xl shadow-purple-500/20"
+              />
+              <div className="absolute -bottom-2 -right-2 p-2 rounded-xl bg-purple-500 text-white shadow-lg">
+                <Quote className="w-4 h-4" />
+              </div>
+            </div>
+
+            <div className="space-y-4 text-center md:text-left flex-1">
+              <div className="space-y-1">
+                <Badge variant="purple" className="mb-1">President &amp; Founder's Message</Badge>
+                <h3 className="text-2xl font-extrabold text-white">Tisha Simejiya</h3>
+                <p className="text-xs font-semibold text-purple-400">
+                  Associate Microsoft Student Ambassador • Founder &amp; President
+                </p>
+              </div>
+
+              <blockquote className="text-xs sm:text-sm text-slate-300 italic leading-relaxed bg-slate-950/60 p-4 rounded-2xl border border-slate-800">
+                &quot;This community is for every student who wants to learn, build, ask questions, and be part of something meaningful. You do not need to know everything before you begin. Join us, bring your curiosity, and be part of the change we can create together at Marwadi University.&quot;
+              </blockquote>
+            </div>
+          </div>
+        </Card>
       </section>
 
-      {/* 16 NOTICE BOARD */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* 7. NOTICE BOARD & FREQUENTLY ASKED QUESTIONS */}
+      <section id="faq" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        {/* Notice Board */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -341,83 +612,59 @@ export default function HomePage() {
             )}
           </div>
         </div>
-      </section>
 
-      {/* MICROSOFT TECHNOLOGY PATHWAYS */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        <div className="text-center max-w-2xl mx-auto">
-          <Badge variant="primary" className="mb-2">Skill Tracks</Badge>
-          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">Microsoft Technology Pathways</h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
-            Structured learning pathways to help students master enterprise Microsoft technologies and prepare for official certification tracks.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <Card className="p-6 space-y-3 hover:border-sky-500/50 transition-all duration-300 group relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-sky-500/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
-            <div className="w-11 h-11 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Cloud className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">Azure Cloud Computing</h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              Cloud architecture, serverless computing, and preparation for Microsoft Certified: Azure Fundamentals (AZ-900).
+        {/* FAQs */}
+        <div className="space-y-6 pt-4">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <Badge variant="primary">FAQ</Badge>
+            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center justify-center gap-2">
+              <HelpCircle className="w-7 h-7 text-sky-400" /> Frequently Asked Questions
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Everything you need to know about joining and contributing to Microsoft Campus Club.
             </p>
-            <div className="flex items-center gap-2 pt-1">
-              <Badge variant="primary" className="text-[10px]">12 Workshops</Badge>
-              <Badge variant="default" className="text-[10px]">AZ-900</Badge>
-            </div>
-          </Card>
+          </div>
 
-          <Card className="p-6 space-y-3 hover:border-purple-500/50 transition-all duration-300 group relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
-            <div className="w-11 h-11 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-600 dark:text-purple-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Cpu className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">AI &amp; Machine Learning</h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              Azure OpenAI, Cognitive Services, and foundational AI principles for Microsoft Certified: Azure AI Fundamentals (AI-900).
-            </p>
-            <div className="flex items-center gap-2 pt-1">
-              <Badge variant="purple" className="text-[10px]">8 Sessions</Badge>
-              <Badge variant="default" className="text-[10px]">AI-900</Badge>
-            </div>
-          </Card>
-
-          <Card className="p-6 space-y-3 hover:border-emerald-500/50 transition-all duration-300 group relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-500/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
-            <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <GitBranch className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">GitHub &amp; DevOps</h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              GitHub Actions, CI/CD automation pipelines, version control practices, and open-source contribution sprints.
-            </p>
-            <div className="flex items-center gap-2 pt-1">
-              <Badge variant="success" className="text-[10px]">6 Bootcamps</Badge>
-              <Badge variant="default" className="text-[10px]">GitHub Pro</Badge>
-            </div>
-          </Card>
-
-          <Card className="p-6 space-y-3 hover:border-amber-500/50 transition-all duration-300 group relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-amber-500/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
-            <div className="w-11 h-11 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Zap className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">Power Platform</h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              Low-code application development and automated workflows for Microsoft Certified: Power Platform Fundamentals (PL-900).
-            </p>
-            <div className="flex items-center gap-2 pt-1">
-              <Badge variant="warning" className="text-[10px]">5 Labs</Badge>
-              <Badge variant="default" className="text-[10px]">PL-900</Badge>
-            </div>
-          </Card>
+          <div className="space-y-4">
+            {FAQS.map((faq, idx) => {
+              const isOpen = openFaqIndex === idx;
+              return (
+                <Card
+                  key={idx}
+                  className="bg-slate-900/80 border-slate-800 rounded-2xl overflow-hidden transition-colors"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                    className="w-full p-5 text-left flex items-center justify-between gap-4 font-bold text-sm text-white hover:text-sky-400 transition-colors"
+                  >
+                    <span>{faq.q}</span>
+                    <ChevronDown className={`w-4 h-4 text-sky-400 shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  <AnimatePresence>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="p-5 pt-0 text-xs text-slate-400 leading-relaxed border-t border-slate-800/60">
+                          {faq.a}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </Card>
+              );
+            })}
+          </div>
         </div>
       </section>
 
-      {/* JOIN THE COMMUNITY CTA */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* 8. ADVANCE YOUR TECHNICAL JOURNEY CTA (AT THE VERY END) */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <div className="rounded-3xl bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 p-8 md:p-12 text-white text-center shadow-2xl space-y-5 relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.1)_0%,_transparent_60%)]" />
           <div className="relative z-10 space-y-5">
@@ -430,7 +677,7 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto pt-2">
               <Link href="/join-us" className="flex-1">
                 <Button variant="secondary" size="lg" className="w-full font-bold text-xs shadow-lg">
-                  <Users className="w-4 h-4 mr-1.5" /> Join Chapter
+                  <UserCheck className="w-4 h-4 mr-1.5" /> Join Chapter
                 </Button>
               </Link>
               <Link href="/events" className="flex-1">
@@ -446,6 +693,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <CommunitySocialModal isOpen={isSocialModalOpen} onClose={() => setIsSocialModalOpen(false)} />
     </div>
   );
 }

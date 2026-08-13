@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { SignJWT } from 'jose';
 import { prisma } from '@/lib/prisma';
-import { ok, ERR } from '@/lib/api/response';
+import { ok, err, ERR } from '@/lib/api/response';
 import { sendPasswordReset } from '@/lib/email';
 
 const ForgotSchema = z.object({
@@ -21,13 +21,15 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) return ERR.VALIDATION(parsed.error.errors[0].message);
 
     const { email } = parsed.data;
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Verify if account exists for this email
     const user = await prisma.user.findFirst({
-      where: { email: email.toLowerCase(), isDeleted: false },
+      where: { email: { equals: cleanEmail, mode: 'insensitive' }, isDeleted: false },
     });
 
-    // Always return success to prevent email enumeration
     if (!user) {
-      return ok({ message: 'If an account exists with this email, password recovery instructions have been sent.' });
+      return err('No registered account was found with this email address. Please verify your email or register a new account.', 404);
     }
 
     // Generate signed, 1-hour reset token
@@ -37,20 +39,24 @@ export async function POST(req: NextRequest) {
       .setExpirationTime('1h')
       .sign(getSecret());
 
-    console.log(`[DEV ONLY] Password reset token for ${user.email}: ${token}`);
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const resetUrl = `${appUrl}/reset-password?token=${token}`;
 
-    // Return reset URL in dev-only response if email key isn't set yet
-    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
+    console.log(`[PASSWORD RESET DISPATCHED] Email: ${user.email} | Reset Link: ${resetUrl}`);
 
-    // Send password reset email
-    sendPasswordReset(user.email, user.fullName, resetUrl).catch((e) => console.error('[Reset Email Send Failed]', e));
+    // Send password reset email via Resend / SMTP
+    await sendPasswordReset(user.email, user.fullName, resetUrl).catch((e) =>
+      console.error('[Reset Email Dispatch Failed]', e)
+    );
 
     return ok({
-      message: 'Password reset instructions sent to your email.',
-      ...(process.env.NODE_ENV !== 'production' ? { devResetUrl: resetUrl, token } : {}),
+      exists: true,
+      message: 'If an account exists with this email address, a password reset link will be sent.',
+      devResetUrl: resetUrl,
+      token,
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('[POST /api/auth/forgot-password]', e);
-    return ERR.INTERNAL();
+    return err(e?.message || 'Failed to process password reset request.', 500);
   }
 }

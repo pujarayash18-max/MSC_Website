@@ -317,6 +317,7 @@ model User {
   blogPosts       BlogPost[]
   winnerShowcases WinnerShowcase[]
   teamMemberships RegistrationTeamMember[]
+  recruitmentApplications RecruitmentApplication[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1076,4 +1077,61 @@ model Settings {
   updatedAt DateTime @updatedAt
 
   @@map("settings")
+}
+
+// ─────────────────────────────────────────────
+// RECRUITMENT & APPLICATIONS
+// ─────────────────────────────────────────────
+
+enum RecruitmentRoleStatus {
+  OPEN   @map("Open")
+  CLOSED @map("Closed")
+}
+
+enum ApplicationStatus {
+  PENDING     @map("Pending")
+  SHORTLISTED @map("Shortlisted")
+  ACCEPTED    @map("Accepted")
+  REJECTED    @map("Rejected")
+}
+
+model RecruitmentRole {
+  id           String                @id @default(cuid())
+  title        String
+  department   String
+  description  String
+  status       RecruitmentRoleStatus @default(OPEN)
+  displayOrder Int                   @default(0)
+  isDeleted    Boolean               @default(false)
+
+  applications RecruitmentApplication[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("recruitment_roles")
+}
+
+model RecruitmentApplication {
+  id          String            @id @default(cuid())
+  roleId      String?
+  role        RecruitmentRole?  @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  roleTitle   String
+  fullName    String
+  email       String
+  enrollment  String
+  statement   String
+  status      ApplicationStatus @default(PENDING)
+  reviewNotes String?
+  userId      String?
+  user        User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  isDeleted   Boolean           @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([roleId])
+  @@index([userId])
+  @@index([status])
+  @@map("recruitment_applications")
 }

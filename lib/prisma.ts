@@ -2,13 +2,26 @@ import { PrismaClient } from '@prisma/client';
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-export const prisma =
+const basePrisma =
   globalForPrisma.prisma ??
   new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
   });
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = basePrisma;
+
+export const prisma = new Proxy(basePrisma, {
+  get(target, prop, receiver) {
+    if (typeof prop === 'string' && !(prop in target) && !prop.startsWith('$') && !prop.startsWith('_')) {
+      const freshClient = new PrismaClient({
+        log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+      });
+      globalForPrisma.prisma = freshClient;
+      return Reflect.get(freshClient, prop);
+    }
+    return Reflect.get(target, prop, receiver);
+  },
+});
 
 /**
  * Execute DB operation with connection retry handling for serverless PostgreSQL scaling (Neon / Azure DB).

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Mail, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { Mail, ArrowLeft, CheckCircle2, RefreshCw, KeyRound, ExternalLink } from 'lucide-react';
 import { MicrosoftFourSquareIcon } from '@/components/icons';
 import Link from 'next/link';
 
@@ -13,9 +13,10 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [devResetUrl, setDevResetUrl] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!email) return;
 
     setIsSubmitting(true);
@@ -26,14 +27,18 @@ export default function ForgotPasswordPage() {
         body: JSON.stringify({ email }),
       });
       const json = await res.json();
-      if (res.ok && json.success) {
+
+      if (res.ok && (json.success || json.exists)) {
         setSubmitted(true);
-        toast.success(json.data.message || 'Password reset link sent to your email!');
+        const resetLink = json.data?.devResetUrl || json.devResetUrl;
+        if (resetLink) setDevResetUrl(resetLink);
+        toast.success(json.message || json.data?.message || 'If an account exists with this email, a reset link will be sent.');
       } else {
-        toast.error(json.error || 'Failed to send recovery email.');
+        const errorMsg = json.error?.message || json.message || json.error || 'Failed to send recovery email.';
+        toast.error(errorMsg);
       }
     } catch {
-      toast.error('Network error. Please try again.');
+      toast.error('Network error. Please check your connection and try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -57,18 +62,48 @@ export default function ForgotPasswordPage() {
           {submitted ? (
             <div className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-4">
               <CheckCircle2 className="w-12 h-12 text-[#7FBA00] mx-auto animate-bounce" />
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Reset Link Dispatched</h3>
-                <p className="text-xs text-slate-600 dark:text-[#A8B0BB] mt-1">
-                  We&apos;ve sent password reset instructions to <strong className="text-slate-900 dark:text-white">{email}</strong>.
+              <div className="space-y-1">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">Reset Link Dispatched</h3>
+                <p className="text-xs text-slate-600 dark:text-[#A8B0BB]">
+                  If an account exists for <strong className="text-slate-900 dark:text-white">{email}</strong>, a password reset link will be sent to your inbox.
                 </p>
               </div>
 
-              <Link href="/login" className="block pt-2">
-                <Button variant="fluent" size="sm" className="w-full">
-                  <ArrowLeft className="w-4 h-4" /> Return to Login
+              {/* Dev Only Direct Reset Link */}
+              {devResetUrl && (
+                <div className="p-3 bg-slate-900/90 border border-sky-500/30 rounded-xl text-left space-y-1">
+                  <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wider block">
+                    Direct Reset Link (Local Testing):
+                  </span>
+                  <a
+                    href={devResetUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-sky-300 underline break-all flex items-center gap-1 hover:text-sky-200"
+                  >
+                    <KeyRound className="w-3.5 h-3.5 shrink-0" /> Open Reset Password Page <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
+
+              <div className="flex flex-col gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isSubmitting}
+                  onClick={() => handleSubmit()}
+                  className="w-full text-xs font-semibold"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isSubmitting ? 'animate-spin' : ''}`} />
+                  Resend Recovery Email
                 </Button>
-              </Link>
+
+                <Link href="/login" className="block w-full">
+                  <Button variant="fluent" size="sm" className="w-full text-xs">
+                    <ArrowLeft className="w-4 h-4 mr-1" /> Return to Login
+                  </Button>
+                </Link>
+              </div>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -91,18 +126,21 @@ export default function ForgotPasswordPage() {
                 variant="fluent"
                 size="lg"
                 disabled={isSubmitting}
-                className="w-full justify-center py-3 font-bold text-xs"
+                className="w-full justify-center py-3 font-bold text-xs shadow-lg shadow-sky-500/20"
               >
                 {isSubmitting ? 'Sending Recovery Link...' : 'Send Recovery Email'}
               </Button>
+
+              <div className="text-center pt-2">
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-sky-500 transition-colors"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" /> Back to Sign In
+                </Link>
+              </div>
             </form>
           )}
-
-          <div className="pt-2 text-center text-xs">
-            <Link href="/login" className="text-[#0078D4] dark:text-[#00A4EF] font-bold hover:underline inline-flex items-center gap-1">
-              <ArrowLeft className="w-3 h-3" /> Back to Sign In
-            </Link>
-          </div>
         </CardContent>
       </Card>
     </div>
