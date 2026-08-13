@@ -234,21 +234,24 @@ const FAQS = [
   },
 ];
 
-async function fetchHomeData() {
-  const [eventsRes, noticesRes, speakersRes, blogsRes, leaderboardRes] = await Promise.all([
-    fetch('/api/events', { cache: 'no-store' }),
-    fetch('/api/notices', { cache: 'no-store' }),
-    fetch('/api/speakers', { cache: 'no-store' }),
-    fetch('/api/blogs', { cache: 'no-store' }),
-    fetch('/api/points?mode=leaderboard', { cache: 'no-store' }),
-  ]);
+async function safeFetch(url: string) {
+  try {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) return { data: {} };
+    return await res.json();
+  } catch (e) {
+    console.warn(`[safeFetch] Failed to fetch ${url}:`, e);
+    return { data: {} };
+  }
+}
 
+async function fetchHomeData() {
   const [eventsData, noticesData, speakersData, blogsData, leaderboardData] = await Promise.all([
-    eventsRes.ok ? eventsRes.json() : { data: {} },
-    noticesRes.ok ? noticesRes.json() : { data: {} },
-    speakersRes.ok ? speakersRes.json() : { data: {} },
-    blogsRes.ok ? blogsRes.json() : { data: {} },
-    leaderboardRes.ok ? leaderboardRes.json() : { data: {} },
+    safeFetch('/api/events'),
+    safeFetch('/api/notices'),
+    safeFetch('/api/speakers'),
+    safeFetch('/api/blogs'),
+    safeFetch('/api/points?mode=leaderboard'),
   ]);
 
   return {
@@ -879,6 +882,11 @@ export default function MasterHomePage() {
           <p className="text-sm text-slate-600 dark:text-slate-400">
             Tutorials, architectural guides, and experiences written by Microsoft Student Ambassadors and core leads.
           </p>
+          <Link href="/dashboard/blogs/new">
+            <Button variant="fluent" size="sm" className="mt-3 font-bold text-xs gap-1.5">
+              <PenSquare className="w-4 h-4" /> Write a Blog
+            </Button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -943,7 +951,125 @@ export default function MasterHomePage() {
         </div>
       </section>
 
-      {/* 12. SUPPORT TICKET PORTAL */}
+
+
+      {/* 13. NOTICE BOARD & FREQUENTLY ASKED QUESTIONS */}
+      <section id="faq" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        {/* Notice Board */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Pin className="w-5 h-5 text-sky-600 dark:text-sky-400" /> Notice Board
+            </h3>
+            <Badge variant="primary">Live Announcements</Badge>
+          </div>
+
+          <div className="space-y-3">
+            {notices.length > 0 ? (
+              notices.slice(0, 3).map((notice) => (
+                <Card key={notice.id} className="p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Badge variant={notice.priority === 'Urgent' ? 'danger' : 'purple'}>
+                      {notice.priority} Notice
+                    </Badge>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                      {formatDateDeterministic(String(notice.publishDate))}
+                    </span>
+                  </div>
+                  <h4 className="font-bold text-slate-900 dark:text-white text-sm">{notice.title}</h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">{notice.description}</p>
+                </Card>
+              ))
+            ) : (
+              <Card className="p-6 text-center text-slate-600 dark:text-slate-400 text-xs">
+                No active announcements at this time. Check back soon for official club updates.
+              </Card>
+            )}
+          </div>
+        </div>
+
+        {/* FAQs */}
+        <div className="space-y-6 pt-4">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <Badge variant="primary">FAQ</Badge>
+            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center justify-center gap-2">
+              <HelpCircle className="w-7 h-7 text-sky-400" /> Frequently Asked Questions
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Everything you need to know about joining and contributing to Microsoft Campus Club.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {FAQS.map((faq, idx) => {
+              const isOpen = openFaqIndex === idx;
+              return (
+                <Card
+                  key={idx}
+                  className="bg-slate-900/80 border-slate-800 rounded-2xl overflow-hidden transition-colors"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                    className="w-full p-5 text-left flex items-center justify-between gap-4 font-bold text-sm text-white hover:text-sky-400 transition-colors"
+                  >
+                    <span>{faq.q}</span>
+                    <ChevronDown className={`w-4 h-4 text-sky-400 shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  <AnimatePresence>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="p-5 pt-0 text-xs text-slate-400 leading-relaxed border-t border-slate-800/60">
+                          {faq.a}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* 14. ADVANCE YOUR TECHNICAL JOURNEY CTA */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        <div className="rounded-3xl bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 p-8 md:p-12 text-white text-center shadow-2xl space-y-5 relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.1)_0%,_transparent_60%)]" />
+          <div className="relative z-10 space-y-5">
+            <Badge variant="outline" className="text-white border-white/40">Open to All Marwadi University Students</Badge>
+            <h2 className="text-2xl sm:text-3xl font-extrabold">Advance Your Technical Journey</h2>
+            <p className="text-xs sm:text-sm text-sky-100 max-w-xl mx-auto leading-relaxed">
+              Join the student developer community at Marwadi University. Access Microsoft certification guidance, technical workshops, hackathons, and student ambassador mentorship opportunities.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto pt-2">
+              <Link href="/join-us" className="flex-1">
+                <Button variant="secondary" size="lg" className="w-full font-bold text-xs shadow-lg">
+                  <UserCheck className="w-4 h-4 mr-1.5" /> Join Chapter
+                </Button>
+              </Link>
+              <a href="#events" className="flex-1">
+                <Button variant="outline" size="lg" className="w-full font-bold text-xs border-white/30 text-white hover:bg-white/10">
+                  <Calendar className="w-4 h-4 mr-1.5" /> Browse Events
+                </Button>
+              </a>
+            </div>
+
+            <p className="text-[11px] text-sky-200/70 pt-1">
+              Microsoft Learn Student Ambassadors • Azure for Students Benefits • GitHub Student Developer Pack
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 15. GET IN TOUCH - SUPPORT TICKET PORTAL (LAST SECTION) */}
       <section id="contact" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <div className="text-center max-w-3xl mx-auto space-y-3">
           <Badge variant="primary">Support Portal</Badge>
@@ -1050,122 +1176,6 @@ export default function MasterHomePage() {
               </Button>
             </form>
           </Card>
-        </div>
-      </section>
-
-      {/* 13. NOTICE BOARD & FREQUENTLY ASKED QUESTIONS */}
-      <section id="faq" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        {/* Notice Board */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Pin className="w-5 h-5 text-sky-600 dark:text-sky-400" /> Notice Board
-            </h3>
-            <Badge variant="primary">Live Announcements</Badge>
-          </div>
-
-          <div className="space-y-3">
-            {notices.length > 0 ? (
-              notices.slice(0, 3).map((notice) => (
-                <Card key={notice.id} className="p-4 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Badge variant={notice.priority === 'Urgent' ? 'danger' : 'purple'}>
-                      {notice.priority} Notice
-                    </Badge>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400">
-                      {formatDateDeterministic(String(notice.publishDate))}
-                    </span>
-                  </div>
-                  <h4 className="font-bold text-slate-900 dark:text-white text-sm">{notice.title}</h4>
-                  <p className="text-xs text-slate-600 dark:text-slate-400">{notice.description}</p>
-                </Card>
-              ))
-            ) : (
-              <Card className="p-6 text-center text-slate-600 dark:text-slate-400 text-xs">
-                No active announcements at this time. Check back soon for official club updates.
-              </Card>
-            )}
-          </div>
-        </div>
-
-        {/* FAQs */}
-        <div className="space-y-6 pt-4">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <Badge variant="primary">FAQ</Badge>
-            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center justify-center gap-2">
-              <HelpCircle className="w-7 h-7 text-sky-400" /> Frequently Asked Questions
-            </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Everything you need to know about joining and contributing to Microsoft Campus Club.
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            {FAQS.map((faq, idx) => {
-              const isOpen = openFaqIndex === idx;
-              return (
-                <Card
-                  key={idx}
-                  className="bg-slate-900/80 border-slate-800 rounded-2xl overflow-hidden transition-colors"
-                >
-                  <button
-                    type="button"
-                    onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
-                    className="w-full p-5 text-left flex items-center justify-between gap-4 font-bold text-sm text-white hover:text-sky-400 transition-colors"
-                  >
-                    <span>{faq.q}</span>
-                    <ChevronDown className={`w-4 h-4 text-sky-400 shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-                  </button>
-                  <AnimatePresence>
-                    {isOpen && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="p-5 pt-0 text-xs text-slate-400 leading-relaxed border-t border-slate-800/60">
-                          {faq.a}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* 14. ADVANCE YOUR TECHNICAL JOURNEY CTA (AT THE VERY END) */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        <div className="rounded-3xl bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 p-8 md:p-12 text-white text-center shadow-2xl space-y-5 relative overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.1)_0%,_transparent_60%)]" />
-          <div className="relative z-10 space-y-5">
-            <Badge variant="outline" className="text-white border-white/40">Open to All Marwadi University Students</Badge>
-            <h2 className="text-2xl sm:text-3xl font-extrabold">Advance Your Technical Journey</h2>
-            <p className="text-xs sm:text-sm text-sky-100 max-w-xl mx-auto leading-relaxed">
-              Join the student developer community at Marwadi University. Access Microsoft certification guidance, technical workshops, hackathons, and student ambassador mentorship opportunities.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto pt-2">
-              <Link href="/join-us" className="flex-1">
-                <Button variant="secondary" size="lg" className="w-full font-bold text-xs shadow-lg">
-                  <UserCheck className="w-4 h-4 mr-1.5" /> Join Chapter
-                </Button>
-              </Link>
-              <a href="#events" className="flex-1">
-                <Button variant="outline" size="lg" className="w-full font-bold text-xs border-white/30 text-white hover:bg-white/10">
-                  <Calendar className="w-4 h-4 mr-1.5" /> Browse Events
-                </Button>
-              </a>
-            </div>
-
-            <p className="text-[11px] text-sky-200/70 pt-1">
-              Microsoft Learn Student Ambassadors • Azure for Students Benefits • GitHub Student Developer Pack
-            </p>
-          </div>
         </div>
       </section>
 
