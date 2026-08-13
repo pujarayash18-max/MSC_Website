@@ -23,11 +23,10 @@ import {
 
 // Primary links – always shown in the desktop nav pill
 const PRIMARY_NAV = [
-  { label: 'Home', href: '/' },
-  { label: 'Events', href: '/events' },
-  { label: 'Speakers', href: '/speakers' },
-  { label: 'Community', href: '/team' },
-  { label: 'About', href: '/about' },
+  { label: 'Home', href: '/#home' },
+  { label: 'Events', href: '/#events' },
+  { label: 'Speakers', href: '/#speakers' },
+  { label: 'Community', href: '/#community' },
 ];
 
 // Secondary links – tucked into the "More" dropdown

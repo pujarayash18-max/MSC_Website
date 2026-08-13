@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { formatDateDeterministic } from '@/lib/date';
+import { EventFilterCatalog } from '@/components/events/EventFilterCatalog';
 import {
   Sparkles,
   Calendar,
@@ -36,8 +37,9 @@ import {
   UserCheck,
   GraduationCap,
   Share2,
+  Building2,
 } from 'lucide-react';
-import type { Event, Notice } from '@/types';
+import type { Event, Notice, Speaker } from '@/types';
 import { CommunitySocialModal } from '@/components/community/CommunitySocialModal';
 
 const VISION_ITEMS = [
@@ -45,38 +47,38 @@ const VISION_ITEMS = [
     title: 'A Starting Point for Every Student',
     description: 'Every student should have a place to begin, regardless of their current knowledge or experience.',
     icon: Compass,
-    color: 'text-sky-500 bg-sky-500/10 border-sky-500/30'
+    color: 'text-sky-500 bg-sky-500/10 border-sky-500/30',
   },
   {
     title: 'A Bridge to the Real World',
     description: 'Students should be able to connect what they learn in classrooms with practical applications and industry expectations.',
     icon: Globe,
-    color: 'text-purple-500 bg-purple-500/10 border-purple-500/30'
+    color: 'text-purple-500 bg-purple-500/10 border-purple-500/30',
   },
   {
     title: 'A Community Where Everyone Learns Together',
     description: 'MSC should be a student-led community where no one is expected to know everything. Students learn, explore, experiment and figure things out together.',
     icon: Users,
-    color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/30'
+    color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/30',
   },
   {
     title: 'A Community That Develops Student Leaders',
     description: 'Students should not only participate but also take ownership, lead, create and contribute to the community.',
     icon: Award,
-    color: 'text-amber-500 bg-amber-500/10 border-amber-500/30'
+    color: 'text-amber-500 bg-amber-500/10 border-amber-500/30',
   },
   {
     title: 'A Support System Throughout the Journey',
     description: 'Students should always have people, resources and opportunities to turn to when they are stuck or looking for their next step.',
     icon: HeartHandshake,
-    color: 'text-rose-500 bg-rose-500/10 border-rose-500/30'
+    color: 'text-rose-500 bg-rose-500/10 border-rose-500/30',
   },
   {
     title: 'A Cycle of Growth and Contribution',
     description: 'Students who grow through the community should become the ones who guide, support and create opportunities for the students who come after them.',
     icon: TrendingUp,
-    color: 'text-blue-500 bg-blue-500/10 border-blue-500/30'
-  }
+    color: 'text-blue-500 bg-blue-500/10 border-blue-500/30',
+  },
 ];
 
 const MISSION_ITEMS = [
@@ -84,44 +86,44 @@ const MISSION_ITEMS = [
     condition: "When a student doesn't know where to start",
     action: 'Provide direction, resources and opportunities to help them take their first step.',
     icon: Sparkles,
-    badgeColor: 'bg-sky-500/10 text-sky-400 border-sky-500/30'
+    badgeColor: 'bg-sky-500/10 text-sky-400 border-sky-500/30',
   },
   {
     condition: 'When a student wants to learn',
     action: 'Create opportunities through workshops, expert sessions, hands-on activities and peer-to-peer learning around Microsoft and emerging technologies.',
     icon: BookOpen,
-    badgeColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
+    badgeColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30',
   },
   {
     condition: 'When a student wants to explore',
     action: 'Encourage students to explore technologies, ideas, projects, people, industry exposure and career possibilities together.',
     icon: Rocket,
-    badgeColor: 'bg-purple-500/10 text-purple-400 border-purple-500/30'
+    badgeColor: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
   },
   {
     condition: 'When a student wants to build',
     action: 'Encourage students to apply what they learn by creating projects, solutions and practical experiences.',
     icon: Hammer,
-    badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+    badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
   },
   {
     condition: 'When a student wants to take responsibility',
     action: 'Give students opportunities to take ownership, lead teams, organize initiatives, manage projects and make decisions.',
     icon: ShieldCheck,
-    badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+    badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
   },
   {
     condition: 'When a student gets stuck',
     action: 'Help them find their next step through peers, experienced students, resources, guidance and opportunities.',
     icon: HelpCircle,
-    badgeColor: 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+    badgeColor: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
   },
   {
     condition: 'When a student grows',
     action: 'Encourage them to share what they have learned, showcase their work, support their peers and contribute back to the community.',
     icon: Share2,
-    badgeColor: 'bg-teal-500/10 text-teal-400 border-teal-500/30'
-  }
+    badgeColor: 'bg-teal-500/10 text-teal-400 border-teal-500/30',
+  },
 ];
 
 const JOURNEY_STEPS = [
@@ -179,19 +181,22 @@ const FAQS = [
 ];
 
 async function fetchHomeData() {
-  const [eventsRes, noticesRes] = await Promise.all([
+  const [eventsRes, noticesRes, speakersRes] = await Promise.all([
     fetch('/api/events'),
     fetch('/api/notices'),
+    fetch('/api/speakers'),
   ]);
 
-  const [eventsData, noticesData] = await Promise.all([
+  const [eventsData, noticesData, speakersData] = await Promise.all([
     eventsRes.ok ? eventsRes.json() : { data: {} },
     noticesRes.ok ? noticesRes.json() : { data: {} },
+    speakersRes.ok ? speakersRes.json() : { data: {} },
   ]);
 
   return {
     events: (eventsData.data?.events || []) as Event[],
     notices: (noticesData.data?.notices || []) as Notice[],
+    speakers: (speakersData.data?.speakers || []) as Speaker[],
   };
 }
 
@@ -203,6 +208,7 @@ export default function HomePage() {
 
   const events = data?.events || [];
   const notices = data?.notices || [];
+  const speakers = data?.speakers || [];
 
   const nextEvent = events[0] || {
     id: 'evt_default',
@@ -283,11 +289,11 @@ export default function HomePage() {
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-            <Link href="/events">
+            <a href="#events">
               <Button variant="fluent" size="lg" className="shadow-xl shadow-sky-500/25">
                 Explore Events <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
-            </Link>
+            </a>
             <Button variant="secondary" size="lg" onClick={() => setIsSocialModalOpen(true)}>
               <Users className="w-4 h-4 mr-1.5 text-sky-400" /> Join Community
             </Button>
@@ -453,8 +459,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 5. UPCOMING EVENT & COUNTDOWN */}
-      <section id="events" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* 5. WORKSHOPS & EVENTS CATALOG */}
+      <section id="events" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        {/* Next Upcoming Event Banner & Countdown */}
         <div className="rounded-3xl bg-gradient-to-r from-slate-100 via-sky-50 to-slate-100 dark:from-slate-900 dark:via-sky-950/60 dark:to-slate-900 border border-sky-500/30 p-8 md:p-10 relative overflow-hidden shadow-2xl">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-8 relative z-10">
             <div className="space-y-4 text-center lg:text-left max-w-2xl">
@@ -504,10 +511,86 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+
+        {/* Full Interactive Events Filter Catalog */}
+        <div className="space-y-6 pt-6 border-t border-slate-800/80">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <Badge variant="primary">MCC Events Catalog</Badge>
+            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              Workshops, Hackathons &amp; Bootcamps
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Discover upcoming Microsoft events, register with dynamic forms, track seat capacity, and earn community points.
+            </p>
+          </div>
+          <EventFilterCatalog events={events} />
+        </div>
       </section>
 
-      {/* 6. FACULTY MENTORSHIP & PRESIDENT LEADERSHIP SECTION */}
-      <section id="leadership" className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      {/* 6. SPEAKERS & MENTORS SHOWCASE */}
+      <section id="speakers" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <Badge variant="purple">Expert Mentorship</Badge>
+          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center justify-center gap-2">
+            <Mic className="w-7 h-7 text-purple-400" /> Industry Speakers &amp; Mentors
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Learn directly from seasoned Microsoft Student Ambassadors, cloud engineers, and technical leaders.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {speakers.length > 0 ? (
+            speakers.slice(0, 6).map((spk) => (
+              <Card
+                key={spk.id}
+                className="p-6 bg-slate-900/80 border-slate-800 rounded-3xl space-y-4 hover:border-sky-500/50 transition-all duration-300 group shadow-xl"
+              >
+                <div className="flex items-center gap-4">
+                  <img
+                    src={spk.photo || '/avatar-placeholder.png'}
+                    alt={spk.name}
+                    className="w-16 h-16 rounded-2xl object-cover border-2 border-sky-500 shadow-md group-hover:scale-105 transition-transform"
+                  />
+                  <div>
+                    <h3 className="text-base font-bold text-white group-hover:text-sky-400 transition-colors">
+                      {spk.name}
+                    </h3>
+                    <p className="text-xs text-sky-400 font-medium">{spk.designation}</p>
+                    <p className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
+                      <Building2 className="w-3 h-3 text-slate-500" /> {spk.organization}
+                    </p>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-300 leading-relaxed line-clamp-3 italic">
+                  &quot;{spk.bio}&quot;
+                </p>
+
+                {spk.expertise && spk.expertise.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-800">
+                    {spk.expertise.map((exp) => (
+                      <span
+                        key={exp}
+                        className="px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-[10px] text-slate-300 font-medium"
+                      >
+                        {exp}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </Card>
+            ))
+          ) : (
+            <Card className="col-span-full p-8 text-center bg-slate-900/40 border-slate-800 text-xs text-slate-400">
+              Speaker lineup updating for upcoming Azure Learning &amp; Competition sessions.
+            </Card>
+          )}
+        </div>
+      </section>
+
+      {/* 7. FACULTY MENTORSHIP & CHAPTER LEADERSHIP */}
+      <section id="community" className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <div className="text-center max-w-2xl mx-auto space-y-2">
           <Badge variant="primary">Community Leadership</Badge>
           <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
@@ -582,7 +665,7 @@ export default function HomePage() {
         </Card>
       </section>
 
-      {/* 7. NOTICE BOARD & FREQUENTLY ASKED QUESTIONS */}
+      {/* 8. NOTICE BOARD & FREQUENTLY ASKED QUESTIONS */}
       <section id="faq" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Notice Board */}
         <div className="space-y-4">
@@ -667,7 +750,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 8. ADVANCE YOUR TECHNICAL JOURNEY CTA (AT THE VERY END) */}
+      {/* 9. ADVANCE YOUR TECHNICAL JOURNEY CTA (AT THE VERY END) */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <div className="rounded-3xl bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 p-8 md:p-12 text-white text-center shadow-2xl space-y-5 relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.1)_0%,_transparent_60%)]" />
@@ -684,11 +767,11 @@ export default function HomePage() {
                   <UserCheck className="w-4 h-4 mr-1.5" /> Join Chapter
                 </Button>
               </Link>
-              <Link href="/events" className="flex-1">
+              <a href="#events" className="flex-1">
                 <Button variant="outline" size="lg" className="w-full font-bold text-xs border-white/30 text-white hover:bg-white/10">
                   <Calendar className="w-4 h-4 mr-1.5" /> Browse Events
                 </Button>
-              </Link>
+              </a>
             </div>
 
             <p className="text-[11px] text-sky-200/70 pt-1">
