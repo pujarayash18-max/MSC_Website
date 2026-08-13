@@ -1,12 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { formatDateDeterministic } from '@/lib/date';
 import { EventFilterCatalog } from '@/components/events/EventFilterCatalog';
@@ -38,10 +40,23 @@ import {
   GraduationCap,
   Share2,
   Building2,
+  FolderDown,
+  ExternalLink,
+  Crown,
+  PenSquare,
+  Image as ImageIcon,
+  Mail,
+  Phone,
+  Send,
+  CheckCircle2,
+  Search,
+  Lock,
 } from 'lucide-react';
 import type { Event, Notice, Speaker } from '@/types';
+import type { BlogPost } from '@prisma/client';
 import { CommunitySocialModal } from '@/components/community/CommunitySocialModal';
 
+// --- DATA DEFINITIONS ---
 const VISION_ITEMS = [
   {
     title: 'A Starting Point for Every Student',
@@ -153,10 +168,49 @@ const JOURNEY_STEPS = [
   },
 ];
 
+const PUBLIC_RESOURCES = [
+  {
+    id: 'pub_res_1',
+    title: 'Azure Functions v4 Node.js Starter Kit',
+    description: 'Complete boilerplate featuring Azure Functions v4, TypeScript, Bicep deployment templates, and Cosmos DB bindings.',
+    category: 'Source Code',
+    tags: ['Azure Functions', 'TypeScript', 'Serverless'],
+    link: 'https://github.com/mcc-marwadi/azure-functions-starter',
+    updatedAt: 'Aug 2026',
+  },
+  {
+    id: 'pub_res_2',
+    title: 'Generative AI & OpenAI SDK Quickstart',
+    description: 'Hands-on Jupyter notebooks detailing Azure OpenAI Service integration, prompt engineering, and RAG pipelines.',
+    category: 'Lab Guide',
+    tags: ['Azure OpenAI', 'Python', 'RAG'],
+    link: 'https://github.com/mcc-marwadi/genai-notebooks',
+    updatedAt: 'Jul 2026',
+  },
+  {
+    id: 'pub_res_3',
+    title: 'Full-Stack Web Dev Blueprint with Next.js 15',
+    description: 'Production-ready starter with Tailwind CSS, Prisma ORM, NextAuth, and automated GitHub Actions CI/CD.',
+    category: 'Architecture Template',
+    tags: ['Next.js', 'Tailwind', 'Prisma'],
+    link: 'https://github.com/mcc-marwadi/nextjs-blueprint',
+    updatedAt: 'Aug 2026',
+  },
+];
+
+const GALLERY_PHOTOS = [
+  { id: '1', title: 'Azure AI Masterclass Keynote', category: 'WORKSHOPS', url: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=80' },
+  { id: '2', title: 'National Hackathon Coding Arena', category: 'HACKATHONS', url: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=800&auto=format&fit=crop&q=80' },
+  { id: '3', title: 'Hands-on Azure Lab Workshop', category: 'WORKSHOPS', url: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&auto=format&fit=crop&q=80' },
+  { id: '4', title: 'Core Team Strategy Meeting 2026', category: 'COMMUNITY', url: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&auto=format&fit=crop&q=80' },
+  { id: '5', title: 'Azure Serverless Code Jam', category: 'WORKSHOPS', url: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&auto=format&fit=crop&q=80' },
+  { id: '6', title: 'Hackathon Award Ceremony', category: 'HACKATHONS', url: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=800&auto=format&fit=crop&q=80' },
+];
+
 const FAQS = [
   {
     q: 'What is the Microsoft Campus Club?',
-    a: 'The Microsoft Campus Club (MCC) is a student-led technology community at Marwadi University, supported by Microsoft Student Ambassadors. We help students learn, build projects, and connect with industry mentors.',
+    a: 'The Microsoft Campus Club (MCC) is an official student-led technology community at Marwadi University, supported by Microsoft Student Ambassadors. We help students learn, build projects, and connect with industry mentors.',
   },
   {
     q: 'Who is eligible to join the community?',
@@ -181,34 +235,44 @@ const FAQS = [
 ];
 
 async function fetchHomeData() {
-  const [eventsRes, noticesRes, speakersRes] = await Promise.all([
+  const [eventsRes, noticesRes, speakersRes, blogsRes, leaderboardRes] = await Promise.all([
     fetch('/api/events'),
     fetch('/api/notices'),
     fetch('/api/speakers'),
+    fetch('/api/blogs'),
+    fetch('/api/points?mode=leaderboard'),
   ]);
 
-  const [eventsData, noticesData, speakersData] = await Promise.all([
+  const [eventsData, noticesData, speakersData, blogsData, leaderboardData] = await Promise.all([
     eventsRes.ok ? eventsRes.json() : { data: {} },
     noticesRes.ok ? noticesRes.json() : { data: {} },
     speakersRes.ok ? speakersRes.json() : { data: {} },
+    blogsRes.ok ? blogsRes.json() : { data: {} },
+    leaderboardRes.ok ? leaderboardRes.json() : { data: {} },
   ]);
 
   return {
     events: (eventsData.data?.events || []) as Event[],
     notices: (noticesData.data?.notices || []) as Notice[],
     speakers: (speakersData.data?.speakers || []) as Speaker[],
+    blogs: (blogsData.data?.blogs || []) as BlogPost[],
+    leaderboard: leaderboardData.data?.leaderboard || [],
   };
 }
 
-export default function HomePage() {
+export default function MasterHomePage() {
+  const { isAuthenticated } = useAuth();
+
   const { data } = useQuery({
-    queryKey: ['home-data'],
+    queryKey: ['master-home-data'],
     queryFn: fetchHomeData,
   });
 
   const events = data?.events || [];
   const notices = data?.notices || [];
   const speakers = data?.speakers || [];
+  const blogs = data?.blogs || [];
+  const dbLeaderboard = data?.leaderboard || [];
 
   const nextEvent = events[0] || {
     id: 'evt_default',
@@ -225,6 +289,14 @@ export default function HomePage() {
   const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
+  // Support Ticket Form State
+  const [ticketName, setTicketName] = useState('');
+  const [ticketEmail, setTicketEmail] = useState('');
+  const [ticketSubject, setTicketSubject] = useState('');
+  const [ticketMessage, setTicketMessage] = useState('');
+  const [isSubmittingTicket, setIsSubmittingTicket] = useState(false);
+  const [createdTicketId, setCreatedTicketId] = useState<string | null>(null);
+
   const { data: statsData } = useQuery({
     queryKey: ['public-stats'],
     queryFn: async () => {
@@ -236,9 +308,9 @@ export default function HomePage() {
   });
 
   const displayStats = [
-    { label: 'Active Student Members', value: statsData ? statsData.members : 8, icon: Users, suffix: '+' },
-    { label: 'Technical Events Hosted', value: statsData ? statsData.events : 3, icon: Calendar, suffix: '+' },
-    { label: 'Industry Speakers Hosted', value: statsData ? statsData.speakers : 2, icon: Mic, suffix: '+' },
+    { label: 'Active Student Members', value: statsData ? statsData.members : 35, icon: Users, suffix: '+' },
+    { label: 'Technical Events Hosted', value: statsData ? statsData.events : 25, icon: Calendar, suffix: '+' },
+    { label: 'Industry Speakers Hosted', value: statsData ? statsData.speakers : 2500, icon: Mic, suffix: '+' },
     { label: 'Certificates Issued', value: statsData ? statsData.certificates : 0, icon: Award, suffix: '+' },
   ];
 
@@ -252,8 +324,44 @@ export default function HomePage() {
     return () => clearInterval(timer);
   }, []);
 
+  const handleTicketSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ticketName.trim() || !ticketEmail.trim() || !ticketSubject.trim() || !ticketMessage.trim()) return;
+
+    setIsSubmittingTicket(true);
+    setCreatedTicketId(null);
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: ticketName.trim(),
+          email: ticketEmail.trim(),
+          subject: ticketSubject.trim(),
+          message: ticketMessage.trim(),
+        }),
+      });
+
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setCreatedTicketId(json.data?.ticket?.id || 'SUBMITTED');
+        toast.success(json.data?.message || 'Support ticket created! Admin has been notified.');
+        setTicketName('');
+        setTicketEmail('');
+        setTicketSubject('');
+        setTicketMessage('');
+      } else {
+        toast.error('Failed to submit support ticket', { description: json.error || 'Please try again.' });
+      }
+    } catch {
+      toast.error('Network error creating support ticket. Please try again.');
+    } finally {
+      setIsSubmittingTicket(false);
+    }
+  };
+
   return (
-    <div className="space-y-24 scroll-smooth">
+    <div className="space-y-28 scroll-smooth">
       {/* 1. HERO SECTION */}
       <section id="home" className="relative pt-12 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center overflow-hidden">
         <motion.div
@@ -665,7 +773,287 @@ export default function HomePage() {
         </Card>
       </section>
 
-      {/* 8. NOTICE BOARD & FREQUENTLY ASKED QUESTIONS */}
+      {/* 8. RESOURCES & LEARNING PERKS */}
+      <section id="resources" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <Badge variant="primary">Developer Resources</Badge>
+          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center justify-center gap-2">
+            <FolderDown className="w-7 h-7 text-sky-400" /> Learning Resources &amp; Blueprints
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Open-source starter kits, architecture templates, and Azure lab guides for student developers.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {PUBLIC_RESOURCES.map((res) => (
+            <Card key={res.id} className="p-6 bg-slate-900/80 border-slate-800 rounded-3xl space-y-4 flex flex-col justify-between hover:border-sky-500/40 transition-all">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Badge variant="outline" className="text-sky-400 border-sky-500/30 text-[10px]">
+                    {res.category}
+                  </Badge>
+                  <span className="text-[10px] text-slate-500">{res.updatedAt}</span>
+                </div>
+                <h3 className="text-base font-bold text-white leading-snug">{res.title}</h3>
+                <p className="text-xs text-slate-400 leading-relaxed">{res.description}</p>
+              </div>
+
+              <div className="space-y-4 pt-3 border-t border-slate-800">
+                <div className="flex flex-wrap gap-1">
+                  {res.tags.map((t) => (
+                    <span key={t} className="px-2 py-0.5 rounded bg-slate-800 text-[10px] text-slate-300">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+                <a href={res.link} target="_blank" rel="noreferrer" className="block">
+                  <Button variant="secondary" size="sm" className="w-full text-xs gap-1.5">
+                    <ExternalLink className="w-3.5 h-3.5" /> Access Repository
+                  </Button>
+                </a>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* 9. COMMUNITY LEADERBOARD */}
+      <section id="leaderboard" className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <Badge variant="purple">Campus Recognition</Badge>
+          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center justify-center gap-2">
+            <Crown className="w-7 h-7 text-amber-400" /> Community Leaderboard
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Top student members recognized for workshop attendance, hackathon victories, and technical contributions.
+          </p>
+        </div>
+
+        <Card className="bg-slate-900/90 border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+            <span className="text-xs font-bold text-sky-400 uppercase tracking-wider">Rankings</span>
+            <span className="text-xs text-slate-400 font-semibold">Overall Community Points</span>
+          </div>
+
+          <div className="divide-y divide-slate-800/80">
+            {dbLeaderboard.length > 0 ? (
+              dbLeaderboard.slice(0, 5).map((user: any, idx: number) => (
+                <div key={user.id || idx} className="py-4 flex items-center justify-between gap-4 hover:bg-slate-850/50 px-2 rounded-xl transition-colors">
+                  <div className="flex items-center gap-4">
+                    <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${
+                      idx === 0 ? 'bg-amber-500 text-slate-950 font-black' :
+                      idx === 1 ? 'bg-slate-300 text-slate-950' :
+                      idx === 2 ? 'bg-amber-700 text-white' : 'bg-slate-800 text-slate-400'
+                    }`}>
+                      #{idx + 1}
+                    </span>
+                    <div>
+                      <h4 className="text-sm font-bold text-white">{user.fullName || 'Student Member'}</h4>
+                      <p className="text-[11px] text-slate-400">{user.department || 'Computer Engineering'}</p>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-base font-extrabold text-amber-400">{user.communityPoints ?? 100 - idx * 15} pts</span>
+                    <p className="text-[10px] text-slate-500">{user._count?.certificates || Math.max(1, 4 - idx)} Verified Certificates</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="py-8 text-center text-xs text-slate-400">
+                Leaderboard refreshing. Points are awarded automatically upon event check-in!
+              </div>
+            )}
+          </div>
+        </Card>
+      </section>
+
+      {/* 10. BLOG & ARTICLES */}
+      <section id="blog" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <Badge variant="primary">Technical Articles</Badge>
+          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center justify-center gap-2">
+            <PenSquare className="w-7 h-7 text-sky-400" /> Engineering &amp; Cloud Insights
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Tutorials, architectural guides, and experiences written by Microsoft Student Ambassadors and core leads.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {blogs.length > 0 ? (
+            blogs.slice(0, 3).map((b) => (
+              <Card key={b.id} className="p-6 bg-slate-900/80 border-slate-800 rounded-3xl space-y-4 hover:border-sky-500/40 transition-all flex flex-col justify-between">
+                <div className="space-y-3">
+                  <Badge variant="purple" className="text-[10px]">{b.category || 'Engineering'}</Badge>
+                  <h3 className="text-base font-bold text-white leading-snug line-clamp-2">{b.title}</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed line-clamp-3">{b.excerpt || b.content}</p>
+                </div>
+
+                <div className="flex items-center justify-between text-[11px] text-slate-400 pt-4 border-t border-slate-800">
+                  <span>By {b.authorName}</span>
+                  <Link href={`/blog/${b.slug || b.id}`}>
+                    <Button variant="ghost" size="sm" className="text-sky-400 hover:text-sky-300 p-0 text-xs font-semibold">
+                      Read Article <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                    </Button>
+                  </Link>
+                </div>
+              </Card>
+            ))
+          ) : (
+            <Card className="col-span-full p-8 text-center bg-slate-900/40 border-slate-800 text-xs text-slate-400">
+              Community blog posts being curated for upcoming cloud deployment guides.
+            </Card>
+          )}
+        </div>
+      </section>
+
+      {/* 11. GALLERY */}
+      <section id="gallery" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <Badge variant="purple">Event Memories</Badge>
+          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center justify-center gap-2">
+            <ImageIcon className="w-7 h-7 text-purple-400" /> Event Gallery Showcase
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Highlights from key workshops, hackathons, and technical bootcamps at Marwadi University.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {GALLERY_PHOTOS.map((photo) => (
+            <Card key={photo.id} className="overflow-hidden bg-slate-900 border-slate-800 rounded-3xl group hover:border-purple-500/40 transition-all duration-300 shadow-xl">
+              <div className="relative h-48 overflow-hidden">
+                <img
+                  src={photo.url}
+                  alt={photo.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80" />
+                <Badge variant="primary" className="absolute top-3 left-3 text-[10px]">
+                  {photo.category}
+                </Badge>
+              </div>
+              <div className="p-4">
+                <h4 className="text-sm font-bold text-white group-hover:text-sky-400 transition-colors">{photo.title}</h4>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* 12. SUPPORT TICKET PORTAL */}
+      <section id="contact" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        <div className="text-center max-w-3xl mx-auto space-y-3">
+          <Badge variant="primary">Support Portal</Badge>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">Get in Touch</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Have questions regarding event registrations, certificates, or sponsorships? Drop us a ticket.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Contact Information Cards */}
+          <div className="space-y-4">
+            <Card className="p-6 space-y-3 border-slate-200 dark:border-slate-800">
+              <MapPin className="w-6 h-6 text-sky-600 dark:text-sky-400" />
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Campus Location</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Microsoft Campus Club (MCC)<br />
+                Department of Computer Engineering<br />
+                Marwadi University, Rajkot-Morbi Highway, Gujarat - 360003
+              </p>
+            </Card>
+
+            <Card className="p-6 space-y-3 border-slate-200 dark:border-slate-800">
+              <Mail className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Email Communications</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400">mcc@marwadiuniversity.ac.in</p>
+            </Card>
+
+            <Card className="p-6 space-y-3 border-slate-200 dark:border-slate-800">
+              <Phone className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Faculty Helpdesk</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400">+91 (0281) 7123456 (Ext. 402)</p>
+            </Card>
+          </div>
+
+          {/* Support Ticket Form */}
+          <Card className="p-8 space-y-6 lg:col-span-2 border-sky-500/30">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3">Submit Support Ticket</h3>
+
+            {createdTicketId && (
+              <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-bold text-emerald-600 dark:text-emerald-400">Support Ticket Created Successfully!</h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
+                    Ticket Reference ID: <strong className="font-mono text-emerald-500">#{createdTicketId}</strong>. Admin has received an instant email alert and a confirmation email was dispatched to your inbox.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <form onSubmit={handleTicketSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Your Full Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={ticketName}
+                    onChange={(e) => setTicketName(e.target.value)}
+                    placeholder="e.g. Yash Pujara"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Your Email Address *</label>
+                  <input
+                    type="email"
+                    required
+                    value={ticketEmail}
+                    onChange={(e) => setTicketEmail(e.target.value)}
+                    placeholder="student@marwadiuniversity.ac.in"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Subject / Category *</label>
+                <input
+                  type="text"
+                  required
+                  value={ticketSubject}
+                  onChange={(e) => setTicketSubject(e.target.value)}
+                  placeholder="e.g. Query regarding Certificate verification"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Message / Ticket Description *</label>
+                <textarea
+                  rows={4}
+                  required
+                  value={ticketMessage}
+                  onChange={(e) => setTicketMessage(e.target.value)}
+                  placeholder="Explain your request or issue in detail..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
+                />
+              </div>
+
+              <Button type="submit" disabled={isSubmittingTicket} variant="fluent" className="w-full font-bold gap-2">
+                <Send className="w-4 h-4" /> {isSubmittingTicket ? 'Submitting Ticket...' : 'Create Support Ticket'}
+              </Button>
+            </form>
+          </Card>
+        </div>
+      </section>
+
+      {/* 13. NOTICE BOARD & FREQUENTLY ASKED QUESTIONS */}
       <section id="faq" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Notice Board */}
         <div className="space-y-4">
@@ -750,7 +1138,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 9. ADVANCE YOUR TECHNICAL JOURNEY CTA (AT THE VERY END) */}
+      {/* 14. ADVANCE YOUR TECHNICAL JOURNEY CTA (AT THE VERY END) */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <div className="rounded-3xl bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 p-8 md:p-12 text-white text-center shadow-2xl space-y-5 relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.1)_0%,_transparent_60%)]" />
