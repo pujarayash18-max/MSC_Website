@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Settings, Save, Database, Loader2, RefreshCw, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { Settings, Save, Database, Loader2, RefreshCw, AlertTriangle, ShieldCheck, Share2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 async function fetchSettings() {
@@ -30,6 +30,14 @@ export default function AdminSettingsPage() {
   const [participantPoints, setParticipantPoints] = useState(20);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
 
+  // Social Links
+  const [whatsappUrl, setWhatsappUrl] = useState('');
+  const [teamsUrl, setTeamsUrl] = useState('');
+  const [linkedinUrl, setLinkedinUrl] = useState('');
+  const [githubUrl, setGithubUrl] = useState('');
+  const [instagramUrl, setInstagramUrl] = useState('');
+  const [youtubeUrl, setYoutubeUrl] = useState('');
+
   const { data: dbSettings, isLoading, isRefetching, refetch } = useQuery({
     queryKey: ['admin-global-settings'],
     queryFn: fetchSettings,
@@ -46,6 +54,14 @@ export default function AdminSettingsPage() {
       if (dp.secondPlace !== undefined) setSecondPoints(Number(dp.secondPlace));
       if (dp.thirdPlace !== undefined) setThirdPoints(Number(dp.thirdPlace));
       if (dp.participant !== undefined) setParticipantPoints(Number(dp.participant));
+
+      const sl = dbSettings.socialLinks || {} as any;
+      if (sl.whatsapp) setWhatsappUrl(sl.whatsapp);
+      if (sl.teams) setTeamsUrl(sl.teams);
+      if (sl.linkedin) setLinkedinUrl(sl.linkedin);
+      if (sl.github) setGithubUrl(sl.github);
+      if (sl.instagram) setInstagramUrl(sl.instagram);
+      if (sl.youtube) setYoutubeUrl(sl.youtube);
     }
   }, [dbSettings]);
 
@@ -61,6 +77,14 @@ export default function AdminSettingsPage() {
           participant: participantPoints,
         },
         maintenanceMode,
+        socialLinks: {
+          whatsapp: whatsappUrl,
+          teams: teamsUrl,
+          linkedin: linkedinUrl,
+          github: githubUrl,
+          instagram: instagramUrl,
+          youtube: youtubeUrl,
+        },
       };
 
       const res = await fetch('/api/settings', {
@@ -232,6 +256,84 @@ export default function AdminSettingsPage() {
             >
               {maintenanceMode ? 'Disable Maintenance' : 'Enable Maintenance'}
             </Button>
+          </div>
+        </Card>
+
+        {/* Social Media / Community Links */}
+        <Card className="p-6 space-y-4 border-slate-200 dark:border-[#2A323D] bg-white dark:bg-[#151B23]">
+          <h3 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-[#2A323D] pb-3 flex items-center gap-2">
+            <Share2 className="w-4 h-4 text-sky-500" /> Community Social Links
+          </h3>
+          <p className="text-[11px] text-slate-500 dark:text-[#A8B0BB]">
+            These links are displayed in the &quot;Join Community&quot; popup on the homepage.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div>
+              <label className="text-slate-700 dark:text-slate-300 font-semibold block mb-1">WhatsApp Community URL</label>
+              <input
+                type="url"
+                value={whatsappUrl}
+                onChange={(e) => setWhatsappUrl(e.target.value)}
+                placeholder="https://whatsapp.com/channel/..."
+                className="w-full p-2.5 bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-[#00A4EF] focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-slate-700 dark:text-slate-300 font-semibold block mb-1">Microsoft Teams URL</label>
+              <input
+                type="url"
+                value={teamsUrl}
+                onChange={(e) => setTeamsUrl(e.target.value)}
+                placeholder="https://teams.microsoft.com/..."
+                className="w-full p-2.5 bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-[#00A4EF] focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-slate-700 dark:text-slate-300 font-semibold block mb-1">LinkedIn Organization URL</label>
+              <input
+                type="url"
+                value={linkedinUrl}
+                onChange={(e) => setLinkedinUrl(e.target.value)}
+                placeholder="https://linkedin.com/company/..."
+                className="w-full p-2.5 bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-[#00A4EF] focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-slate-700 dark:text-slate-300 font-semibold block mb-1">GitHub Organization URL</label>
+              <input
+                type="url"
+                value={githubUrl}
+                onChange={(e) => setGithubUrl(e.target.value)}
+                placeholder="https://github.com/..."
+                className="w-full p-2.5 bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-[#00A4EF] focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-slate-700 dark:text-slate-300 font-semibold block mb-1">Instagram Page URL</label>
+              <input
+                type="url"
+                value={instagramUrl}
+                onChange={(e) => setInstagramUrl(e.target.value)}
+                placeholder="https://instagram.com/..."
+                className="w-full p-2.5 bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-[#00A4EF] focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-slate-700 dark:text-slate-300 font-semibold block mb-1">YouTube Channel URL</label>
+              <input
+                type="url"
+                value={youtubeUrl}
+                onChange={(e) => setYoutubeUrl(e.target.value)}
+                placeholder="https://youtube.com/@..."
+                className="w-full p-2.5 bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-[#2A323D] rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-[#00A4EF] focus:outline-none"
+              />
+            </div>
           </div>
         </Card>
 

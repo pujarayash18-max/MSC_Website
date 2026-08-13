@@ -2,65 +2,77 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, MessageSquare, ExternalLink, Sparkles, Check, Copy } from 'lucide-react';
+import { X, MessageSquare, ExternalLink, Sparkles, Check, Copy, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useQuery } from '@tanstack/react-query';
 
 interface CommunitySocialModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const SOCIAL_LINKS = [
+async function fetchSocialLinks() {
+  try {
+    const res = await fetch('/api/settings', { cache: 'no-store' });
+    if (!res.ok) return {};
+    const json = await res.json();
+    return (json.data?.settings?.socialLinks || {}) as Record<string, string>;
+  } catch {
+    return {};
+  }
+}
+
+const SOCIAL_LINK_DEFS = [
   {
+    key: 'whatsapp',
     name: 'WhatsApp Community',
-    category: 'Instant Announcements & Event Alerts',
     description: 'Official student lounge for real-time announcements, workshop links, and study groups.',
-    url: 'https://whatsapp.com/channel/0029Va9Xxxx', // Official community channel
+    fallbackUrl: 'https://whatsapp.com/channel/0029Va9Xxxx',
     color: 'from-emerald-500/20 to-teal-500/10 border-emerald-500/30 text-emerald-400',
     iconBg: 'bg-emerald-500/20 text-emerald-400',
     badge: 'Primary Channel',
   },
   {
+    key: 'teams',
     name: 'Microsoft Teams',
-    category: 'Online Workshops & Live Sessions',
     description: 'Join live tech talks, Azure hands-on labs, and Student Ambassador roadmap webinars.',
-    url: 'https://teams.microsoft.com',
+    fallbackUrl: 'https://teams.microsoft.com',
     color: 'from-blue-500/20 to-indigo-500/10 border-blue-500/30 text-blue-400',
     iconBg: 'bg-blue-500/20 text-blue-400',
     badge: 'Live Events',
   },
   {
+    key: 'linkedin',
     name: 'LinkedIn Organization',
-    category: 'Career & Professional Network',
     description: 'Connect with MLSA leads, alumni, and share your event completion certificates.',
-    url: 'https://linkedin.com/company/microsoft-campus-club-mu',
+    fallbackUrl: 'https://linkedin.com/company/microsoft-campus-club-mu',
     color: 'from-sky-500/20 to-cyan-500/10 border-sky-500/30 text-sky-400',
     iconBg: 'bg-sky-500/20 text-sky-400',
     badge: 'Professional',
   },
   {
+    key: 'github',
     name: 'GitHub Organization',
-    category: 'Open Source Repositories',
     description: 'Contribute to club web projects, workshop source code, and student hackathon repos.',
-    url: 'https://github.com/microsoft-campus-club-mu',
+    fallbackUrl: 'https://github.com/microsoft-campus-club-mu',
     color: 'from-slate-700/40 to-slate-800/20 border-slate-700/50 text-slate-200',
     iconBg: 'bg-slate-700/50 text-slate-200',
     badge: 'Code & Repos',
   },
   {
+    key: 'instagram',
     name: 'Instagram Page',
-    category: 'Event Highlights & Stories',
     description: 'Catch behind-the-scenes, workshop photo galleries, hackathon winners, and reels.',
-    url: 'https://instagram.com/mcc_marwadi',
+    fallbackUrl: 'https://instagram.com/mcc_marwadi',
     color: 'from-pink-500/20 to-purple-500/10 border-pink-500/30 text-pink-400',
     iconBg: 'bg-pink-500/20 text-pink-400',
     badge: 'Photos & Updates',
   },
   {
+    key: 'youtube',
     name: 'YouTube Channel',
-    category: 'Workshop Recordings & Demos',
     description: 'Watch past session recordings, Azure setup tutorials, and project walkthroughs.',
-    url: 'https://youtube.com/@microsoftcampusclubmu',
+    fallbackUrl: 'https://youtube.com/@microsoftcampusclubmu',
     color: 'from-red-500/20 to-rose-500/10 border-red-500/30 text-red-400',
     iconBg: 'bg-red-500/20 text-red-400',
     badge: 'Video Tutorials',
@@ -69,6 +81,12 @@ const SOCIAL_LINKS = [
 
 export function CommunitySocialModal({ isOpen, onClose }: CommunitySocialModalProps) {
   const [copiedIndex, setCopiedIndex] = React.useState<number | null>(null);
+
+  const { data: socialLinks = {}, isLoading } = useQuery({
+    queryKey: ['community-social-links'],
+    queryFn: fetchSocialLinks,
+    enabled: isOpen,
+  });
 
   const copyToClipboard = (url: string, index: number) => {
     navigator.clipboard.writeText(url);
@@ -118,44 +136,53 @@ export function CommunitySocialModal({ isOpen, onClose }: CommunitySocialModalPr
             </div>
 
             {/* Social Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-6 max-h-[60vh] overflow-y-auto pr-1">
-              {SOCIAL_LINKS.map((link, idx) => (
-                <div
-                  key={link.name}
-                  className={`p-4 rounded-2xl bg-gradient-to-br ${link.color} border transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between space-y-3`}
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider ${link.iconBg}`}>
-                        {link.badge}
-                      </span>
-                      <button
-                        onClick={() => copyToClipboard(link.url, idx)}
-                        className="text-slate-400 hover:text-white p-1 rounded-md transition-colors"
-                        title="Copy Link"
-                      >
-                        {copiedIndex === idx ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                      </button>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-white flex items-center gap-1.5">
-                        {link.name}
-                      </h4>
-                      <p className="text-[11px] text-slate-400 mt-0.5 leading-tight">{link.description}</p>
-                    </div>
-                  </div>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-6 h-6 animate-spin text-sky-400" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-6 max-h-[60vh] overflow-y-auto pr-1">
+                {SOCIAL_LINK_DEFS.map((link, idx) => {
+                  const url = (socialLinks as any)[link.key] || link.fallbackUrl;
+                  return (
+                    <div
+                      key={link.key}
+                      className={`p-4 rounded-2xl bg-gradient-to-br ${link.color} border transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between space-y-3`}
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider ${link.iconBg}`}>
+                            {link.badge}
+                          </span>
+                          <button
+                            onClick={() => copyToClipboard(url, idx)}
+                            className="text-slate-400 hover:text-white p-1 rounded-md transition-colors"
+                            title="Copy Link"
+                          >
+                            {copiedIndex === idx ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold text-white flex items-center gap-1.5">
+                            {link.name}
+                          </h4>
+                          <p className="text-[11px] text-slate-400 mt-0.5 leading-tight">{link.description}</p>
+                        </div>
+                      </div>
 
-                  <a
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-xs font-semibold text-white border border-slate-700/50 hover:border-slate-600 transition-all group"
-                  >
-                    Join / Open Link <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                  </a>
-                </div>
-              ))}
-            </div>
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-xs font-semibold text-white border border-slate-700/50 hover:border-slate-600 transition-all group"
+                      >
+                        Join / Open Link <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                      </a>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Footer Notice */}
             <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
