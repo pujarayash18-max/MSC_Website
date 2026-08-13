@@ -35,6 +35,7 @@ import {
   ChevronDown,
   UserCheck,
   GraduationCap,
+  Share2,
 } from 'lucide-react';
 import type { Event, Notice } from '@/types';
 import { CommunitySocialModal } from '@/components/community/CommunitySocialModal';
@@ -42,73 +43,85 @@ import { CommunitySocialModal } from '@/components/community/CommunitySocialModa
 const VISION_ITEMS = [
   {
     title: 'A Starting Point for Every Student',
-    description: 'Every student should have an accessible starting point, regardless of prior knowledge or technical experience.',
+    description: 'Every student should have a place to begin, regardless of their current knowledge or experience.',
     icon: Compass,
-    color: 'text-sky-500 bg-sky-500/10 border-sky-500/30',
+    color: 'text-sky-500 bg-sky-500/10 border-sky-500/30'
   },
   {
-    title: 'A Bridge to Industry Expectations',
-    description: 'Connecting classroom theory with practical applications, cloud deployments, and modern developer tools.',
+    title: 'A Bridge to the Real World',
+    description: 'Students should be able to connect what they learn in classrooms with practical applications and industry expectations.',
     icon: Globe,
-    color: 'text-purple-500 bg-purple-500/10 border-purple-500/30',
+    color: 'text-purple-500 bg-purple-500/10 border-purple-500/30'
   },
   {
-    title: 'Collaborative Peer Learning',
-    description: 'A student-led environment where peers experiment, learn, ask questions, and solve technical challenges together.',
+    title: 'A Community Where Everyone Learns Together',
+    description: 'MSC should be a student-led community where no one is expected to know everything. Students learn, explore, experiment and figure things out together.',
     icon: Users,
-    color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/30',
+    color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/30'
   },
   {
-    title: 'Developing Student Leaders',
-    description: 'Empowering students to take ownership, direct initiatives, organize workshops, and contribute back to campus life.',
+    title: 'A Community That Develops Student Leaders',
+    description: 'Students should not only participate but also take ownership, lead, create and contribute to the community.',
     icon: Award,
-    color: 'text-amber-500 bg-amber-500/10 border-amber-500/30',
+    color: 'text-amber-500 bg-amber-500/10 border-amber-500/30'
   },
   {
-    title: 'Continuous Growth & Support',
-    description: 'Providing mentorship, learning resources, and career guidance to support students throughout their academic journey.',
+    title: 'A Support System Throughout the Journey',
+    description: 'Students should always have people, resources and opportunities to turn to when they are stuck or looking for their next step.',
     icon: HeartHandshake,
-    color: 'text-rose-500 bg-rose-500/10 border-rose-500/30',
+    color: 'text-rose-500 bg-rose-500/10 border-rose-500/30'
   },
   {
-    title: 'Sustainable Mentorship Cycle',
-    description: 'Graduating student leaders guide and mentor incoming batches, creating a perpetual cycle of campus growth.',
+    title: 'A Cycle of Growth and Contribution',
+    description: 'Students who grow through the community should become the ones who guide, support and create opportunities for the students who come after them.',
     icon: TrendingUp,
-    color: 'text-blue-500 bg-blue-500/10 border-blue-500/30',
-  },
+    color: 'text-blue-500 bg-blue-500/10 border-blue-500/30'
+  }
 ];
 
 const MISSION_ITEMS = [
   {
-    condition: 'When a student is looking for direction',
-    action: 'Provide clear resources, structured learning paths, and guidance to help them take their first step.',
+    condition: "When a student doesn't know where to start",
+    action: 'Provide direction, resources and opportunities to help them take their first step.',
     icon: Sparkles,
-    badgeColor: 'bg-sky-500/10 text-sky-400 border-sky-500/30',
+    badgeColor: 'bg-sky-500/10 text-sky-400 border-sky-500/30'
   },
   {
     condition: 'When a student wants to learn',
-    action: 'Organize practical workshops, expert technical sessions, and hands-on bootcamps around Microsoft and cloud tech.',
+    action: 'Create opportunities through workshops, expert sessions, hands-on activities and peer-to-peer learning around Microsoft and emerging technologies.',
     icon: BookOpen,
-    badgeColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30',
+    badgeColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
   },
   {
     condition: 'When a student wants to explore',
-    action: 'Encourage exploration of emerging technologies, AI models, developer tools, and industry career possibilities.',
+    action: 'Encourage students to explore technologies, ideas, projects, people, industry exposure and career possibilities together.',
     icon: Rocket,
-    badgeColor: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
+    badgeColor: 'bg-purple-500/10 text-purple-400 border-purple-500/30'
   },
   {
     condition: 'When a student wants to build',
-    action: 'Support students in converting ideas into tangible software projects, hackathon solutions, and campus tools.',
+    action: 'Encourage students to apply what they learn by creating projects, solutions and practical experiences.',
     icon: Hammer,
-    badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+    badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/30'
   },
   {
-    condition: 'When a student takes leadership',
-    action: 'Offer leadership positions, event management responsibilities, and team coordination roles.',
+    condition: 'When a student wants to take responsibility',
+    action: 'Give students opportunities to take ownership, lead teams, organize initiatives, manage projects and make decisions.',
     icon: ShieldCheck,
-    badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+    badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
   },
+  {
+    condition: 'When a student gets stuck',
+    action: 'Help them find their next step through peers, experienced students, resources, guidance and opportunities.',
+    icon: HelpCircle,
+    badgeColor: 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+  },
+  {
+    condition: 'When a student grows',
+    action: 'Encourage them to share what they have learned, showcase their work, support their peers and contribute back to the community.',
+    icon: Share2,
+    badgeColor: 'bg-teal-500/10 text-teal-400 border-teal-500/30'
+  }
 ];
 
 const JOURNEY_STEPS = [
@@ -336,26 +349,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3. ABOUT US — VISION & MISSION */}
+      {/* 3. VISION & MISSION */}
       <section id="about" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <Badge variant="primary">About Microsoft Campus Club</Badge>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Empowering Student Developers at Marwadi University
-          </h2>
-          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
-            The Microsoft Campus Club (MCC) is an official student-led community at Marwadi University, Rajkot. We bridge academic learning with enterprise Microsoft technologies through hands-on cloud labs, collaborative projects, and peer mentorship.
-          </p>
-        </div>
-
         {/* Vision */}
         <div className="space-y-8">
-          <div className="text-center space-y-2">
-            <Badge variant="outline" className="text-sky-400 border-sky-500/30">Our Core Vision</Badge>
-            <h3 className="text-2xl font-bold text-white">Our Long-Term Purpose</h3>
-            <p className="text-xs text-slate-400 max-w-xl mx-auto">
-              A guiding blueprint for how our community creates continuous impact for every student on campus.
-            </p>
+          <div className="text-center space-y-2 max-w-2xl mx-auto">
+            <Badge variant="primary">Our Vision</Badge>
+            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              Our Vision
+            </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -383,9 +385,11 @@ export default function HomePage() {
 
         {/* Mission */}
         <div className="space-y-8 pt-6 border-t border-slate-800/80">
-          <div className="text-center space-y-2">
-            <Badge variant="purple">Actionable Mission</Badge>
-            <h3 className="text-2xl font-bold text-white">Supporting Students at Every Step</h3>
+          <div className="text-center space-y-2 max-w-2xl mx-auto">
+            <Badge variant="purple">Our Mission</Badge>
+            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              Our Mission
+            </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-5xl mx-auto">
